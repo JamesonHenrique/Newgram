@@ -1,0 +1,224 @@
+<!-- Main Content Area -->
+<div class="content-area">
+  <!-- Posts Feed (Scrollable) -->
+  <div class="feed-container custom-scrollbar">
+    <h1 class="h1-bold max-w-3xl mx-auto mb-4 mr-1">Feed</h1>
+    <div class="flex flex-col  max-w-3xl mx-auto mr-1 animate-fadeIn">
+      <div class="post-list ">
+        <label for="modal-1" class="cursor-pointer">
+          <article
+            *ngFor="let post of posts"
+            class="post-card animate-slideUp flex flex-col justify-center "
+            [style.animation-delay]="0.2 * +1 + 's'"
+            (click)="openPostDetails(post, $event)"
+            [attr.data-post-id]="post.id"
+          >
+            <div class="flex-between mb-4">
+              <div class="flex-start gap-3">
+                <img
+                  [src]="post.avatar"
+                  alt="Avatar do Usuário"
+                  width="55"
+                  height="55"
+                  class=" story-border"
+                />
+                <div>
+                  <h4 class="base-semibold">{{ post.author }}</h4>
+                  <div class="flex gap-2 small-medium text-principal text-light-3">
+                    <span>{{ post.time }}</span>
+                    <span>•</span>
+                    <span>{{ post.location }}</span>
+                  </div>
+                </div>
+              </div>
+              <button class="post-menu-btn" (click)="$event.stopPropagation()">
+                <i class="fas fa-ellipsis-h text-light-3"></i>
+              </button>
+            </div>
+
+            <p class="base-medium mb-3">{{ post.text }}</p>
+            <div class="flex gap-2 small-medium text-principal text-light-3 mb-4">
+              <span *ngFor="let tag of post.tags">#{{ tag }}</span>
+            </div>
+
+
+            <img
+              [src]="post.image"
+              alt="Imagem do Post"
+              class="post-card_img"
+            />
+
+            <div class="flex-between mt-3">
+              <div class="flex gap-4">
+                <button
+                  class="flex-center gap-1 text-light-1hover:text-primary-custom transition"
+                  (click)="toggleLike(post, $event)"
+                  [ngClass]="{
+                    'text-red': post.isLiked,
+                    'hover:text-primary-custom': !post.isLiked
+                  }"
+                >
+                  <i
+                    class="fa-heart btn-icon text-xl"
+                    [ngClass]="{
+                      'fas': post.isLiked,
+                     'far': !post.isLiked
+                    }"
+                    [ngStyle]="{
+                      transform: post.isAnimating ? 'scale(1.2)' : 'scale(1)'
+                    }"
+                  ></i>
+                  <span class="small-medium">{{ post.likes }}</span>
+                </button>
+                <button
+                  class="flex-center gap-1 text-light-1 hover:text-primary-custom transition"
+                  (click)="$event.stopPropagation()"
+                >
+                  <i class="far fa-bookmark btn-icon text-xl"></i>
+                </button>
+              </div>
+              <button
+                class="small-medium text-light-3"
+                (click)="$event.stopPropagation()"
+              >
+                {{ post.comments }} comentários
+              </button>
+            </div>
+          </article>
+        </label>
+      </div>
+    </div>
+  </div>
+
+  <!-- Top Creators Sidebar (Fixed) -->
+  <div class="top-creators sticky top-0 right-0 w-[700px] h-screen p-8 overflow-y-auto custom-scrollbar">
+    <div class="creators-box bg-dark-2 rounded-3xl p-6 mb-6 shadow-lg">
+      <h3 class="h3-bold mb-6 text-primary-custom">Top Criadores</h3>
+      <div class="creator-grid grid grid-cols-2 gap-4">
+        <!-- Creator 1 -->
+        <div class="creator-card flex flex-col items-center justify-center gap-2 bg-dark-3 rounded-xl p-4 transition-all duration-300 hover:bg-dark-4 hover:-translate-y-1 hover:shadow-md" *ngFor="let topCreator of topCreators">
+          <img
+            src="{{ topCreator.avatar }}"
+            alt="Criador"
+            class="w-12 h-12 rounded-full object-cover"
+          />
+          <h4 class="base-semibold truncate">{{ topCreator.name }}</h4>
+          <p class="small-medium text-light-3 truncate text-principal">&#64;{{topCreator.username}}</p>
+          <button class="btn-follow mt-2 bg-primary-500 hover:bg-primary-600 text-white font-medium py-1 px-4 rounded-full transition-colors duration-200">
+            Seguir
+          </button>
+        </div>
+
+
+
+      </div>
+
+
+
+      <!-- Suggested Topics -->
+      <div class="creators-box">
+        <h3 class="h3-bold mb-4 text-primary-custom">Tópicos Sugeridos</h3>
+        <div class="flex flex-wrap gap-2">
+          <span
+            class="px-3 py-1 bg-dark-3 rounded-full text-sm hover:bg-primary-custom transition cursor-pointer"
+            >#fotografia</span
+          >
+          <span
+            class="px-3 py-1 bg-dark-3 rounded-full text-sm hover:bg-primary-custom transition cursor-pointer"
+            >#viagem</span
+          >
+          <span
+            class="px-3 py-1 bg-dark-3 rounded-full text-sm hover:bg-primary-custom transition cursor-pointer"
+            >#natureza</span
+          >
+          <span
+            class="px-3 py-1 bg-dark-3 rounded-full text-sm hover:bg-primary-custom transition cursor-pointer"
+            >#comida</span
+          >
+          <span
+            class="px-3 py-1 bg-dark-3 rounded-full text-sm hover:bg-primary-custom transition cursor-pointer"
+            >#arte</span
+          >
+          <span
+            class="px-3 py-1 bg-dark-3 rounded-full text-sm hover:bg-primary-custom transition cursor-pointer"
+            >#música</span
+          >
+          <span
+            class="px-3 py-1 bg-dark-3 rounded-full text-sm hover:bg-primary-custom transition cursor-pointer"
+            >#tecnologia</span
+          >
+        </div>
+      </div>
+
+      <!-- Quem Seguir -->
+      <div class="creators-box">
+        <h3 class="h3-bold mb-4 text-primary-custom">Quem Seguir</h3>
+        <div class="flex flex-col gap-4">
+          <div class="flex items-center gap-3">
+            <img
+              src="/placeholder.svg?height=40&width=40"
+              alt="Usuário"
+              class="w-10 h-10 rounded-full object-cover border border-primary-custom"
+            />
+            <div class="flex-1">
+              <h4 class="base-semibold">Rafael Costa</h4>
+              <p class="small-medium text-light-3">&#64;rafaelcosta</p>
+            </div>
+            <button class="btn-follow text-sm px-3 py-1">Seguir</button>
+          </div>
+          <div class="flex items-center gap-3">
+            <img
+              src="/placeholder.svg?height=40&width=40"
+              alt="Usuário"
+              class="w-10 h-10 rounded-full object-cover border border-primary-custom"
+            />
+            <div class="flex-1">
+              <h4 class="base-semibold">Juliana Lima</h4>
+              <p class="small-medium text-light-3">&#64;julima</p>
+            </div>
+            <button class="btn-follow text-sm px-3 py-1">Seguir</button>
+          </div>
+          <div class="flex items-center gap-3">
+            <img
+              src="/placeholder.svg?height=40&width=40"
+              alt="Usuário"
+              class="w-10 h-10 rounded-full object-cover border border-primary-custom"
+            />
+            <div class="flex-1">
+              <h4 class="base-semibold">Marcos Alves</h4>
+              <p class="small-medium text-light-3">malves</p>
+            </div>
+            <button class="btn-follow text-sm px-3 py-1">Seguir</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="bottom-bar flex-between w-full px-5 py-4">
+    <a href="#" class="flex-center flex-col gap-1">
+      <i class="fas fa-home icon-custom text-xl"></i>
+      <span class="tiny-medium">Início</span>
+    </a>
+    <a href="#" class="flex-center flex-col gap-1">
+      <i class="fas fa-compass text-light-3 text-xl"></i>
+      <span class="tiny-medium">Explorar</span>
+    </a>
+    <a href="#" class="flex-center flex-col gap-1">
+      <i class="fas fa-plus-circle text-light-3 text-xl"></i>
+      <span class="tiny-medium">Criar</span>
+    </a>
+    <a href="#" class="flex-center flex-col gap-1">
+      <i class="fas fa-bookmark text-light-3 text-xl"></i>
+      <span class="tiny-medium">Salvos</span>
+    </a>
+    <a href="#" class="flex-center flex-col gap-1">
+      <i class="fas fa-users text-light-3 text-xl"></i>
+      <span class="tiny-medium">Pessoas</span>
+    </a>
+  </div>
+  <app-post-details
+    [postSelected]="postSelected"
+    [modalId]="'modal-1'"
+  ></app-post-details>
+</div>

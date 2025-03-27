@@ -1,0 +1,143 @@
+<input type="checkbox" [id]="modalId" class="modal-toggle" />
+<div *ngIf="postSelected" class="post-detail-overlay active" id="postDetailOverlay">
+  <div class="post-detail-container custom-scrollbar">
+    <div class="post-detail-header flex-between">
+      <button class="back-button" id="closePostDetail">
+        <i class="fas fa-arrow-left"></i>
+        <span class="base-medium">Voltar</span>
+      </button>
+      <button class="btn-icon">
+        <i class="fas fa-ellipsis-h"></i>
+      </button>
+    </div>
+
+    <div class="post-detail-content" id="postDetailContent">
+      <div class="flex-between p-4 border-b border-dark-4">
+        <div class="flex-start gap-3">
+          <img
+            [src]="postSelected.avatar"
+            alt="Avatar do Usuário"
+            class="w-12 h-12 rounded-full object-cover border border-primary-custom"
+          />
+          <div>
+            <h4 class="base-semibold">{{ postSelected.author }}</h4>
+            <div class="flex gap-2 small-medium text-light-3">
+              <span>{{ postSelected.time }}</span>
+              <span>•</span>
+              <span>{{ postSelected.location }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <img
+        [src]="postSelected.image"
+        alt="Imagem do Post"
+        class="post-detail-image"
+      />
+
+      <div class="post-detail-info">
+        <p class="base-medium mb-3">{{ postSelected.text }}</p>
+        <div class="flex gap-2 flex-wrap mt-4"></div>
+        <div class="flex-between mt-6">
+          <div class="flex gap-2 items-center">
+            <i class="fas fa-heart text-red"></i>
+            <span class="small-medium">curtidas</span>
+          </div>
+          <span class="small-medium text-light-3"> comentários</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="post-detail-actions">
+      <div class="flex gap-4">
+        <button class="btn-icon">
+          <i class="far fa-heart"></i>
+        </button>
+        <button class="btn-icon">
+          <i class="far fa-comment"></i>
+        </button>
+        <button class="btn-icon">
+          <i class="far fa-paper-plane"></i>
+        </button>
+      </div>
+      <button class="btn-icon">
+        <i class="far fa-bookmark"></i>
+      </button>
+    </div>
+
+    <div class="post-detail-comments">
+      <h3 class="base-semibold mb-4">Comentários</h3>
+
+      <!-- Comment 1 -->
+      <div class="comment">
+        <img
+          [src]="postSelected.image"
+          alt="Avatar do Usuário"
+          class="w-10 h-10 rounded-full object-cover border border-primary-custom"
+        />
+        <div>
+          <div class="flex gap-2 items-center">
+            <h4 class="base-semibold">Fernanda Lima</h4>
+            <span class="small-medium text-light-3">2 horas atrás</span>
+          </div>
+          <p class="base-medium">
+            Que lugar incrível! Adorei as cores nessa foto.
+          </p>
+        </div>
+      </div>
+
+      <!-- Comment 2 -->
+      <div class="comment">
+        <img
+          [src]="postSelected.image"
+          alt="Avatar do Usuário"
+          class="w-10 h-10 rounded-full object-cover border border-primary-custom"
+        />
+        <div>
+          <div class="flex gap-2 items-center">
+            <h4 class="base-semibold">Roberto Gomes</h4>
+            <span class="small-medium text-light-3">1 dia atrás</span>
+          </div>
+          <p class="base-medium">
+            Já visitei esse lugar! É ainda mais bonito pessoalmente.
+          </p>
+        </div>
+      </div>
+
+      <!-- Comment 3 -->
+      <div class="comment">
+        <img
+          [src]="postSelected.image"
+          alt="Avatar do Usuário"
+          class="w-10 h-10 rounded-full object-cover border border-primary-custom"
+        />
+        <div>
+          <div class="flex gap-2 items-center">
+            <h4 class="base-semibold">Camila Souza</h4>
+            <span class="small-medium text-light-3">2 dias atrás</span>
+          </div>
+          <p class="base-medium">
+            Qual câmera você usou para tirar essa foto? Ficou perfeita!
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <div class="comment-input">
+      <img
+        [src]="postSelected.image"
+        alt="Seu Avatar"
+        class="w-10 h-10 rounded-full object-cover border border-primary-custom"
+      />
+      <input
+        type="text"
+        placeholder="Adicione um comentário..."
+        class="comment-input-field"
+      />
+      <button class="btn-icon">
+        <i class="fas fa-paper-plane icon-custom"></i>
+      </button>
+    </div>
+  </div>
+</div>

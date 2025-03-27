@@ -1,0 +1,122 @@
+/* You can add global styles to this file, and also import other style files */
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap");
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --primary-500: #877EFF;
+  --primary-600: #5D5FEF;
+  --primary-custom: #49437E;
+  --secondary-500: #FFB620;
+  --off-white: #D0DFFF;
+  --red: #FF5A5A;
+  --dark-1: #000000;
+  --dark-2: #09090A;
+  --dark-3: #101012;
+  --dark-4: #1F1F22;
+  --light-1: #FFFFFF;
+  --light-2: #EFEFEF;
+  --light-3: #7878A3;
+  --light-4: #5C5C7B;
+}
+
+
+* {
+  box-sizing: border-box;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  scroll-behavior: smooth;
+}
+
+body {
+  background-color: var(--dark-1);
+  color: white;
+  min-height: 100vh;
+  font-family: 'Inter', sans-serif;
+}
+.h1-bold {
+  font-size: 36px;
+  font-weight: 700;
+  line-height: 140%;
+  letter-spacing: -0.03em;
+}
+.h2-bold {
+  font-size: 30px;
+  font-weight: 700;
+  line-height: 140%;
+  letter-spacing: -0.03em;
+}
+.h3-bold {
+  font-size: 24px;
+  font-weight: 700;
+  line-height: 140%;
+  letter-spacing: -0.03em;
+}
+.base-medium {
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 140%;
+}
+.base-semibold {
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 140%;
+  letter-spacing: -0.03em;
+}
+.small-medium {
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 140%;
+}
+.small-semibold {
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 140%;
+  letter-spacing: -0.03em;
+}
+.subtle-semibold {
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 140%;
+}
+
+/* Custom Utilities */
+.flex-center {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.flex-between {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.flex-start {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+}
+.custom-scrollbar::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+  border-radius: 4px;
+
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: var(--dark-2);
+  border-radius: 4px;
+
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: var(--primary-custom);
+  border-radius: 50px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: var(--primary-500);
+}
+
+.custom-scrollbar {
+  overflow: auto;
+}
