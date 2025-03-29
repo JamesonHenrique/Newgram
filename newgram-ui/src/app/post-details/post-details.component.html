@@ -1,5 +1,7 @@
+
 <input type="checkbox" [id]="modalId" class="modal-toggle" />
 <div *ngIf="postSelected" class="post-detail-overlay active" id="postDetailOverlay">
+
   <div class="post-detail-container custom-scrollbar">
     <div class="post-detail-header flex-between">
       <button class="back-button" id="closePostDetail">
@@ -38,6 +40,7 @@
 
       <div class="post-detail-info">
         <p class="base-medium mb-3">{{ postSelected.text }}</p>
+        <p class="base-medium mb-3 text-principal">{{ postSelected.tags }} </p>
         <div class="flex gap-2 flex-wrap mt-4"></div>
         <div class="flex-between mt-6">
           <div class="flex gap-2 items-center">
@@ -45,7 +48,9 @@
             <span class="small-medium">curtidas</span>
           </div>
           <span class="small-medium text-light-3"> comentários</span>
+
         </div>
+
       </div>
     </div>
 

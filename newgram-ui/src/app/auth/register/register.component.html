@@ -1,0 +1,258 @@
+<!-- Background Elements -->
+<div
+  class="min-h-screen flex items-center justify-center p-4 relative overflow-hidden"
+>
+  <div class="bg-gradient"></div>
+  <div class="bg-pattern"></div>
+  <div class="floating-shape shape-1"></div>
+  <div class="floating-shape shape-2"></div>
+
+  <div class="register-container animate-fadeIn">
+    <!-- Login Form Section -->
+    <div class="register-form-section">
+      <div class="register-form-container">
+        <a
+          href="#"
+          class="h3-bold text-primary-500 flex items-center justify-center logo-pulse"
+        >
+          <img src="/images/logo.png" width="200" height="200" alt="Logo" />
+        </a>
+        <div class="register-form-header">
+          <p class="base-medium text-light-3 mt-2">
+            Crie sua conta e compartilhe seus momentos
+          </p>
+        </div>
+
+        <!-- Step Indicators -->
+        <div class="step-indicators">
+          <div class="step-indicator active" id="indicator-1"></div>
+          <div class="step-indicator" id="indicator-2"></div>
+          <div class="step-indicator" id="indicator-3"></div>
+        </div>
+
+        <div class="step-title active" id="step-title-1">
+          Etapa 1: Informações Básicas
+        </div>
+        <div class="step-title" id="step-title-2">Etapa 2: Segurança</div>
+        <div class="step-title" id="step-title-3">Etapa 3: Perfil</div>
+
+        <form id="registerForm">
+          <div class="form-step active" id="step-1">
+            <!-- Name Field -->
+            <div class="form-group">
+              <label for="name" class="form-label">Nome completo</label>
+              <input
+                type="text"
+                id="name"
+                class="form-input"
+                placeholder="Digite seu nome completo"
+              />
+              <div class="validation-message" id="nameError"></div>
+            </div>
+
+            <!-- Email Field -->
+            <div class="form-group">
+              <label for="email" class="form-label">Email</label>
+              <input
+                type="email"
+                id="email"
+                class="form-input"
+                placeholder="Digite seu email"
+              />
+              <div class="validation-message" id="emailError"></div>
+            </div>
+
+            <div class="social-features">
+              <div class="social-feature">
+                <i class="fas fa-camera"></i>
+                <span>Compartilhe fotos</span>
+              </div>
+              <div class="social-feature">
+                <i class="fas fa-heart"></i>
+                <span>Receba curtidas</span>
+              </div>
+              <div class="social-feature">
+                <i class="fas fa-comment"></i>
+                <span>Interaja com amigos</span>
+              </div>
+            </div>
+
+            <div class="form-actions">
+              <button type="button" class="btn btn-primary" id="nextToStep2">
+                Próximo
+              </button>
+            </div>
+          </div>
+          <!-- Step 2: Password -->
+          <div class="form-step" id="step-2">
+            <!-- Password Field -->
+            <div class="form-group">
+              <label for="password" class="form-label">Senha</label>
+              <input
+                type="password"
+                id="password"
+                class="form-input"
+                placeholder="Crie uma senha forte"
+              />
+              <i class="fas fa-eye password-toggle" id="passwordToggle"></i>
+
+              <!-- Password Strength Meter -->
+              <div class="password-strength">
+                <div class="strength-meter">
+                  <div class="strength-meter-fill" id="strengthMeter"></div>
+                </div>
+                <div class="strength-text" id="strengthText">
+                  Força da senha
+                </div>
+              </div>
+
+              <!-- Password Requirements -->
+              <div class="password-requirements">
+                <div class="requirement" id="reqLength">
+                  <i class="fas fa-circle"></i>
+                  <span>Mínimo de 8 caracteres</span>
+                </div>
+                <div class="requirement" id="reqUppercase">
+                  <i class="fas fa-circle"></i>
+                  <span>Pelo menos uma letra maiúscula</span>
+                </div>
+                <div class="requirement" id="reqLowercase">
+                  <i class="fas fa-circle"></i>
+                  <span>Pelo menos uma letra minúscula</span>
+                </div>
+                <div class="requirement" id="reqNumber">
+                  <i class="fas fa-circle"></i>
+                  <span>Pelo menos um número</span>
+                </div>
+                <div class="requirement" id="reqSpecial">
+                  <i class="fas fa-circle"></i>
+                  <span>Pelo menos um caractere especial</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Confirm Password Field -->
+            <div class="form-group">
+              <label for="confirmPassword" class="form-label"
+                >Confirmar senha</label
+              >
+              <input
+                type="password"
+                id="confirmPassword"
+                class="form-input"
+                placeholder="Confirme sua senha"
+              />
+              <i
+                class="fas fa-eye password-toggle"
+                id="confirmPasswordToggle"
+              ></i>
+              <div class="validation-message" id="confirmPasswordError"></div>
+            </div>
+
+            <div class="form-actions">
+              <button type="button" class="btn btn-secondary" id="backToStep1">
+                Voltar
+              </button>
+              <button type="button" class="btn btn-primary" id="nextToStep3">
+                Próximo
+              </button>
+            </div>
+          </div>
+
+          <!-- Step 3: Profile -->
+          <div class="form-step" id="step-3">
+            <!-- Avatar Upload -->
+            <div class="avatar-upload">
+              <div class="avatar-preview" id="avatarPreview">
+                <img id="avatarImage" src="/placeholder.svg" alt="Avatar" />
+                <i class="fas fa-user" id="avatarPlaceholder"></i>
+                <div class="avatar-overlay">
+                  <i class="fas fa-camera"></i>
+                </div>
+              </div>
+              <label for="avatarUpload" class="avatar-upload-btn">
+                <i class="fas fa-upload mr-2"></i>
+                Escolher foto de perfil
+              </label>
+              <input type="file" id="avatarUpload" accept="image/*" />
+            </div>
+
+            <!-- Username Field -->
+            <div class="form-group">
+              <label for="username" class="form-label">Nome de usuário</label>
+              <div class="username-input-wrapper">
+                <span class="username-prefix">&#64;</span>
+                <input
+                  type="text"
+                  id="username"
+                  class="form-input username-input"
+                  placeholder="escolhaseunome"
+                />
+              </div>
+              <div class="validation-message" id="usernameError"></div>
+            </div>
+
+            <!-- Bio Field -->
+            <div class="form-group">
+              <label for="bio" class="form-label">Bio</label>
+              <textarea
+                id="bio"
+                class="form-input form-textarea"
+                placeholder="Conte um pouco sobre você..."
+              ></textarea>
+              <div class="char-counter" id="bioCounter">0/150 caracteres</div>
+            </div>
+
+            <div class="form-actions">
+              <button type="button" class="btn btn-secondary" id="backToStep2">
+                Voltar
+              </button>
+              <button type="submit" class="btn btn-primary" id="registerBtn">
+                Criar conta
+              </button>
+            </div>
+          </div>
+
+          <!-- Login Link -->
+          <div class="form-footer">
+            <p class="small-medium text-light-3">
+              Já tem uma conta? <a routerLink="/login" class="text-primary-500">Entrar</a>
+            </p>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Visual Section -->
+    <div class="register-visual-section">
+      <div class="register-visual-overlay"></div>
+      <div class="register-visual-bg"></div>
+
+      <!-- Floating Elements -->
+      <div class="floating-circle floating-element"></div>
+      <div class="floating-square floating-element"></div>
+
+      <div class="register-visual-content">
+        <h2 class="h3-bold mb-4">Junte-se ao Newgram</h2>
+        <p class="base-medium mb-6">Conheça novas pessoas e compartilhe seus melhores momentos</p>
+
+        <!-- Features List -->
+        <div class="flex-center gap-3 flex-wrap ">
+          <div class="flex-center flex-col  mr-6">
+            <h3 class="h3-bold text-primary-500 ">10M+</h3>
+            <p class="small-medium">Usuários</p>
+          </div>
+          <div class="flex-center flex-col  mr-6">
+            <h3 class="h3-bold text-primary-500">50M+</h3>
+            <p class="small-medium">Posts</p>
+          </div>
+          <div class="flex-center flex-col  mr-6">
+            <h3 class="h3-bold text-primary-500">+100k+</h3>
+            <p class="small-medium">Momentos diários</p>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

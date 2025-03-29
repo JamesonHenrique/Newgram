@@ -257,3 +257,6 @@ input[type="checkbox"].modal-toggle:checked + .post-detail-overlay {
   color: var(--light-1);
   background-color: var(--dark-4);
 }
+.text-principal {
+  color: #8d8bb4;
+}

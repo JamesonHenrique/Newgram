@@ -1,4 +1,5 @@
 /* You can add global styles to this file, and also import other style files */
+@import "animate.css";
 @import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap");
 @tailwind base;
 @tailwind components;
@@ -92,6 +93,47 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: center;
+}/* Para todos os navegadores que suportam scrollbar-color (Firefox) */
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: var(--primary-custom) var(--dark-2);
+  overflow: auto;
+}
+
+/* Para navegadores WebKit (Chrome, Safari, Edge) */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+  border-radius: 4px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: var(--dark-2);
+  border-radius: 4px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: var(--primary-custom);
+  border-radius: 50px;
+  transition: background 0.2s ease;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: var(--primary-500);
+}
+
+/* Melhorias para mobile/touch devices */
+.custom-scrollbar {
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+}
+
+/* Fallback para navegadores sem suporte */
+@supports not (selector(::-webkit-scrollbar)) and (scrollbar-width: none) {
+  .custom-scrollbar {
+    /* Estilo mínimo para navegadores sem suporte */
+    overflow: auto;
+  }
 }
 .flex-start {
   display: flex;

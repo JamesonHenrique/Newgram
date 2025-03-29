@@ -1,0 +1,296 @@
+<div class="main-layout">
+  <!-- Main Content Area -->
+  <div class="content-area">
+    <div class="max-w-7xl mx-auto">
+      <!-- Profile Header -->
+      <div class="profile-header animate__fadeIn animate__animated">
+        <img
+          [src]="userProfile[0].avatar"
+          alt="Foto de Perfil"
+          class="profile-avatar"
+        />
+
+        <div class="profile-info">
+          <div class="profile-name-section">
+            <h1 class="h2-bold">{{ userProfile[0].name }}</h1>
+            <i
+              class="fas fa-check-circle verified-badge"
+              *ngIf="ifVerified()"
+              title="Conta verificada"
+            ></i>
+          </div>
+
+          <p class="profile-username">&#64;{{ userProfile[0].username }}</p>
+
+          <p class="profile-bio">
+            {{ userProfile[0].bio }}
+
+
+          </p>
+
+          <div class="profile-stats">
+            <div class="stat-item">
+              <span class="stat-value">{{ userProfile[0].posts }}</span>
+              <span class="stat-label">Posts</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-value">{{ userProfile[0].followers }}</span>
+              <span class="stat-label">Seguidores</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-value">{{ userProfile[0].following }}</span>
+              <span class="stat-label">Seguindo</span>
+            </div>
+          </div>
+
+          <div class="profile-actions">
+            <button (click)="follow()" [ngClass]="{ 'follow-btn': !following, 'following-btn': following }" id="followBtn">{{ following ? 'Seguindo' : 'Seguir' }}</button>
+            <button class="message-btn">
+              <i class="fas fa-envelope"></i>
+              <span>Mensagem</span>
+            </button>
+            <button class="more-options-btn">
+              <i class="fas fa-ellipsis-h"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Highlights Section -->
+      <div
+        class="highlights-section"
+      >
+        <div class="highlights-container custom-scrollbar mb-2  animate__lightSpeedInLeft animate__animated">
+          <!-- Highlight 1 -->
+          <div
+            class="highlight-item"
+            *ngFor="let highlight of userProfile[0].highlights"
+          >
+            <div class="highlight-circle">
+              <img
+                [src]="highlight.image"
+                alt="Destaque"
+                class="highlight-image"
+              />
+            </div>
+            <span class="highlight-title">{{ highlight.title }}</span>
+          </div>
+        </div>
+
+        <!-- Profile Tabs -->
+        <div class="profile-tabs animate-slideUp" style="animation-delay: 0.2s">
+          <div class="profile-tab active" data-tab="posts">
+            <i class="fas fa-th mr-1"></i>
+            <span>Posts</span>
+          </div>
+          <div class="profile-tab" data-tab="saved">
+            <i class="fas fa-bookmark mr-1"></i>
+            <span>Salvos</span>
+          </div>
+          <div class="profile-tab" data-tab="tagged">
+            <i class="fas fa-user-tag mr-1"></i>
+            <span>Marcados</span>
+          </div>
+        </div>
+
+        <!-- Posts Grid -->
+        <div
+          class="posts-grid animate-slideUp"
+          style="animation-delay: 0.3s"
+          id="postsGrid"
+        >
+          <!-- Post 1 -->
+
+          <div
+            class="post-item"
+            data-post-id="1"
+            (click)="openPostDetails(post, $event)"
+            *ngFor="let post of posts"
+          >
+            <label for="modal-1" class="">
+              <img [src]="post.image" alt="Post" class="post-image" />
+              <div class="post-overlay">
+                <div class="post-stats">
+                  <div class="post-stat">
+                    <i class="fas fa-heart"></i>
+                    <span>245</span>
+                  </div>
+                  <div class="post-stat">
+                    <i class="fas fa-comment"></i>
+                    <span>23</span>
+                  </div>
+                </div>
+              </div>
+            </label>
+          </div>
+        </div>
+
+        <!-- Saved Posts Grid (Hidden by default) -->
+        <div class="posts-grid hidden" id="savedGrid">
+          <!-- Saved posts would be loaded here -->
+          <!-- Empty State -->
+          <div class="empty-state col-span-3">
+            <i class="far fa-bookmark empty-state-icon"></i>
+            <h3 class="h3-bold mb-2">Nenhum post salvo</h3>
+            <p class="base-medium text-light-3 mb-6">
+              Quando você salvar posts, eles aparecerão aqui.
+            </p>
+          </div>
+        </div>
+
+        <!-- Tagged Posts Grid (Hidden by default) -->
+        <div class="posts-grid hidden" id="taggedGrid">
+          <!-- Tagged posts would be loaded here -->
+          <!-- Empty State -->
+          <div class="empty-state col-span-3">
+            <i class="far fa-user-tag empty-state-icon"></i>
+            <h3 class="h3-bold mb-2">Nenhuma marcação</h3>
+            <p class="base-medium text-light-3 mb-6">
+              Quando pessoas marcarem você em posts, eles aparecerão aqui.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <app-post-details
+      [postSelected]="postSelected"
+      [modalId]="'modal-1'"
+    ></app-post-details>
+    <!-- Post Detail Modal -->
+    <div class="post-modal" id="postModal">
+      <button class="post-modal-close" id="closeModal">
+        <i class="fas fa-times"></i>
+      </button>
+
+      <div class="post-modal-content">
+        <img
+          src="/placeholder.svg?height=600&width=600"
+          alt="Post"
+          class="post-modal-image"
+          id="modalImage"
+        />
+
+        <div class="post-modal-info">
+          <div class="post-modal-header">
+            <img
+              src="/placeholder.svg?height=40&width=40"
+              alt="Avatar"
+              class="post-modal-avatar"
+            />
+            <div>
+              <h4 class="base-semibold">Ana Costa</h4>
+              <p class="small-medium text-light-3">Florianópolis, Brasil</p>
+            </div>
+          </div>
+
+          <div class="post-modal-comments custom-scrollbar">
+            <!-- Post Caption -->
+            <div class="post-modal-comment">
+              <img
+                src="/placeholder.svg?height=40&width=40"
+                alt="Avatar"
+                class="comment-avatar"
+              />
+              <div class="comment-content">
+                <span class="comment-username">Ana Costa</span>
+                <span class="comment-text"
+                  >Nascer do sol na Praia do Campeche. As cores são simplesmente
+                  surreais! #nascerdosol #praia #viagem #floripa</span
+                >
+                <p class="comment-time">2 dias atrás</p>
+              </div>
+            </div>
+
+            <!-- Comment 1 -->
+            <div class="post-modal-comment">
+              <img
+                src="/placeholder.svg?height=32&width=32"
+                alt="Avatar"
+                class="comment-avatar"
+              />
+              <div class="comment-content">
+                <span class="comment-username">Fernanda Lima</span>
+                <span class="comment-text"
+                  >Que lugar incrível! Adorei as cores nessa foto.</span
+                >
+                <p class="comment-time">2 horas atrás</p>
+              </div>
+            </div>
+
+            <!-- Comment 2 -->
+            <div class="post-modal-comment">
+              <img
+                src="/placeholder.svg?height=32&width=32"
+                alt="Avatar"
+                class="comment-avatar"
+              />
+              <div class="comment-content">
+                <span class="comment-username">Roberto Gomes</span>
+                <span class="comment-text"
+                  >Já visitei esse lugar! É ainda mais bonito
+                  pessoalmente.</span
+                >
+                <p class="comment-time">1 dia atrás</p>
+              </div>
+            </div>
+
+            <!-- Comment 3 -->
+            <div class="post-modal-comment">
+              <img
+                src="/placeholder.svg?height=32&width=32"
+                alt="Avatar"
+                class="comment-avatar"
+              />
+              <div class="comment-content">
+                <span class="comment-username">Camila Souza</span>
+                <span class="comment-text"
+                  >Qual câmera você usou para tirar essa foto? Ficou
+                  perfeita!</span
+                >
+                <p class="comment-time">2 dias atrás</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="post-modal-actions">
+            <div class="post-modal-stats">
+              <div class="post-modal-likes">378 curtidas</div>
+              <div class="post-modal-date">2 dias atrás</div>
+            </div>
+
+            <div class="post-modal-buttons">
+              <button class="post-modal-button">
+                <i class="far fa-heart text-xl"></i>
+              </button>
+              <button class="post-modal-button">
+                <i class="far fa-comment text-xl"></i>
+              </button>
+              <button class="post-modal-button">
+                <i class="far fa-paper-plane text-xl"></i>
+              </button>
+              <button class="post-modal-button ml-auto">
+                <i class="far fa-bookmark text-xl"></i>
+              </button>
+            </div>
+
+            <div class="post-modal-add-comment">
+              <img
+                src="/placeholder.svg?height=32&width=32"
+                alt="Seu Avatar"
+                class="comment-avatar"
+              />
+              <input
+                type="text"
+                placeholder="Adicione um comentário..."
+                class="post-modal-comment-input"
+              />
+              <button class="post-modal-button text-primary-500">
+                Publicar
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

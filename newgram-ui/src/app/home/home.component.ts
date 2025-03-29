@@ -2,6 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
 import { Router } from '@angular/router';
 import { PostDetailsComponent } from '../post-details/post-details.component';
+import { Title } from '@angular/platform-browser';
 
 @Component({
   selector: 'app-home',
@@ -10,6 +11,10 @@ import { PostDetailsComponent } from '../post-details/post-details.component';
   styleUrl: './home.component.css'
 })
 export class HomeComponent {
+  constructor(private title:  Title) {}
+  ngOnInit(): void {
+    this.title.setTitle('Feed');
+  }
   postSelected:any = []
   selectedIndex:any = []
 

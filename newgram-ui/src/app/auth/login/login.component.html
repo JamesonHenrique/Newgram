@@ -1,0 +1,133 @@
+<!-- Background Elements -->
+<div
+  class="min-h-screen flex items-center justify-center p-4 relative overflow-hidden"
+>
+  <div class="bg-gradient"></div>
+  <div class="bg-pattern"></div>
+  <div class="floating-shape shape-1"></div>
+  <div class="floating-shape shape-2"></div>
+
+  <div class="login-container animate-fadeIn">
+    <!-- Login Form Section -->
+    <div class="login-form-section">
+      <div class="login-form-container">
+        <a
+          href="#"
+          class="h3-bold text-primary-500 flex items-center justify-center logo-pulse"
+        >
+          <img src="/images/logo.png" width="200" height="200" alt="Logo" />
+        </a>
+        <div class="login-form-header">
+          <p class="base-medium text-light-3 mt-2">Bem-vindo de volta!</p>
+        </div>
+
+        <form id="loginForm">
+          <!-- Username Field -->
+          <div class="form-group">
+            <label for="username" class="form-label">Nome de usuário</label>
+            <i class="fas fa-user input-icon"></i>
+            <input
+              type="text"
+              id="username"
+              class="form-input input-with-icon"
+              placeholder="Digite seu nome de usuário"
+            />
+            <div class="validation-message" id="usernameError"></div>
+          </div>
+
+          <!-- Password Field -->
+          <div class="form-group">
+            <label for="password" class="form-label">Senha</label>
+            <i class="fas fa-lock input-icon"></i>
+            <input
+              type="password"
+              id="password"
+              class="form-input input-with-icon"
+              placeholder="Digite sua senha"
+            />
+            <i class="fas fa-eye password-toggle" id="passwordToggle"></i>
+            <div class="validation-message" id="passwordError"></div>
+          </div>
+
+          <!-- Form Options -->
+          <div class="form-options">
+            <div class="remember-me">
+              <input
+                type="checkbox"
+                id="rememberMe"
+                class="remember-checkbox"
+              />
+              <span class="custom-checkbox"></span>
+              <label for="rememberMe" class="small-medium">Lembrar-me</label>
+            </div>
+            <a href="#" class="forgot-password">Esqueceu a senha?</a>
+          </div>
+
+          <!-- Login Button -->
+          <button type="submit" class="login-btn" id="loginBtn">Entrar</button>
+
+          <!-- Social Login -->
+          <div class="divider">
+            <span>ou continue com</span>
+          </div>
+
+          <div class="social-login">
+            <button type="button" class="social-btn google-btn">
+              <i class="fab fa-google"></i>
+              <span>Google</span>
+            </button>
+            <button type="button" class="social-btn facebook-btn">
+              <i class="fab fa-facebook-f"></i>
+              <span>Facebook</span>
+            </button>
+          </div>
+
+          <!-- Signup Link -->
+          <div class="signup-link">
+            <p class="small-medium text-light-3">
+              Não tem uma conta? <a routerLink="/register" class="text-primary-500">Registre-se</a>
+            </p>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Visual Section -->
+    <div class="login-visual-section">
+      <div class="login-visual-overlay"></div>
+      <div class="login-visual-bg"></div>
+
+      <!-- Floating Elements -->
+      <div class="floating-circle floating-element"></div>
+      <div class="floating-square floating-element"></div>
+
+      <div class="login-visual-content">
+        <h2 class="h3-bold mb-4 text-primary-500">Volte a fazer suas postagens</h2>
+        <p class="base-medium mb-6">
+          Compartilhe seus momentos especiais com pessoas de todo o mundo.
+        </p>
+        <div class="features-list">
+          <div class="feature-item">
+            <div class="feature-icon">
+              <i class="fas fa-camera"></i>
+            </div>
+            <p class="small-medium">Compartilhe suas melhores fotos</p>
+          </div>
+          <div class="feature-item">
+            <div class="feature-icon">
+              <i class="fas fa-users"></i>
+            </div>
+            <p class="small-medium">Conecte-se com amigos</p>
+          </div>
+          <div class="feature-item">
+            <div class="feature-icon">
+              <i class="fas fa-heart"></i>
+            </div>
+            <p class="small-medium">Descubra conteúdo que você ama</p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
