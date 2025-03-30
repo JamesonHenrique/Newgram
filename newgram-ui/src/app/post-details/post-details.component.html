@@ -45,9 +45,9 @@
         <div class="flex-between mt-6">
           <div class="flex gap-2 items-center">
             <i class="fas fa-heart text-red"></i>
-            <span class="small-medium">curtidas</span>
+            <span class="small-medium"> {{  formatNumber(postSelected.likes) }} curtidas</span>
           </div>
-          <span class="small-medium text-light-3"> comentários</span>
+          <span class="small-medium text-light-3"> {{ formatNumber(postSelected.comments) }} comentários</span>
 
         </div>
 

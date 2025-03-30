@@ -8,6 +8,8 @@
 :root {
   --primary-500: #877EFF;
   --primary-600: #5D5FEF;
+  --primary-700: #8b5cf6;
+  --primary-800: #7c3aed;
   --primary-custom: #49437E;
   --secondary-500: #FFB620;
   --off-white: #D0DFFF;
@@ -20,6 +22,7 @@
   --light-2: #EFEFEF;
   --light-3: #7878A3;
   --light-4: #5C5C7B;
+
 }
 
 
@@ -128,13 +131,7 @@ body {
   overscroll-behavior: contain;
 }
 
-/* Fallback para navegadores sem suporte */
-@supports not (selector(::-webkit-scrollbar)) and (scrollbar-width: none) {
-  .custom-scrollbar {
-    /* Estilo mínimo para navegadores sem suporte */
-    overflow: auto;
-  }
-}
+
 .flex-start {
   display: flex;
   justify-content: flex-start;

@@ -1,0 +1,215 @@
+<div class="content-area px-4 sm:px-6 lg:px-8">
+  <div class="max-w-7xl mx-auto">
+    <h1
+      class="text-2xl sm:text-3xl md:text-4xl font-bold mb-4 sm:mb-6 text-primary-500 animate-fadeIn"
+    >
+      Pessoas
+    </h1>
+
+    <!-- Search Bar -->
+    <div class="search-container relative mb-4 md:mb-6 animate-slideUp">
+      <i
+        class="fas fa-search search-icon absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
+      ></i>
+      <input
+        type="text"
+        class="search-input w-full py-2 px-4 pl-10 text-sm md:text-base rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+        placeholder="Pesquisar pessoas por nome ou @username"
+        id="searchInput"
+      />
+    </div>
+
+    <!-- Filter Tabs -->
+    <div
+      class="filter-tabs flex gap-2 sm:gap-3 md:gap-4 overflow-x-auto pb-2 mb-4 md:mb-6 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100 animate-slideUp"
+      style="animation-delay: 0.1s"
+    >
+      <div
+        class="filter-tab active whitespace-nowrap px-3 py-1.5 text-xs sm:text-sm rounded-full bg-primary-500 text-white cursor-pointer transition-colors duration-200"
+        data-filter="all"
+      >
+        Todos
+      </div>
+      <div
+        class="filter-tab whitespace-nowrap px-3 py-1.5 text-xs sm:text-sm rounded-full bg-gray-200 hover:bg-gray-300 cursor-pointer transition-colors duration-200"
+        data-filter="popular"
+      >
+        Mais Populares
+      </div>
+      <div
+        class="filter-tab whitespace-nowrap px-3 py-1.5 text-xs sm:text-sm rounded-full bg-gray-200 hover:bg-gray-300 cursor-pointer transition-colors duration-200"
+        data-filter="recent"
+      >
+        Recentes
+      </div>
+      <div
+        class="filter-tab whitespace-nowrap px-3 py-1.5 text-xs sm:text-sm rounded-full bg-gray-200 hover:bg-gray-300 cursor-pointer transition-colors duration-200"
+        data-filter="following"
+      >
+        Seguindo
+      </div>
+      <div
+        class="filter-tab whitespace-nowrap px-3 py-1.5 text-xs sm:text-sm rounded-full bg-gray-200 hover:bg-gray-300 cursor-pointer transition-colors duration-200"
+        data-filter="followers"
+      >
+        Seguidores
+      </div>
+    </div>
+
+    <!-- Suggestions Section -->
+
+    <!-- Suggestions Section -->
+    <section
+      class="suggestions-section px-4 sm:px-6 lg:px-8 animate-slideUp"
+      style="animation-delay: 0.2s"
+    >
+      <div class="max-w-7xl mx-auto">
+        <div
+          class="suggestions-header flex justify-between items-center mb-3 md:mb-4"
+        >
+          <h3
+            class="font-semibold text-primary-custom text-base sm:text-lg md:text-xl"
+          >
+            Sugestões para você
+          </h3>
+          <a
+            href="#"
+            class="font-medium text-gray-400 hover:text-gray-100 transition text-xs sm:text-sm"
+            >Ver Todos</a
+          >
+        </div>
+        <div
+          class="suggestions-list flex flex-nowrap gap-3 sm:gap-4 overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100"
+        >
+          <!-- Suggestion Cards (repeated 5 times) -->
+          <!-- Suggestion 1 -->
+          <div *ngFor="let suggestionUser of suggestionsUsers"
+            class="suggestion-card flex flex-col items-center min-w-[120px] sm:min-w-[140px] md:min-w-[160px] p-3 bg-gray-800 rounded-lg"
+          >
+            <img
+              [src]="suggestionUser.avatar"
+              alt="Avatar"
+              class="suggestion-avatar w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 rounded-full object-cover mb-2"
+            />
+            <h4
+              class="font-semibold text-sm sm:text-base truncate w-full text-center"
+            >
+              {{ suggestionUser.name }}
+            </h4>
+            <p
+              class="font-medium text-gray-400 text-xs sm:text-sm mb-2 truncate w-full text-center"
+            >
+              &#64;{{ suggestionUser.username }}
+            </p>
+            <button
+              class="follow-btn w-full py-1 px-3 text-xs sm:text-sm bg-primary-500 hover:bg-primary-600 text-white rounded-full transition-colors duration-200"
+            >
+              Seguir
+            </button>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- Connections Section -->
+
+    <section
+      class="connections-section animate-slideUp"
+      style="animation-delay: 0.3s"
+    >
+      <div class="connections-header mb-3 md:mb-4">
+        <h3 class="base-semibold text-primary-custom text-lg md:text-xl">
+          Pessoas que você pode conhecer
+        </h3>
+      </div>
+      <div
+        class="connections-list grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 md:gap-4"
+      >
+        <!-- Connection 1 -->
+        <div class="connection-card" *ngFor="let connection of connectionUsers">
+          <img
+            [src]="connection.avatar"
+            alt="Avatar"
+            class="connection-avatar"
+          />
+          <div class="connection-info">
+            <h4 class="connection-name">{{ connection.name }}</h4>
+            <p class="connection-username">&#64;{{ connection.username }}</p>
+            <p class="connection-mutual">{{ connection.mutual }} amigos em comum</p>
+          </div>
+          <button class="follow-btn">Seguir</button>
+        </div>
+      </div>
+    </section>
+
+    <div class="">
+      <div class="max-w-7xl mx-auto">
+        <h3
+          class="base-semibold mb-4 text-light-2 animate-slideUp"
+          style="animation-delay: 0.4s"
+        >
+          Descubra pessoas
+        </h3>
+
+        <div
+          class="people-grid grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6 animate-slideUp justify-items-center"
+          style="animation-delay: 0.5s"
+          id="peopleGrid"
+        >
+          <!-- Person 1 -->
+          <div class="person-card" *ngFor="let person of randomUsers">
+            <img
+              [src]="person.avatar"
+              alt="Avatar"
+              class="person-avatar"
+            />
+            <div class="person-info">
+              <h4 class="base-semibold truncate"> {{ person.name }}</h4>
+              <p class="small-medium text-light-3 truncate">&#64;{{ person.username }}</p>
+            </div>
+            <div class="person-stats flex flex-wrap justify-center">
+              <div class="stat-item">
+                <span class="stat-value">{{ person.posts }}</span>
+                <span class="stat-label">Posts</span>
+              </div>
+              <div class="stat-item">
+                <span class="stat-value">{{ formatNumber(person.followers) }}</span>
+                <span class="stat-label">Seguidores</span>
+              </div>
+              <div class="stat-item">
+                <span class="stat-value">{{ formatNumber(person.following) }}</span>
+                <span class="stat-label">Seguindo</span>
+              </div>
+            </div>
+            <p
+              class="person-bio line-clamp-3 sm:line-clamp-2 md:line-clamp-3"
+            >
+              {{ person.bio }}
+            </p>
+            <button class="follow-btn w-full">Seguir</button>
+          </div>
+
+
+        </div>
+      </div>
+    </div>
+    <!-- Empty State (Hidden by default) -->
+    <div id="emptyState" class="empty-state hidden animate-fadeIn">
+      <i class="fas fa-users empty-state-icon"></i>
+      <h3 class="h3-bold mb-2">Nenhuma pessoa encontrada</h3>
+      <p class="base-medium text-light-3 mb-6">
+        Tente ajustar sua pesquisa ou filtros.
+      </p>
+    </div>
+
+    <!-- Load More Button -->
+    <button
+      class="load-more-btn animate-slideUp"
+      style="animation-delay: 0.6s"
+      id="loadMoreBtn"
+    >
+      Carregar Mais
+    </button>
+  </div>
+</div>

@@ -5,7 +5,7 @@
     <h1 class="h1-bold max-w-3xl mx-auto mb-4 mr-1">Feed</h1>
     <div class="flex flex-col max-w-3xl mx-auto mr-1 animate-fadeIn">
       <div class="post-list">
-        <label for="modal-1" class="cursor-pointer">
+
           <article
             *ngFor="let post of posts"
             class="post-card animate-slideUp flex flex-col justify-center"
@@ -13,6 +13,7 @@
             (click)="openPostDetails(post, $event)"
             [attr.data-post-id]="post.id"
           >
+          <label for="modal-1" class="cursor-pointer">
             <div class="flex-between mb-4">
               <div class="flex-start gap-3">
                 <img
@@ -71,7 +72,7 @@
                       transform: post.isAnimating ? 'scale(1.2)' : 'scale(1)'
                     }"
                   ></i>
-                  <span class="small-medium">{{ post.likes }}</span>
+                  <span class="small-medium">{{ formatNumber(post.likes) }}</span>
                 </button>
                 <button
                   class="flex-center gap-1 text-light-1 hover:text-primary-custom transition"
@@ -84,11 +85,12 @@
                 class="small-medium text-light-3"
                 (click)="$event.stopPropagation()"
               >
-                {{ post.comments }} comentários
+                {{ formatNumber(post.comments) }} comentários
               </button>
             </div>
+          </label>
           </article>
-        </label>
+
       </div>
     </div>
   </div>
@@ -161,71 +163,28 @@
       <div class="creators-box">
         <h3 class="h3-bold mb-4 text-primary-custom">Quem Seguir</h3>
         <div class="flex flex-col gap-4">
-          <div class="flex items-center gap-3">
+          <div class="flex items-center gap-3"  *ngFor="let otherUser of otherUsers">
             <img
-              src="/placeholder.svg?height=40&width=40"
+              [src]="otherUser.avatar"
               alt="Usuário"
-              class="w-10 h-10 rounded-full object-cover border border-primary-custom"
+              class="w-12 h-12 rounded-full object-cover"
             />
             <div class="flex-1">
-              <h4 class="base-semibold">Rafael Costa</h4>
-              <p class="small-medium text-light-3">&#64;rafaelcosta</p>
+              <h4 class="base-semibold">{{ otherUser.name }}</h4>
+              <p class="small-medium text-principal">&#64;{{ otherUser.username }}</p>
             </div>
             <button class="btn-follow text-sm px-3 py-1">Seguir</button>
           </div>
-          <div class="flex items-center gap-3">
-            <img
-              src="/placeholder.svg?height=40&width=40"
-              alt="Usuário"
-              class="w-10 h-10 rounded-full object-cover border border-primary-custom"
-            />
-            <div class="flex-1">
-              <h4 class="base-semibold">Juliana Lima</h4>
-              <p class="small-medium text-light-3">&#64;julima</p>
-            </div>
-            <button class="btn-follow text-sm px-3 py-1">Seguir</button>
-          </div>
-          <div class="flex items-center gap-3">
-            <img
-              src="/placeholder.svg?height=40&width=40"
-              alt="Usuário"
-              class="w-10 h-10 rounded-full object-cover border border-primary-custom"
-            />
-            <div class="flex-1">
-              <h4 class="base-semibold">Marcos Alves</h4>
-              <p class="small-medium text-light-3">malves</p>
-            </div>
-            <button class="btn-follow text-sm px-3 py-1">Seguir</button>
-          </div>
+
+
         </div>
       </div>
     </div>
   </div>
 
-  <div class="bottom-bar flex-between w-full px-5 py-4">
-    <a href="#" class="flex-center flex-col gap-1">
-      <i class="fas fa-home icon-custom text-xl"></i>
-      <span class="tiny-medium">Início</span>
-    </a>
-    <a href="#" class="flex-center flex-col gap-1">
-      <i class="fas fa-compass text-light-3 text-xl"></i>
-      <span class="tiny-medium">Explorar</span>
-    </a>
-    <a href="#" class="flex-center flex-col gap-1">
-      <i class="fas fa-plus-circle text-light-3 text-xl"></i>
-      <span class="tiny-medium">Criar</span>
-    </a>
-    <a href="#" class="flex-center flex-col gap-1">
-      <i class="fas fa-bookmark text-light-3 text-xl"></i>
-      <span class="tiny-medium">Salvos</span>
-    </a>
-    <a href="#" class="flex-center flex-col gap-1">
-      <i class="fas fa-users text-light-3 text-xl"></i>
-      <span class="tiny-medium">Pessoas</span>
-    </a>
-  </div>
+
   <app-post-details
     [postSelected]="postSelected"
-    [modalId]="'modal-1'"
+      [modalId]="'modal-1'"
   ></app-post-details>
 </div>

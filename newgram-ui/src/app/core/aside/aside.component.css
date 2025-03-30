@@ -1,22 +1,4 @@
 
-
-/* Typography */
-.h1-bold { font-size: 36px; font-weight: 700; line-height: 140%; letter-spacing: -0.03em; }
-.h2-bold { font-size: 30px; font-weight: 700; line-height: 140%; letter-spacing: -0.03em; }
-.h3-bold { font-size: 24px; font-weight: 700; line-height: 140%; letter-spacing: -0.03em; }
-.base-medium { font-size: 16px; font-weight: 500; line-height: 140%; }
-.base-semibold { font-size: 16px; font-weight: 600; line-height: 140%; letter-spacing: -0.03em; }
-.small-medium { font-size: 14px; font-weight: 500; line-height: 140%; }
-.small-semibold { font-size: 14px; font-weight: 600; line-height: 140%; letter-spacing: -0.03em; }
-.subtle-semibold { font-size: 12px; font-weight: 600; line-height: 140%; }
-
-/* Custom Utilities */
-.flex-center { display: flex; justify-content: center; align-items: center; }
-.flex-between { display: flex; justify-content: space-between; align-items: center; }
-.flex-start { display: flex; justify-content: flex-start; align-items: center; }
-
-
-
 .leftsidebar {
   background-color: var(--dark-2);
   padding: 2.5rem 1.5rem;
@@ -308,6 +290,7 @@
   }
   .content-area {
     margin-left: 0;
+
   }
   .topbar, .bottom-bar {
     display: flex;
@@ -359,8 +342,9 @@
 /* Custom Styles */
 .icon-custom {
   color: var(--primary-custom);
-  padding: 0.7rem;
+
 }
+
 
 
 .btn-follow {
@@ -377,6 +361,16 @@
   background-color: var(--primary-500);
   transform: translateY(-2px);
 }
+.btn-active {
+  background-color: var(--primary-500);
+  transform: translateY(-2px);
+
+}
+
+.icon-custom-active {
+  color: white;
+}
+
 .btn-following {
   background-color: transparent;
   color: white;
@@ -439,3 +433,49 @@
 .text-principal {
   color: #8d8bb4;
 }
+@keyframes particle {
+  0% { transform: translate(0,0); opacity: 0; }
+  50% { opacity: 1; }
+  100% { transform: translate(-20px,-20px); opacity: 0; }
+}
+@keyframes border-pulse {
+  0%, 100% { border-color: rgba(135,126,255,0.3); }
+  50% { border-color: rgba(135,126,255,0.1); }
+}
+:host {
+  display: block;
+}
+
+
+/* Animaciones */
+@keyframes textShine {
+  0%, 100% { background-position: 0% center; }
+  50% { background-position: 100% center; }
+}
+
+@keyframes particle {
+  0% { transform: translate(0, 0); opacity: 0; }
+  20% { opacity: 1; }
+  100% { transform: translate(var(--tx, 50px), var(--ty, -30px)); opacity: 0; }
+}
+
+.animate-text-shine {
+  animation: textShine 4s ease-in-out infinite;
+}
+
+.animate-particle {
+  animation: particle 3s ease-in-out infinite;
+}
+
+/* Efectos específicos */
+.active-route-spotlight {
+  will-change: transform, opacity;
+  z-index: -1;
+}
+
+.leftsidebar-link {
+  &.active-route {
+    z-index: 1;
+  }
+}
+

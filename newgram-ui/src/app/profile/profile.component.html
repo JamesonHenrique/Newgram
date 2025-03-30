@@ -30,21 +30,30 @@
 
           <div class="profile-stats">
             <div class="stat-item">
-              <span class="stat-value">{{ userProfile[0].posts }}</span>
+              <span class="stat-value">{{ formatNumber(userProfile[0].posts) }}</span>
               <span class="stat-label">Posts</span>
             </div>
             <div class="stat-item">
-              <span class="stat-value">{{ userProfile[0].followers }}</span>
+              <span class="stat-value">{{ formatNumber(userProfile[0].followers) }}</span>
               <span class="stat-label">Seguidores</span>
             </div>
             <div class="stat-item">
-              <span class="stat-value">{{ userProfile[0].following }}</span>
+              <span class="stat-value">{{ formatNumber(userProfile[0].following) }}</span>
               <span class="stat-label">Seguindo</span>
             </div>
           </div>
 
           <div class="profile-actions">
-            <button (click)="follow()" [ngClass]="{ 'follow-btn': !following, 'following-btn': following }" id="followBtn">{{ following ? 'Seguindo' : 'Seguir' }}</button>
+            <button
+            (click)="follow()"
+            [class.follow-btn]="!following"
+            [class.following-btn]="following"
+            [class.hover-unfollow]="following"
+            id="followBtn"
+            type="button"
+          >
+            {{ following ? 'Seguindo' : 'Seguir' }}
+          </button>
             <button class="message-btn">
               <i class="fas fa-envelope"></i>
               <span>Mensagem</span>
@@ -126,7 +135,7 @@
         </div>
 
         <!-- Saved Posts Grid (Hidden by default) -->
-        <div class="posts-grid hidden" id="savedGrid">
+        <div *ngIf="!posts.length" class="posts-grid hidden" id="savedGrid">
           <!-- Saved posts would be loaded here -->
           <!-- Empty State -->
           <div class="empty-state col-span-3">
@@ -138,18 +147,6 @@
           </div>
         </div>
 
-        <!-- Tagged Posts Grid (Hidden by default) -->
-        <div class="posts-grid hidden" id="taggedGrid">
-          <!-- Tagged posts would be loaded here -->
-          <!-- Empty State -->
-          <div class="empty-state col-span-3">
-            <i class="far fa-user-tag empty-state-icon"></i>
-            <h3 class="h3-bold mb-2">Nenhuma marcação</h3>
-            <p class="base-medium text-light-3 mb-6">
-              Quando pessoas marcarem você em posts, eles aparecerão aqui.
-            </p>
-          </div>
-        </div>
       </div>
     </div>
     <app-post-details
