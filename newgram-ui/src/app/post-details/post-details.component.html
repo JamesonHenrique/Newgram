@@ -1,15 +1,17 @@
-
 <input type="checkbox" [id]="modalId" class="modal-toggle" />
-<div *ngIf="postSelected" class="post-detail-overlay active" id="postDetailOverlay">
-
+<div
+  *ngIf="postSelected"
+  class="post-detail-overlay active"
+  id="postDetailOverlay"
+>
   <div class="post-detail-container custom-scrollbar">
     <div class="post-detail-header flex-between">
       <button class="back-button" id="closePostDetail">
         <i class="fas fa-arrow-left"></i>
         <span class="base-medium">Voltar</span>
       </button>
-      <button class="btn-icon">
-        <i class="fas fa-ellipsis-h"></i>
+      <button class="btn-icon" (click)="editPost(postSelected.id)">
+        <i class="fas fa-edit"></i>
       </button>
     </div>
 
@@ -40,17 +42,20 @@
 
       <div class="post-detail-info">
         <p class="base-medium mb-3">{{ postSelected.text }}</p>
-        <p class="base-medium mb-3 text-principal">{{ postSelected.tags }} </p>
+        <p class="base-medium mb-3 text-principal">{{ postSelected.tags }}</p>
         <div class="flex gap-2 flex-wrap mt-4"></div>
         <div class="flex-between mt-6">
           <div class="flex gap-2 items-center">
             <i class="fas fa-heart text-red"></i>
-            <span class="small-medium"> {{  formatNumber(postSelected.likes) }} curtidas</span>
+            <span class="small-medium">
+              {{ postSelected?.likes | formatNumber }} curtidas
+            </span>
           </div>
-          <span class="small-medium text-light-3"> {{ formatNumber(postSelected.comments) }} comentários</span>
-
+          <span class="small-medium text-light-3">
+            {{ postSelected?.comments | formatNumber }} comentários
+          </span>
+          >
         </div>
-
       </div>
     </div>
 

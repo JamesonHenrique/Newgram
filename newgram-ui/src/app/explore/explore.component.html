@@ -16,7 +16,7 @@
 
     <!-- Popular Tags -->
     <div class="mb-4 sm:mb-6 animate-slideUp" style="animation-delay: 0.1s">
-      <h3 class="font-semibold mb-3 text-gray-300 text-sm sm:text-base">
+      <h3 class="font-semibold mb-3  text-sm sm:text-base">
         Tags Populares
       </h3>
       <div
@@ -221,13 +221,13 @@
                     class="flex items-center gap-1 text-gray-400 text-[10px] xs:text-xs sm:text-sm"
                   >
                     <i class="far fa-heart"></i>
-                    <span>{{ formatNumber(post.likes) }}</span>
+                    <span>{{ post.likes | formatNumber }}</span>
                   </span>
                   <span
                     class="flex items-center gap-1 text-gray-400 text-[10px] xs:text-xs sm:text-sm"
                   >
                     <i class="far fa-comment"></i>
-                    <span>{{ formatNumber(post.comments) }}</span>
+                    <span>{{ post.comments | formatNumber }}</span>
                   </span>
                 </div>
                 <i
@@ -281,11 +281,11 @@
               <div class="post-card-stats">
                 <span class="flex-center gap-1 text-light-3">
                   <i class="far fa-heart"></i>
-                  <small>{{ formatNumber(celebrity.likes) }}</small>
+                  <small>{{ celebrity.likes | formatNumber }}</small>
                 </span>
                 <span class="flex-center gap-1 text-light-3">
                   <i class="far fa-comment"></i>
-                  <small>{{ formatNumber(celebrity.comments) }}</small>
+                  <small>{{ celebrity.comments | formatNumber }}</small>
                 </span>
               </div>
             </div>
@@ -336,11 +336,11 @@
               <div class="flex gap-3">
                 <span class="flex-center gap-1 text-light-3">
                   <i class="far fa-heart"></i>
-                  <small>{{ formatNumber(followedPeople.likes) }}</small>
+                  <small>{{ followedPeople.likes | formatNumber }}</small>
                 </span>
                 <span class="flex-center gap-1 text-light-3">
                   <i class="far fa-comment"></i>
-                  <small>{{ formatNumber(followedPeople.comments) }}</small>
+                  <small>{{ followedPeople.comments | formatNumber }}</small>
                 </span>
               </div>
               <i class="far fa-bookmark text-light-3"></i>

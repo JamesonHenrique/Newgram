@@ -3,7 +3,7 @@ import { Component } from '@angular/core';
 
 @Component({
   selector: 'app-favorite',
-  imports: [CommonModule],
+  imports: [CommonModule, ],
   templateUrl: './favorite.component.html',
   styleUrl: './favorite.component.css'
 })
@@ -52,15 +52,5 @@ export class FavoriteComponent {
       time: '4h'
     }
   ];
-  formatNumber(count:any) {
-    if (count >= 10000000) {
-      return `${Math.floor(count / 1000000)}M`; // Ex: 28.700.000 → "28M"
-    } else if (count >= 1000000) {
-      return `${(count / 1000000).toFixed(1)}M`; // Ex: 1.500.000 → "1.5M"
-    } else if (count >= 1000) {
-      return `${Math.floor(count / 1000)}K`; // Ex: 150.000 → "150K"
-    } else {
-      return count.toString(); // Menos de 1.000
-    }
-  }
+
 }

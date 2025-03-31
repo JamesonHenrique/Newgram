@@ -10,7 +10,7 @@ import { CommonModule } from '@angular/common';
   selector: 'app-root',
   imports: [RouterOutlet, AsideComponent, HeaderComponent, CommonModule],
   templateUrl: './app.component.html',
-  styleUrl: './app.component.css'
+  styleUrl: './app.component.css',
 })
 export class AppComponent {
   title = 'newgram-ui';
@@ -19,14 +19,10 @@ export class AppComponent {
   constructor(private router: Router) {}
 
   ngOnInit() {
-    // Verifica a rota inicial
     this.checkAuthPage(this.router.url);
 
-    // Escuta mudanças de rota
     this.router.events
-      .pipe(
-        filter(event => event instanceof NavigationEnd)
-      )
+      .pipe(filter((event) => event instanceof NavigationEnd))
       .subscribe((event: NavigationEnd) => {
         this.checkAuthPage(event.url);
       });
@@ -34,6 +30,5 @@ export class AppComponent {
 
   private checkAuthPage(url: string): void {
     this.isAuthPage = url.includes('/login') || url.includes('/register');
-    console.log('Current URL:', url, 'isAuthPage:', this.isAuthPage);
   }
 }

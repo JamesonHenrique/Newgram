@@ -1,10 +1,11 @@
 import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
 import { Title } from '@angular/platform-browser';
+import { FormatNumberPipe } from '../format-number.pipe';
 
 @Component({
   selector: 'app-search-profile',
-  imports: [CommonModule,],
+  imports: [CommonModule, FormatNumberPipe],
   templateUrl: './search-profile.component.html',
   styleUrl: './search-profile.component.css',
 })
@@ -12,6 +13,7 @@ export class SearchProfileComponent {
   constructor(private title:Title) {
     this.title.setTitle('Buscar pessoas');
   }
+  searchProfiles = ' '
   connectionUsers = [
     {
       id: 1,
@@ -149,15 +151,5 @@ export class SearchProfileComponent {
         'https://upload.wikimedia.org/wikipedia/commons/thumb/1/16/Emicida_Festival_Sensacional_2020_%28cropped%29.jpg/800px-Emicida_Festival_Sensacional_2020_%28cropped%29.jpg',
     },
   ];
-  formatNumber(count:any) {
-    if (count >= 10000000) {
-      return `${Math.floor(count / 1000000)}M`; // Ex: 28.700.000 → "28M"
-    } else if (count >= 1000000) {
-      return `${(count / 1000000).toFixed(1)}M`; // Ex: 1.500.000 → "1.5M"
-    } else if (count >= 1000) {
-      return `${Math.floor(count / 1000)}K`; // Ex: 150.000 → "150K"
-    } else {
-      return count.toString(); // Menos de 1.000
-    }
-  }
+
 }

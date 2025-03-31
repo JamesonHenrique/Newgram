@@ -1,10 +1,8 @@
-<div class="main-layout custom-scrollbar">
-  <!-- Left Sidebar -->
+<div class="">
 
-  <!-- Main Content Area -->
   <div class="content-area">
     <div class="create-post-container">
-      <h1 class="h2-bold mb-6 text-center text-primary-500">Criar Novo Post</h1>
+      <h1 class="h2-bold mb-6 text-center text-primary-500">Editar seu post</h1>
 
       <form id="createPostForm " [formGroup]="postForm">
         <!-- Image Upload -->
@@ -24,7 +22,7 @@
             <img
               id="imagePreview"
               class="image-preview"
-              src=""
+              src="/placeholder.svg"
               alt="Preview da imagem"
             />
             <div id="uploadPlaceholder" class="flex-center flex-col gap-3">
@@ -113,7 +111,7 @@
           <a href="index.html" class="btn btn-secondary">Cancelar</a>
           <button type="submit" class="btn btn-primary">
             <i class="fas fa-paper-plane mr-2"></i>
-            Publicar
+            Atualizar
           </button>
         </div>
       </form>

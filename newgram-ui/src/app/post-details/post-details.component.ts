@@ -1,10 +1,11 @@
 import { CommonModule } from '@angular/common';
 import { Component, ElementRef, EventEmitter, inject, Input, Output } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
+import { FormatNumberPipe } from '../format-number.pipe';
 
 @Component({
   selector: 'app-post-details',
-  imports: [CommonModule],
+  imports: [CommonModule, FormatNumberPipe],
   templateUrl: './post-details.component.html',
   styleUrl: './post-details.component.css',
 })
@@ -20,26 +21,23 @@ export class PostDetailsComponent {
   @Output() cancel = new EventEmitter<void>();
   post: any;
   postService: any;
+  editPost(id: number): void {
+    this.router.navigate(['/editar-post', id]);
+  }
   formatNumber(count:any) {
     if (count >= 10000000) {
-      return `${Math.floor(count / 1000000)}M`; // Ex: 28.700.000 → "28M"
+      return `${Math.floor(count / 1000000)}M`;
     } else if (count >= 1000000) {
-      return `${(count / 1000000).toFixed(1)}M`; // Ex: 1.500.000 → "1.5M"
+      return `${(count / 1000000).toFixed(1)}M`;
     } else if (count >= 1000) {
-      return `${Math.floor(count / 1000)}K`; // Ex: 150.000 → "150K"
+      return `${Math.floor(count / 1000)}K`;
     } else {
-      return count.toString(); // Menos de 1.000
+      return count.toString();
     }
   }
-  constructor(private route: ActivatedRoute) {}
+  constructor(private route: ActivatedRoute, private router: Router) {}
 
-  ngOnInit(): void {
-    const postId = this.route.snapshot.paramMap.get('id');
-    if (postId) {
-      this.post = this.postService.getPostById(+postId);
-      document.body.style.overflow = 'hidden';
-    }
-  }
+
 
   ngOnDestroy(): void {
     document.body.style.overflow = '';

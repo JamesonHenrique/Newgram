@@ -174,11 +174,11 @@
                 <span class="stat-label">Posts</span>
               </div>
               <div class="stat-item">
-                <span class="stat-value">{{ formatNumber(person.followers) }}</span>
+                <span class="stat-value">{{ person.followers | formatNumber }}</span>
                 <span class="stat-label">Seguidores</span>
               </div>
               <div class="stat-item">
-                <span class="stat-value">{{ formatNumber(person.following) }}</span>
+                <span class="stat-value">{{ person.following | formatNumber }}</span>
                 <span class="stat-label">Seguindo</span>
               </div>
             </div>

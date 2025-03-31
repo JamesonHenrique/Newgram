@@ -7,11 +7,13 @@ import { CreatePostComponent } from './create-post/create-post.component';
 import { SearchProfileComponent } from './search-profile/search-profile.component';
 import { ExploreComponent } from './explore/explore.component';
 import { FavoriteComponent } from './favorite/favorite.component';
+import { UpdatePostComponent } from './update-post/update-post.component';
 
 export const routes: Routes = [
   { path: 'feed', component:HomeComponent },
-  { path: 'perfis', component:ProfileComponent },
+  { path: 'perfis/:id', component:ProfileComponent },
   { path: 'criar-post', component:CreatePostComponent },
+  { path: 'editar-post/:id', component:UpdatePostComponent },
   { path: 'pessoas', component:SearchProfileComponent },
   { path: 'explorar', component:ExploreComponent },
   { path: 'salvos', component:FavoriteComponent },

@@ -30,15 +30,15 @@
 
           <div class="profile-stats">
             <div class="stat-item">
-              <span class="stat-value">{{ formatNumber(userProfile[0].posts) }}</span>
+              <span class="stat-value">{{ userProfile[0].posts | formatNumber }}</span>
               <span class="stat-label">Posts</span>
             </div>
             <div class="stat-item">
-              <span class="stat-value">{{ formatNumber(userProfile[0].followers) }}</span>
+              <span class="stat-value">{{ userProfile[0].followers | formatNumber }}</span>
               <span class="stat-label">Seguidores</span>
             </div>
             <div class="stat-item">
-              <span class="stat-value">{{ formatNumber(userProfile[0].following) }}</span>
+              <span class="stat-value">{{ userProfile[0].following | formatNumber }}</span>
               <span class="stat-label">Seguindo</span>
             </div>
           </div>
@@ -153,141 +153,9 @@
       [postSelected]="postSelected"
       [modalId]="'modal-1'"
     ></app-post-details>
-    <!-- Post Detail Modal -->
-    <div class="post-modal" id="postModal">
-      <button class="post-modal-close" id="closeModal">
-        <i class="fas fa-times"></i>
-      </button>
 
-      <div class="post-modal-content">
-        <img
-          src="/placeholder.svg?height=600&width=600"
-          alt="Post"
-          class="post-modal-image"
-          id="modalImage"
-        />
 
-        <div class="post-modal-info">
-          <div class="post-modal-header">
-            <img
-              src="/placeholder.svg?height=40&width=40"
-              alt="Avatar"
-              class="post-modal-avatar"
-            />
-            <div>
-              <h4 class="base-semibold">Ana Costa</h4>
-              <p class="small-medium text-light-3">Florianópolis, Brasil</p>
-            </div>
-          </div>
 
-          <div class="post-modal-comments custom-scrollbar">
-            <!-- Post Caption -->
-            <div class="post-modal-comment">
-              <img
-                src="/placeholder.svg?height=40&width=40"
-                alt="Avatar"
-                class="comment-avatar"
-              />
-              <div class="comment-content">
-                <span class="comment-username">Ana Costa</span>
-                <span class="comment-text"
-                  >Nascer do sol na Praia do Campeche. As cores são simplesmente
-                  surreais! #nascerdosol #praia #viagem #floripa</span
-                >
-                <p class="comment-time">2 dias atrás</p>
-              </div>
-            </div>
-
-            <!-- Comment 1 -->
-            <div class="post-modal-comment">
-              <img
-                src="/placeholder.svg?height=32&width=32"
-                alt="Avatar"
-                class="comment-avatar"
-              />
-              <div class="comment-content">
-                <span class="comment-username">Fernanda Lima</span>
-                <span class="comment-text"
-                  >Que lugar incrível! Adorei as cores nessa foto.</span
-                >
-                <p class="comment-time">2 horas atrás</p>
-              </div>
-            </div>
-
-            <!-- Comment 2 -->
-            <div class="post-modal-comment">
-              <img
-                src="/placeholder.svg?height=32&width=32"
-                alt="Avatar"
-                class="comment-avatar"
-              />
-              <div class="comment-content">
-                <span class="comment-username">Roberto Gomes</span>
-                <span class="comment-text"
-                  >Já visitei esse lugar! É ainda mais bonito
-                  pessoalmente.</span
-                >
-                <p class="comment-time">1 dia atrás</p>
-              </div>
-            </div>
-
-            <!-- Comment 3 -->
-            <div class="post-modal-comment">
-              <img
-                src="/placeholder.svg?height=32&width=32"
-                alt="Avatar"
-                class="comment-avatar"
-              />
-              <div class="comment-content">
-                <span class="comment-username">Camila Souza</span>
-                <span class="comment-text"
-                  >Qual câmera você usou para tirar essa foto? Ficou
-                  perfeita!</span
-                >
-                <p class="comment-time">2 dias atrás</p>
-              </div>
-            </div>
-          </div>
-
-          <div class="post-modal-actions">
-            <div class="post-modal-stats">
-              <div class="post-modal-likes">378 curtidas</div>
-              <div class="post-modal-date">2 dias atrás</div>
-            </div>
-
-            <div class="post-modal-buttons">
-              <button class="post-modal-button">
-                <i class="far fa-heart text-xl"></i>
-              </button>
-              <button class="post-modal-button">
-                <i class="far fa-comment text-xl"></i>
-              </button>
-              <button class="post-modal-button">
-                <i class="far fa-paper-plane text-xl"></i>
-              </button>
-              <button class="post-modal-button ml-auto">
-                <i class="far fa-bookmark text-xl"></i>
-              </button>
-            </div>
-
-            <div class="post-modal-add-comment">
-              <img
-                src="/placeholder.svg?height=32&width=32"
-                alt="Seu Avatar"
-                class="comment-avatar"
-              />
-              <input
-                type="text"
-                placeholder="Adicione um comentário..."
-                class="post-modal-comment-input"
-              />
-              <button class="post-modal-button text-primary-500">
-                Publicar
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
+ 
   </div>
 </div>
