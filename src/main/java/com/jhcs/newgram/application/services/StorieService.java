@@ -255,7 +255,7 @@ public class StorieService {
         autorDTO.setId(storie.getAutor().getId());
         autorDTO.setNome(storie.getAutor().getNome());
         autorDTO.setUsername(storie.getAutor().getUsername());
-        autorDTO.setVerificado(storie.getAutor().isVerificado());
+
         dto.setAutor(autorDTO);
 
         // Usuários marcados
@@ -266,7 +266,6 @@ public class StorieService {
                         userDto.setId(usuario.getId());
                         userDto.setNome(usuario.getNome());
                         userDto.setUsername(usuario.getUsername());
-                        userDto.setVerificado(usuario.isVerificado());
                         return userDto;
                     })
                     .collect(Collectors.toList());

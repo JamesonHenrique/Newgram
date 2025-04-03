@@ -1,5 +1,6 @@
 package com.jhcs.newgram.core.domain.entities;
 
+import com.jhcs.newgram.core.domain.enums.TipoNotificacao;
 import jakarta.persistence.*;
 import lombok.Data;
 

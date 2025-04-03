@@ -159,3 +159,18 @@ body {
 .custom-scrollbar {
   overflow: auto;
 }
+.toast-purple {
+  background-color: rgba(156, 39, 176, 0.3) !important;
+  color: white !important;
+  box-shadow: 0 4px 12px rgb(155, 39, 176);
+}
+
+.toast-purple .toast-title {
+  font-weight: bold;
+  font-size: 16px;
+}
+
+.toast-purple .toast-message {
+  font-size: 14px;
+  opacity: 0.9;
+}

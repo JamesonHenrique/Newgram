@@ -36,13 +36,14 @@
         <div class="step-title" id="step-title-2">Etapa 2: Segurança</div>
         <div class="step-title" id="step-title-3">Etapa 3: Perfil</div>
 
-        <form id="registerForm">
+        <form id="registerForm" [formGroup]="authForm" (ngSubmit)="register()">
           <div class="form-step active" id="step-1">
             <!-- Name Field -->
             <div class="form-group">
               <label for="name" class="form-label">Nome completo</label>
               <input
                 type="text"
+                formControlName="name"
                 id="name"
                 class="form-input"
                 placeholder="Digite seu nome completo"
@@ -55,6 +56,7 @@
               <label for="email" class="form-label">Email</label>
               <input
                 type="email"
+                formControlName="email"
                 id="email"
                 class="form-input"
                 placeholder="Digite seu email"
@@ -90,6 +92,7 @@
               <label for="password" class="form-label">Senha</label>
               <input
                 type="password"
+                formControlName="password"
                 id="password"
                 class="form-input"
                 placeholder="Crie uma senha forte"
@@ -141,6 +144,7 @@
                 id="confirmPassword"
                 class="form-input"
                 placeholder="Confirme sua senha"
+                formControlName="confirmPassword"
               />
               <i
                 class="fas fa-eye password-toggle"
@@ -174,7 +178,7 @@
                 <i class="fas fa-upload mr-2"></i>
                 Escolher foto de perfil
               </label>
-              <input type="file" id="avatarUpload" accept="image/*" />
+              <input type="file" id="avatarUpload" accept="image/*" formControlName="avatar" />
             </div>
 
             <!-- Username Field -->
@@ -186,7 +190,8 @@
                   type="text"
                   id="username"
                   class="form-input username-input"
-                  placeholder="escolhaseunome"
+                  placeholder="escolha um nome de usuário"
+                  formControlName="username"
                 />
               </div>
               <div class="validation-message" id="usernameError"></div>
@@ -199,6 +204,7 @@
                 id="bio"
                 class="form-input form-textarea"
                 placeholder="Conte um pouco sobre você..."
+                formControlName="bio"
               ></textarea>
               <div class="char-counter" id="bioCounter">0/150 caracteres</div>
             </div>

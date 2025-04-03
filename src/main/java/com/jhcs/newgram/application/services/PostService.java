@@ -18,7 +18,9 @@ import com.jhcs.newgram.infrastructure.exception.ResourceNotFoundException;
 import com.jhcs.newgram.infrastructure.exception.UnauthorizedException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -26,7 +28,6 @@ import org.springframework.web.multipart.MultipartFile;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -59,7 +60,7 @@ public class PostService {
     private ArquivoService arquivoService;
 
     @Transactional
-    public PostResponseDTO criarPost(PostCreateDTO dto, Long usuarioId) {
+    public PostResponseDTO criarPost(PostCreateDTO dto, Long usuarioId, List<MultipartFile> arquivos) {
         Usuario autor = usuarioRepository.findById(usuarioId)
                 .orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado"));
 
@@ -71,14 +72,12 @@ public class PostService {
         post.setDataCriacao(new Date());
         post.setArquivado(false);
 
-        // Processar hashtags
         if (dto.getHashtags() != null && !dto.getHashtags().isEmpty()) {
             processarHashtags(post, dto.getHashtags());
         } else if (dto.getLegenda() != null) {
             processarHashtagsDaLegenda(post, dto.getLegenda());
         }
 
-        // Processar marcações
         if (dto.getUsuariosMarcados() != null && !dto.getUsuariosMarcados().isEmpty()) {
             processarMarcacoesUsuarios(post, dto.getUsuariosMarcados());
         }
@@ -101,7 +100,6 @@ public class PostService {
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new ResourceNotFoundException("Post não encontrado"));
 
-        // Verificar se o usuário é o autor do post
         if (!post.getAutor().getId().equals(usuarioId)) {
             throw new UnauthorizedException("Você não tem permissão para editar este post");
         }
@@ -124,7 +122,6 @@ public class PostService {
             processarHashtags(post, dto.getHashtags());
         }
 
-        // Atualizar marcações
         if (dto.getUsuariosMarcados() != null) {
             post.getMarcacoes().clear();
             processarMarcacoesUsuarios(post, dto.getUsuariosMarcados());
@@ -190,43 +187,85 @@ public class PostService {
 
     @Transactional(readOnly = true)
     public Page<PostSummaryDTO> listarPostsDoUsuario(Long usuarioId, Pageable pageable, Long usuarioLogadoId) {
-        Page<Post> posts = postRepository.findByAutorId(usuarioId, pageable);
+        Sort sort = Sort.by(Sort.Direction.DESC, "dataCriacao");
+        Pageable safePageable = PageRequest.of(
+                pageable.getPageNumber(),
+                pageable.getPageSize(),
+                sort
+        );
+        Page<Post> posts = postRepository.findByAutorId(usuarioId, safePageable);
         return posts.map(post -> converterParaSummaryDTO(post, usuarioLogadoId));
     }
 
     @Transactional(readOnly = true)
     public Page<PostSummaryDTO> listarFeedDoUsuario(Long usuarioId, Pageable pageable) {
-        Page<Post> posts = postRepository.findFeedByUsuarioId(usuarioId, pageable);
+        Sort sort = Sort.by(Sort.Direction.DESC, "dataCriacao");
+        Pageable safePageable = PageRequest.of(
+                pageable.getPageNumber(),
+                pageable.getPageSize(),
+                sort
+        );
+        Page<Post> posts = postRepository.findFeedByUsuarioId(usuarioId, safePageable);
         return posts.map(post -> converterParaSummaryDTO(post, usuarioId));
     }
 
     @Transactional(readOnly = true)
     public Page<PostSummaryDTO> listarPostsPopulares(Pageable pageable, Long usuarioId) {
-        Page<Post> posts = postRepository.findPostsPopulares(pageable);
+        Sort sort = Sort.by(Sort.Direction.DESC, "dataCriacao");
+        Pageable safePageable = PageRequest.of(
+                pageable.getPageNumber(),
+                pageable.getPageSize(),
+                sort
+        );
+        Page<Post> posts = postRepository.findPostsPopulares(safePageable);
         return posts.map(post -> converterParaSummaryDTO(post, usuarioId));
     }
 
     @Transactional(readOnly = true)
     public Page<PostSummaryDTO> listarPostsPorHashtag(String hashtag, Pageable pageable, Long usuarioId) {
-        Page<Post> posts = postRepository.findByHashtag(hashtag, pageable);
+        Sort sort = Sort.by(Sort.Direction.DESC, "dataCriacao");
+        Pageable safePageable = PageRequest.of(
+                pageable.getPageNumber(),
+                pageable.getPageSize(),
+                sort
+        );
+        Page<Post> posts = postRepository.findByHashtag(hashtag, safePageable);
         return posts.map(post -> converterParaSummaryDTO(post, usuarioId));
     }
 
     @Transactional(readOnly = true)
     public Page<PostSummaryDTO> listarPostsPorLocalizacao(String localizacao, Pageable pageable, Long usuarioId) {
-        Page<Post> posts = postRepository.findByLocalizacao(localizacao, pageable);
+        Sort sort = Sort.by(Sort.Direction.DESC, "dataCriacao");
+        Pageable safePageable = PageRequest.of(
+                pageable.getPageNumber(),
+                pageable.getPageSize(),
+                sort
+        );
+        Page<Post> posts = postRepository.findByLocalizacao(localizacao, safePageable);
         return posts.map(post -> converterParaSummaryDTO(post, usuarioId));
     }
 
     @Transactional(readOnly = true)
     public Page<PostSummaryDTO> listarPostsSalvos(Long usuarioId, Pageable pageable) {
-        Page<Post> posts = postRepository.findSalvosByUsuarioId(usuarioId, pageable);
+        Sort sort = Sort.by(Sort.Direction.DESC, "dataCriacao");
+        Pageable safePageable = PageRequest.of(
+                pageable.getPageNumber(),
+                pageable.getPageSize(),
+                sort
+        );
+        Page<Post> posts = postRepository.findSalvosByUsuarioId(usuarioId, safePageable);
         return posts.map(post -> converterParaSummaryDTO(post, usuarioId));
     }
 
     @Transactional(readOnly = true)
     public Page<PostSummaryDTO> listarPostsSalvosPorColecao(Long usuarioId, String colecao, Pageable pageable) {
-        Page<Post> posts = postRepository.findSalvosByUsuarioIdAndColecao(usuarioId, colecao, pageable);
+        Sort sort = Sort.by(Sort.Direction.DESC, "dataCriacao");
+        Pageable safePageable = PageRequest.of(
+                pageable.getPageNumber(),
+                pageable.getPageSize(),
+                sort
+        );
+        Page<Post> posts = postRepository.findSalvosByUsuarioIdAndColecao(usuarioId, colecao, safePageable);
         return posts.map(post -> converterParaSummaryDTO(post, usuarioId));
     }
 
@@ -360,28 +399,23 @@ public class PostService {
         dto.setVisibilidade(post.getVisibilidade());
         dto.setArquivado(post.isArquivado());
 
-        // Autor
         UsuarioSummaryDTO autorDTO = new UsuarioSummaryDTO();
         autorDTO.setId(post.getAutor().getId());
         autorDTO.setNome(post.getAutor().getNome());
         autorDTO.setUsername(post.getAutor().getUsername());
-        autorDTO.setVerificado(post.getAutor().isVerificado());
         dto.setAutor(autorDTO);
 
-        // Hashtags
         List<String> hashtags = post.getHashtags().stream()
                 .map(Hashtag::getNome)
                 .collect(Collectors.toList());
         dto.setHashtags(hashtags);
 
-        // Usuários marcados
         List<UsuarioSummaryDTO> usuariosMarcados = post.getMarcacoes().stream()
                 .map(usuario -> {
                     UsuarioSummaryDTO userDto = new UsuarioSummaryDTO();
                     userDto.setId(usuario.getId());
                     userDto.setNome(usuario.getNome());
                     userDto.setUsername(usuario.getUsername());
-                    userDto.setVerificado(usuario.isVerificado());
                     return userDto;
                 })
                 .collect(Collectors.toList());
@@ -390,13 +424,11 @@ public class PostService {
         // Estatísticas
         dto.setNumeroCurtidas(curtidaRepository.countByPostId(post.getId()));
         dto.setNumeroComentarios(comentarioRepository.countByPostId(post.getId()));
-        // Upload das imagens usando o ArquivoService
         List<ArquivoDTO> arquivos = arquivoService.buscarArquivosPorEntidade(
                 Arquivo.TipoEntidadeRelacionada.POST,
                 post.getId()
         );
         dto.setArquivos(arquivos);
-        // Verificar se o usuário curtiu ou salvou o post
         if (usuarioLogadoId != null) {
             dto.setCurtidoPeloUsuario(curtidaRepository.existsByUsuarioIdAndPostId(usuarioLogadoId, post.getId()));
             dto.setSalvoPeloUsuario(salvosRepository.existsByUsuarioIdAndPostId(usuarioLogadoId, post.getId()));
@@ -410,19 +442,16 @@ public class PostService {
         dto.setId(post.getId());
         dto.setDataCriacao(post.getDataCriacao());
 
-        // Autor
         UsuarioSummaryDTO autorDTO = new UsuarioSummaryDTO();
         autorDTO.setId(post.getAutor().getId());
         autorDTO.setNome(post.getAutor().getNome());
         autorDTO.setUsername(post.getAutor().getUsername());
-        autorDTO.setVerificado(post.getAutor().isVerificado());
         dto.setAutor(autorDTO);
         List<ArquivoDTO> arquivos = arquivoService.buscarArquivosPorEntidade(
                 Arquivo.TipoEntidadeRelacionada.POST,
                 post.getId()
         );
         dto.setImagemPrincipal(arquivos.isEmpty() ? null : arquivos.get(0));
-        // Estatísticas
         dto.setNumeroCurtidas(curtidaRepository.countByPostId(post.getId()));
         dto.setNumeroComentarios(comentarioRepository.countByPostId(post.getId()));
 

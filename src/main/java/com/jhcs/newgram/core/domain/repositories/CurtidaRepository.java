@@ -25,7 +25,7 @@ public interface CurtidaRepository extends JpaRepository<Curtida, Long> {
 
     Long countByComentarioId(Long comentarioId);
 
-    // Método corrigido com @Query explícita
-    @Query("SELECT c.usuario FROM Curtida c WHERE c.post.id = :postId")
-    Page<Usuario> findUsuariosByPostId(@Param("postId") Long postId, Pageable pageable);
+
+    Page<Curtida> findByPostIdOrderByDataCriacaoDesc(Long postId, Pageable pageable);
+    Page<Curtida> findByComentarioIdOrderByDataCriacaoDesc(Long comentarioId, Pageable pageable);
 }

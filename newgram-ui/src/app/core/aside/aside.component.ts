@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
-import { RouterLink, RouterLinkActive } from '@angular/router';
+import { Router, RouterLink, RouterLinkActive } from '@angular/router';
+import { TokenService } from '../../services/token/token.service';
 
 @Component({
   selector: 'app-aside',
@@ -9,6 +10,7 @@ import { RouterLink, RouterLinkActive } from '@angular/router';
   styleUrl: './aside.component.css'
 })
 export class AsideComponent {
+  constructor( private tokenService: TokenService, private router: Router ) {}
   menuItems = [
     { path: '/feed', icon: 'fa-home', label: 'Página Inicial' },
     { path: '/explorar', icon: 'fa-compass', label: 'Explorar' },
@@ -35,5 +37,9 @@ export class AsideComponent {
       const rect = target.getBoundingClientRect();
       spotlight.setAttribute('style', `opacity: 0.3; transform: translateY(${rect.top + rect.height/2}px)`);
     }
+  }
+  logout() {
+    this.tokenService.logout();
+    this.router.navigate(['login']);
   }
 }

@@ -18,6 +18,6 @@ public interface DestaqueRepository extends JpaRepository<Destaque, Long> {
     @Query("SELECT COUNT(s) FROM Destaque d JOIN d.stories s WHERE d.id = :destaqueId")
     Long countStoriesByDestaqueId(@Param("destaqueId") Long destaqueId);
 
-    @Query("SELECT s FROM Storie s WHERE s.id IN (SELECT d.stories FROM Destaque d WHERE d.id = :destaqueId) ORDER BY s.dataCriacao DESC")
+    @Query("SELECT s FROM Destaque d JOIN d.stories s WHERE d.id = :destaqueId ORDER BY s.dataCriacao DESC")
     List<Storie> findStoriesByDestaqueId(@Param("destaqueId") Long destaqueId);
 }

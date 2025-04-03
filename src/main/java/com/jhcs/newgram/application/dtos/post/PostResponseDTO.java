@@ -2,7 +2,7 @@ package com.jhcs.newgram.application.dtos.post;
 
 import com.jhcs.newgram.application.dtos.arquivo.ArquivoDTO;
 import com.jhcs.newgram.application.dtos.usuario.UsuarioSummaryDTO;
-import com.jhcs.newgram.core.domain.entities.TipoVisibilidade;
+import com.jhcs.newgram.core.domain.enums.TipoVisibilidade;
 import lombok.Data;
 import java.util.Date;
 import java.util.List;

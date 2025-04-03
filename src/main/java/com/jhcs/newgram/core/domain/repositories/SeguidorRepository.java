@@ -19,6 +19,11 @@ public interface SeguidorRepository extends JpaRepository<Seguidor, Long> {
     List<Seguidor> findBySeguidorId(Long seguidorId);
 
     List<Seguidor> findBySeguidoId(Long seguidoId);
+    @Query(value = "SELECT u.* FROM usuario u " +
+            "JOIN seguidor s ON u.id = s.seguido_id " +
+            "WHERE s.seguidor_id = :usuarioId " +
+            "ORDER BY RAND() LIMIT :limite", nativeQuery = true)
+    List<Usuario> findRandomSeguidosByUsuarioId(@Param("usuarioId") Long usuarioId, @Param("limite") int limite);
 
     @Query("SELECT COUNT(s) FROM Seguidor s WHERE s.seguido.id = :usuarioId")
     Long countSeguidoresByUsuarioId(@Param("usuarioId") Long usuarioId);

@@ -217,7 +217,7 @@ public class ComentarioService {
         autorDTO.setId(comentario.getAutor().getId());
         autorDTO.setNome(comentario.getAutor().getNome());
         autorDTO.setUsername(comentario.getAutor().getUsername());
-        autorDTO.setVerificado(comentario.getAutor().isVerificado());
+
         dto.setAutor(autorDTO);
         List<ArquivoDTO> arquivos = arquivoService.buscarArquivosPorEntidade(
                 Arquivo.TipoEntidadeRelacionada.COMENTARIO,

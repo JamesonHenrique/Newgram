@@ -2,7 +2,7 @@ package com.jhcs.newgram.application.dtos.post;
 
 
 
-import com.jhcs.newgram.core.domain.entities.TipoVisibilidade;
+import com.jhcs.newgram.core.domain.enums.TipoVisibilidade;
 import lombok.Data;
 
 import jakarta.validation.constraints.Size;

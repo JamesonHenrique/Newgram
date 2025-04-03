@@ -26,16 +26,12 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
     Page<Usuario> buscarUsuarios(@Param("termo") String termo, Pageable pageable);
 
     @Query("SELECT u FROM Usuario u WHERE u.id IN (SELECT s.seguido.id FROM Seguidor s WHERE s.seguidor.id = :usuarioId)")
-    List<Usuario> findSeguidosByUsuarioId(@Param("usuarioId") Long usuarioId, Pageable pageable);
+    Page<Usuario>  findSeguidosByUsuarioId(@Param("usuarioId") Long usuarioId, Pageable pageable);
+
 
     @Query("SELECT u FROM Usuario u WHERE u.id IN (SELECT s.seguidor.id FROM Seguidor s WHERE s.seguido.id = :usuarioId)")
-    List<Usuario> findSeguidoresByUsuarioId(@Param("usuarioId") Long usuarioId, Pageable pageable);
+    Page<Usuario>  findSeguidoresByUsuarioId(@Param("usuarioId") Long usuarioId, Pageable pageable);
 
-    @Query("SELECT COUNT(s) FROM Seguidor s WHERE s.seguido.id = :usuarioId")
-    Long countSeguidoresByUsuarioId(@Param("usuarioId") Long usuarioId);
-
-    @Query("SELECT COUNT(s) FROM Seguidor s WHERE s.seguidor.id = :usuarioId")
-    Long countSeguidosByUsuarioId(@Param("usuarioId") Long usuarioId);
 
     @Query(value = "SELECT u.* FROM usuario u " +
             "JOIN seguidor s ON u.id = s.seguido_id " +

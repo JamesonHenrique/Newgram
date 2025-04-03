@@ -1,4 +1,4 @@
-package com.jhcs.newgram.core.domain.entities;
+package com.jhcs.newgram.core.domain.enums;
 
 import lombok.Getter;
 
@@ -8,4 +8,5 @@ public enum TipoNotificacao {
     COMENTARIO,
     CURTIDA,
     MENSAGEM,
+    NOVO_SEGUIDOR
 }

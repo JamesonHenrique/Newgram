@@ -19,7 +19,8 @@ public interface HashtagRepository extends JpaRepository<Hashtag, Long> {
     Page<Hashtag> findByNomeContainingIgnoreCase(String nome, Pageable pageable);
 
     @Query("SELECT h FROM Hashtag h ORDER BY SIZE(h.posts) DESC")
-    List<Hashtag> findHashtagsPopulares(Pageable pageable);
+    Page<Object[]> findHashtagsPopulares(Pageable pageable);
+
 
     // Consulta corrigida usando JOIN
     @Query("SELECT DISTINCT h FROM Hashtag h JOIN h.posts p WHERE p.autor.id = :usuarioId ORDER BY SIZE(h.posts) DESC")

@@ -6,8 +6,7 @@ import lombok.Data;
 public class UsuarioUpdateDTO {
     private String nome;
     private String bio;
-    private String website;
-    private String telefone;
+
 
     // Getters e Setters
 }

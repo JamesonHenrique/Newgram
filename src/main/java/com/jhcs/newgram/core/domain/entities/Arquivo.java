@@ -28,6 +28,6 @@ public class Arquivo {
     private Long entidadeId; // ID da entidade relacionada
 
     public enum TipoEntidadeRelacionada {
-        POST, STORIE, PERFIL, MENSAGEM, COMENTARIO
+        POST, STORIE, PERFIL, MENSAGEM, COMENTARIO, CONVERSA, DESTAQUE
     }
 }

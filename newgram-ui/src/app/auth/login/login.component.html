@@ -21,18 +21,19 @@
           <p class="base-medium text-light-3 mt-2">Bem-vindo de volta!</p>
         </div>
 
-        <form id="loginForm">
+        <form id="loginForm" [formGroup]="authForm" (ngSubmit)="login()">
           <!-- Username Field -->
           <div class="form-group">
-            <label for="username" class="form-label">Nome de usuário</label>
+            <label for="email" class="form-label">Email</label>
             <i class="fas fa-user input-icon"></i>
             <input
               type="text"
-              id="username"
+              id="email"
+              formControlName="email"
               class="form-input input-with-icon"
-              placeholder="Digite seu nome de usuário"
+              placeholder="Digite seu email"
             />
-            <div class="validation-message" id="usernameError"></div>
+            <div class="validation-message" id="emailError"></div>
           </div>
 
           <!-- Password Field -->
@@ -42,6 +43,7 @@
             <input
               type="password"
               id="password"
+              formControlName="senha"
               class="form-input input-with-icon"
               placeholder="Digite sua senha"
             />

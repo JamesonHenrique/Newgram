@@ -1,7 +1,7 @@
 package com.jhcs.newgram.core.domain.repositories;
 
 import com.jhcs.newgram.core.domain.entities.Post;
-import com.jhcs.newgram.core.domain.entities.TipoVisibilidade;
+import com.jhcs.newgram.core.domain.enums.TipoVisibilidade;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -47,5 +47,8 @@ public interface PostRepository extends JpaRepository<Post, Long> {
 
 
     Page<Post> findByVisibilidadeAndArquivadoFalse(TipoVisibilidade visibilidade, Pageable pageable);
+
+    @Query("SELECT COUNT(p) FROM Post p JOIN p.hashtags h WHERE h.id = :hashtagId")
+    Long countByHashtagId(@Param("hashtagId") Long hashtagId);
 
 }

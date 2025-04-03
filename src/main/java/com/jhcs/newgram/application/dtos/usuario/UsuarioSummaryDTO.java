@@ -8,7 +8,6 @@ public class UsuarioSummaryDTO {
     private String nome;
     private String username;
     private ArquivoDTO fotoPerfil;
-    private boolean verificado;
     private boolean seguindoUsuario;
 
     // Getters e Setters

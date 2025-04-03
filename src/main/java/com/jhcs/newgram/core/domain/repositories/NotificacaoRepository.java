@@ -10,15 +10,17 @@ import org.springframework.data.repository.query.Param;
 
 public interface NotificacaoRepository extends JpaRepository<Notificacao, Long> {
 
-    Page<Notificacao> findByDestinatarioIdOrderByDataNotificacaoDesc(Long destinatarioId, Pageable pageable);
+    // Alterar o nome do campo na assinatura do método
+    Page<Notificacao> findByDestinatarioIdOrderByDataCriacaoDesc(Long destinatarioId, Pageable pageable);
 
-    @Query("SELECT COUNT(n) FROM Notificacao n WHERE n.destinatario.id = :usuarioId AND n.visualizada = false")
-    Long countNotificacoesNaoVisualizadasByUsuarioId(@Param("usuarioId") Long usuarioId);
+    // Alterar para usar o nome correto do campo: lida em vez de visualizada
+    long countByDestinatarioIdAndLidaFalse(Long usuarioId);
 
-    @Modifying
-    @Query("UPDATE Notificacao n SET n.visualizada = true WHERE n.destinatario.id = :usuarioId")
-    void marcarTodasComoVisualizadas(@Param("usuarioId") Long usuarioId);
+    // Corrigir a query para usar os campos corretos
+    @Modifying(clearAutomatically = true)
+    @Query("UPDATE Notificacao n SET n.lida = true WHERE n.destinatario.id = :usuarioId")
+    int marcarTodasComoVisualizadas(@Param("usuarioId") Long usuarioId);
 
-    @Query("SELECT n FROM Notificacao n WHERE n.destinatario.id = :usuarioId AND n.visualizada = false ORDER BY n.dataNotificacao DESC")
-    Page<Notificacao> findNotificacoesNaoVisualizadas(@Param("usuarioId") Long usuarioId, Pageable pageable);
-}
+    // Corrigir a query para usar dataCriacao e lida
+    @Query("SELECT n FROM Notificacao n WHERE n.destinatario.id = :usuarioId AND n.lida = false ORDER BY n.dataCriacao DESC")
+    Page<Notificacao> findNotificacoesNaoVisualizadas(@Param("usuarioId") Long usuarioId, Pageable pageable);}

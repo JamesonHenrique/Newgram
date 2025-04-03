@@ -1,0 +1,801 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Newgram API",
+    "description": "API para Newgram, uma aplicação de rede social inspirada no Instagram.",
+    "termsOfService": "https://example.com/terms",
+    "contact": {
+      "name": "Jameson Henrique",
+      "url": "https://github.com/JamesonHenrique",
+      "email": "jamesonhenrique14@gmail.com"
+    },
+    "license": {
+      "name": "Apache 2.0",
+      "url": "https://www.apache.org/licenses/LICENSE-2.0"
+    },
+    "version": "1.0.0"
+  },
+  "externalDocs": {
+    "description": "Documentação adicional",
+    "url": "https://example.com/docs"
+  },
+  "servers": [
+    {
+      "url": "http://localhost:8080",
+      "description": "Servidor de desenvolvimento"
+    }
+  ],
+  "security": [{ "bearerAuth": [] }],
+  "tags": [
+    { "name": "Posts", "description": "API para gerenciamento de posts" },
+    { "name": "Stories", "description": "Operações com stories" },
+    {
+      "name": "Autenticação",
+      "description": "Operações relacionadas à autenticação"
+    },
+    {
+      "name": "Autenticação",
+      "description": "API para autenticação e registro de usuários"
+    },
+    { "name": "Usuários", "description": "Gerenciamento de usuários" },
+    { "name": "Arquivos", "description": "Upload e download de arquivos" },
+    { "name": "Mensagens", "description": "Sistema de mensagens" },
+    { "name": "Posts", "description": "Operações com posts" },
+    { "name": "Comentários", "description": "Gerenciamento de comentários" }
+  ],
+  "paths": {
+    "/posts/{id}": {
+      "get": {
+        "tags": ["Posts"],
+        "summary": "Buscar post por ID",
+        "description": "Retorna os detalhes de um post específico",
+        "operationId": "buscarPorId",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "ID do post",
+            "required": true,
+            "schema": { "type": "integer", "format": "int64" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Post encontrado com sucesso",
+            "content": {
+              "*/*": {
+                "schema": { "$ref": "#/components/schemas/PostResponseDTO" }
+              }
+            }
+          },
+          "401": { "description": "Não autorizado" },
+          "404": { "description": "Post não encontrado" }
+        }
+      },
+      "put": {
+        "tags": ["Posts"],
+        "summary": "Atualizar post",
+        "description": "Atualiza um post existente",
+        "operationId": "atualizarPost",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "ID do post",
+            "required": true,
+            "schema": { "type": "integer", "format": "int64" }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/PostUpdateDTO" }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Post atualizado com sucesso",
+            "content": {
+              "*/*": {
+                "schema": { "$ref": "#/components/schemas/PostResponseDTO" }
+              }
+            }
+          },
+          "400": { "description": "Dados inválidos fornecidos" },
+          "401": { "description": "Não autorizado" },
+          "403": { "description": "Permissão negada" },
+          "404": { "description": "Post não encontrado" }
+        }
+      },
+      "delete": {
+        "tags": ["Posts"],
+        "summary": "Excluir post",
+        "description": "Remove permanentemente um post",
+        "operationId": "excluirPost",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "ID do post",
+            "required": true,
+            "schema": { "type": "integer", "format": "int64" }
+          }
+        ],
+        "responses": {
+          "204": { "description": "Post excluído com sucesso" },
+          "401": { "description": "Não autorizado" },
+          "403": { "description": "Permissão negada" },
+          "404": { "description": "Post não encontrado" }
+        }
+      }
+    },
+    "/posts": {
+      "post": {
+        "tags": ["Posts"],
+        "summary": "Criar novo post",
+        "description": "Cria um novo post com opção de upload de arquivos",
+        "operationId": "criarPost",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "post": { "$ref": "#/components/schemas/PostCreateDTO" },
+                  "arquivos": {
+                    "type": "array",
+                    "description": "Arquivos a serem anexados ao post",
+                    "items": { "type": "string", "format": "binary" }
+                  }
+                },
+                "required": ["post"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Post criado com sucesso",
+            "content": {
+              "*/*": {
+                "schema": { "$ref": "#/components/schemas/PostResponseDTO" }
+              }
+            }
+          },
+          "400": { "description": "Dados inválidos fornecidos" },
+          "401": { "description": "Não autorizado" }
+        }
+      }
+    },
+    "/posts/{id}/salvar": {
+      "post": {
+        "tags": ["Posts"],
+        "summary": "Salvar post",
+        "description": "Salva um post, opcionalmente em uma coleção específica",
+        "operationId": "salvarPost",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "ID do post",
+            "required": true,
+            "schema": { "type": "integer", "format": "int64" }
+          },
+          {
+            "name": "colecao",
+            "in": "query",
+            "description": "Nome da coleção para salvar o post",
+            "required": false,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "201": { "description": "Post salvo com sucesso" },
+          "400": { "description": "Post já salvo pelo usuário" },
+          "401": { "description": "Não autorizado" },
+          "404": { "description": "Post não encontrado" }
+        }
+      }
+    },
+    "/posts/{id}/curtir": {
+      "post": {
+        "tags": ["Posts"],
+        "summary": "Curtir post",
+        "description": "Adiciona uma curtida ao post",
+        "operationId": "curtirPost",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "ID do post",
+            "required": true,
+            "schema": { "type": "integer", "format": "int64" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Post curtido com sucesso",
+            "content": {
+              "*/*": {
+                "schema": { "$ref": "#/components/schemas/PostResponseDTO" }
+              }
+            }
+          },
+          "400": { "description": "Post já curtido pelo usuário" },
+          "401": { "description": "Não autorizado" },
+          "404": { "description": "Post não encontrado" }
+        }
+      }
+    },
+    "/auth/register": {
+      "post": {
+        "tags": ["Autenticação"],
+        "summary": "Registrar novo usuário",
+        "description": "Cria um novo usuário no sistema e retorna um token de autenticação",
+        "operationId": "registrar",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/UsuarioCreateDTO" }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Usuário registrado com sucesso",
+            "content": {
+              "*/*": { "schema": { "$ref": "#/components/schemas/TokenDTO" } }
+            }
+          },
+          "400": { "description": "Dados inválidos para registro" },
+          "409": { "description": "Email ou nome de usuário já cadastrado" }
+        }
+      }
+    },
+    "/auth/refresh-token": {
+      "post": {
+        "tags": ["Autenticação"],
+        "summary": "Renovar token",
+        "description": "Renova o token de acesso utilizando um refresh token válido",
+        "operationId": "refreshToken",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "string",
+                "description": "Refresh token para renovação"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Token renovado com sucesso",
+            "content": {
+              "*/*": { "schema": { "$ref": "#/components/schemas/TokenDTO" } }
+            }
+          },
+          "401": { "description": "Refresh token inválido ou expirado" }
+        }
+      }
+    },
+    "/auth/login": {
+      "post": {
+        "tags": ["Autenticação"],
+        "summary": "Autenticar usuário",
+        "description": "Autentica o usuário com email e senha e retorna um token de acesso",
+        "operationId": "login",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/LoginDTO" }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Autenticação realizada com sucesso",
+            "content": {
+              "*/*": { "schema": { "$ref": "#/components/schemas/TokenDTO" } }
+            }
+          },
+          "401": { "description": "Credenciais inválidas" },
+          "404": { "description": "Usuário não encontrado" }
+        }
+      }
+    },
+    "/posts/{id}/desarquivar": {
+      "patch": {
+        "tags": ["Posts"],
+        "summary": "Desarquivar post",
+        "description": "Desarquiva um post anteriormente arquivado",
+        "operationId": "desarquivarPost",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "ID do post",
+            "required": true,
+            "schema": { "type": "integer", "format": "int64" }
+          }
+        ],
+        "responses": {
+          "204": { "description": "Post desarquivado com sucesso" },
+          "401": { "description": "Não autorizado" },
+          "403": { "description": "Permissão negada" },
+          "404": { "description": "Post não encontrado" }
+        }
+      }
+    },
+    "/posts/{id}/arquivar": {
+      "patch": {
+        "tags": ["Posts"],
+        "summary": "Arquivar post",
+        "description": "Arquiva um post sem removê-lo",
+        "operationId": "arquivarPost",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "ID do post",
+            "required": true,
+            "schema": { "type": "integer", "format": "int64" }
+          }
+        ],
+        "responses": {
+          "204": { "description": "Post arquivado com sucesso" },
+          "401": { "description": "Não autorizado" },
+          "403": { "description": "Permissão negada" },
+          "404": { "description": "Post não encontrado" }
+        }
+      }
+    },
+    "/posts/usuario/{usuarioId}": {
+      "get": {
+        "tags": ["Posts"],
+        "summary": "Listar posts de um usuário",
+        "description": "Retorna os posts publicados por um usuário específico",
+        "operationId": "listarPostsDoUsuario",
+        "parameters": [
+          {
+            "name": "usuarioId",
+            "in": "path",
+            "description": "ID do usuário",
+            "required": true,
+            "schema": { "type": "integer", "format": "int64" }
+          },
+          {
+            "name": "pageable",
+            "in": "query",
+            "description": "Parâmetros de paginação (page=0, size=10, sort=dataCriacao,desc)",
+            "required": true,
+            "schema": { "$ref": "#/components/schemas/Pageable" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Posts listados com sucesso",
+            "content": {
+              "*/*": { "schema": { "$ref": "#/components/schemas/Page" } }
+            }
+          },
+          "401": { "description": "Não autorizado" },
+          "404": { "description": "Usuário não encontrado" }
+        }
+      }
+    },
+    "/posts/salvos": {
+      "get": {
+        "tags": ["Posts"],
+        "summary": "Listar posts salvos",
+        "description": "Retorna os posts salvos pelo usuário logado",
+        "operationId": "listarPostsSalvos",
+        "parameters": [
+          {
+            "name": "pageable",
+            "in": "query",
+            "description": "Parâmetros de paginação (page=0, size=10, sort=dataCriacao,desc)",
+            "required": true,
+            "schema": { "$ref": "#/components/schemas/Pageable" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Posts salvos listados com sucesso",
+            "content": {
+              "*/*": { "schema": { "$ref": "#/components/schemas/Page" } }
+            }
+          },
+          "401": { "description": "Não autorizado" }
+        }
+      }
+    },
+    "/posts/salvos/colecao/{colecao}": {
+      "get": {
+        "tags": ["Posts"],
+        "summary": "Listar posts salvos por coleção",
+        "description": "Retorna posts salvos pelo usuário em uma coleção específica",
+        "operationId": "listarPostsSalvosPorColecao",
+        "parameters": [
+          {
+            "name": "colecao",
+            "in": "path",
+            "description": "Nome da coleção",
+            "required": true,
+            "schema": { "type": "string" }
+          },
+          {
+            "name": "pageable",
+            "in": "query",
+            "description": "Parâmetros de paginação (page=0, size=10, sort=dataCriacao,desc)",
+            "required": true,
+            "schema": { "$ref": "#/components/schemas/Pageable" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Posts da coleção listados com sucesso",
+            "content": {
+              "*/*": { "schema": { "$ref": "#/components/schemas/Page" } }
+            }
+          },
+          "401": { "description": "Não autorizado" }
+        }
+      }
+    },
+    "/posts/populares": {
+      "get": {
+        "tags": ["Posts"],
+        "summary": "Listar posts populares",
+        "description": "Retorna os posts mais populares da plataforma",
+        "operationId": "listarPostsPopulares",
+        "parameters": [
+          {
+            "name": "pageable",
+            "in": "query",
+            "description": "Parâmetros de paginação (page=0, size=10, sort=dataCriacao,desc)",
+            "required": true,
+            "schema": { "$ref": "#/components/schemas/Pageable" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Posts populares listados com sucesso",
+            "content": {
+              "*/*": { "schema": { "$ref": "#/components/schemas/Page" } }
+            }
+          },
+          "401": { "description": "Não autorizado" }
+        }
+      }
+    },
+    "/posts/localizacao": {
+      "get": {
+        "tags": ["Posts"],
+        "summary": "Listar posts por localização",
+        "description": "Retorna posts associados a uma localização específica",
+        "operationId": "listarPostsPorLocalizacao",
+        "parameters": [
+          {
+            "name": "local",
+            "in": "query",
+            "description": "Nome da localização",
+            "required": true,
+            "schema": { "type": "string" }
+          },
+          {
+            "name": "pageable",
+            "in": "query",
+            "description": "Parâmetros de paginação (page=0, size=10, sort=dataCriacao,desc)",
+            "required": true,
+            "schema": { "$ref": "#/components/schemas/Pageable" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Posts listados com sucesso",
+            "content": {
+              "*/*": { "schema": { "$ref": "#/components/schemas/Page" } }
+            }
+          },
+          "401": { "description": "Não autorizado" }
+        }
+      }
+    },
+    "/posts/hashtag/{nome}": {
+      "get": {
+        "tags": ["Posts"],
+        "summary": "Listar posts por hashtag",
+        "description": "Retorna posts que contêm uma hashtag específica",
+        "operationId": "listarPostsPorHashtag",
+        "parameters": [
+          {
+            "name": "nome",
+            "in": "path",
+            "description": "Nome da hashtag",
+            "required": true,
+            "schema": { "type": "string" }
+          },
+          {
+            "name": "pageable",
+            "in": "query",
+            "description": "Parâmetros de paginação (page=0, size=10, sort=dataCriacao,desc)",
+            "required": true,
+            "schema": { "$ref": "#/components/schemas/Pageable" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Posts listados com sucesso",
+            "content": {
+              "*/*": { "schema": { "$ref": "#/components/schemas/Page" } }
+            }
+          },
+          "401": { "description": "Não autorizado" }
+        }
+      }
+    },
+    "/posts/feed": {
+      "get": {
+        "tags": ["Posts"],
+        "summary": "Listar feed do usuário",
+        "description": "Retorna o feed personalizado do usuário logado",
+        "operationId": "listarFeed",
+        "parameters": [
+          {
+            "name": "pageable",
+            "in": "query",
+            "description": "Parâmetros de paginação (page=0, size=10, sort=dataCriacao,desc)",
+            "required": true,
+            "schema": { "$ref": "#/components/schemas/Pageable" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Feed listado com sucesso",
+            "content": {
+              "*/*": { "schema": { "$ref": "#/components/schemas/Page" } }
+            }
+          },
+          "401": { "description": "Não autorizado" }
+        }
+      }
+    },
+    "/posts/{id}/remover-salvo": {
+      "delete": {
+        "tags": ["Posts"],
+        "summary": "Remover post salvo",
+        "description": "Remove um post da lista de salvos do usuário",
+        "operationId": "removerPostSalvo",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "ID do post",
+            "required": true,
+            "schema": { "type": "integer", "format": "int64" }
+          }
+        ],
+        "responses": {
+          "204": { "description": "Post removido dos salvos com sucesso" },
+          "400": { "description": "Post não está salvo pelo usuário" },
+          "401": { "description": "Não autorizado" },
+          "404": { "description": "Post não encontrado" }
+        }
+      }
+    },
+    "/posts/{id}/descurtir": {
+      "delete": {
+        "tags": ["Posts"],
+        "summary": "Remover curtida",
+        "description": "Remove a curtida do usuário em um post",
+        "operationId": "descurtirPost",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "ID do post",
+            "required": true,
+            "schema": { "type": "integer", "format": "int64" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Curtida removida com sucesso",
+            "content": {
+              "*/*": {
+                "schema": { "$ref": "#/components/schemas/PostResponseDTO" }
+              }
+            }
+          },
+          "400": { "description": "Post não foi curtido pelo usuário" },
+          "401": { "description": "Não autorizado" },
+          "404": { "description": "Post não encontrado" }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "PostUpdateDTO": {
+        "type": "object",
+        "description": "Dados para atualização do post",
+        "properties": {
+          "legenda": { "type": "string", "maxLength": 2200, "minLength": 0 },
+          "localizacao": { "type": "string" },
+          "visibilidade": {
+            "type": "string",
+            "enum": ["PUBLICO", "PRIVADO", "SOMENTE_SEGUIDORES"]
+          },
+          "hashtags": { "type": "array", "items": { "type": "string" } },
+          "usuariosMarcados": {
+            "type": "array",
+            "items": { "type": "integer", "format": "int64" }
+          }
+        }
+      },
+      "ArquivoDTO": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "integer", "format": "int64" },
+          "nomeOriginal": { "type": "string" },
+          "tipo": { "type": "string" },
+          "tamanho": { "type": "integer", "format": "int64" },
+          "url": { "type": "string" },
+          "contentType": { "type": "string" }
+        }
+      },
+      "PostResponseDTO": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "integer", "format": "int64" },
+          "legenda": { "type": "string" },
+          "arquivos": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/ArquivoDTO" }
+          },
+          "dataCriacao": { "type": "string", "format": "date-time" },
+          "localizacao": { "type": "string" },
+          "visibilidade": {
+            "type": "string",
+            "enum": ["PUBLICO", "PRIVADO", "SOMENTE_SEGUIDORES"]
+          },
+          "arquivado": { "type": "boolean" },
+          "autor": { "$ref": "#/components/schemas/UsuarioSummaryDTO" },
+          "hashtags": { "type": "array", "items": { "type": "string" } },
+          "usuariosMarcados": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/UsuarioSummaryDTO" }
+          },
+          "numeroCurtidas": { "type": "integer", "format": "int64" },
+          "numeroComentarios": { "type": "integer", "format": "int64" },
+          "curtidoPeloUsuario": { "type": "boolean" },
+          "salvoPeloUsuario": { "type": "boolean" }
+        }
+      },
+      "UsuarioSummaryDTO": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "integer", "format": "int64" },
+          "nome": { "type": "string" },
+          "username": { "type": "string" },
+          "fotoPerfil": { "$ref": "#/components/schemas/ArquivoDTO" },
+          "seguindoUsuario": { "type": "boolean" }
+        }
+      },
+      "PostCreateDTO": {
+        "type": "object",
+        "description": "Dados do post a ser criado",
+        "properties": {
+          "legenda": { "type": "string", "maxLength": 2200, "minLength": 0 },
+          "arquivos": {
+            "type": "array",
+            "items": { "type": "string", "format": "binary" },
+            "minItems": 1
+          },
+          "localizacao": { "type": "string" },
+          "visibilidade": {
+            "type": "string",
+            "enum": ["PUBLICO", "PRIVADO", "SOMENTE_SEGUIDORES"]
+          },
+          "hashtags": { "type": "array", "items": { "type": "string" } },
+          "usuariosMarcados": {
+            "type": "array",
+            "items": { "type": "integer", "format": "int64" }
+          }
+        }
+      },
+      "UsuarioCreateDTO": {
+        "type": "object",
+        "description": "Dados do usuário a ser registrado",
+        "properties": {
+          "nome": { "type": "string" },
+          "username": { "type": "string" },
+          "email": { "type": "string" },
+          "senha": { "type": "string" },
+          "bio": { "type": "string" },
+          "confirmacaoSenha": { "type": "string" }
+        }
+      },
+      "TokenDTO": {
+        "type": "object",
+        "properties": {
+          "token": { "type": "string" },
+          "refreshToken": { "type": "string" }
+        }
+      },
+      "LoginDTO": {
+        "type": "object",
+        "description": "Credenciais de login do usuário",
+        "properties": {
+          "email": { "type": "string" },
+          "senha": { "type": "string" }
+        }
+      },
+      "Pageable": {
+        "type": "object",
+        "properties": {
+          "page": { "type": "integer", "format": "int32", "minimum": 0 },
+          "size": { "type": "integer", "format": "int32", "minimum": 1 },
+          "sort": { "type": "array", "items": { "type": "string" } }
+        }
+      },
+      "Page": {
+        "type": "object",
+        "properties": {
+          "totalElements": { "type": "integer", "format": "int64" },
+          "totalPages": { "type": "integer", "format": "int32" },
+          "first": { "type": "boolean" },
+          "last": { "type": "boolean" },
+          "size": { "type": "integer", "format": "int32" },
+          "content": { "type": "array", "items": { "type": "object" } },
+          "number": { "type": "integer", "format": "int32" },
+          "sort": { "$ref": "#/components/schemas/SortObject" },
+          "numberOfElements": { "type": "integer", "format": "int32" },
+          "pageable": { "$ref": "#/components/schemas/PageableObject" },
+          "empty": { "type": "boolean" }
+        }
+      },
+      "PageableObject": {
+        "type": "object",
+        "properties": {
+          "offset": { "type": "integer", "format": "int64" },
+          "sort": { "$ref": "#/components/schemas/SortObject" },
+          "unpaged": { "type": "boolean" },
+          "paged": { "type": "boolean" },
+          "pageNumber": { "type": "integer", "format": "int32" },
+          "pageSize": { "type": "integer", "format": "int32" }
+        }
+      },
+      "SortObject": {
+        "type": "object",
+        "properties": {
+          "empty": { "type": "boolean" },
+          "unsorted": { "type": "boolean" },
+          "sorted": { "type": "boolean" }
+        }
+      }
+    },
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "description": "Insira um token JWT válido aqui. Expira em 24h.",
+        "name": "bearerAuth",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      },
+      "refreshToken": {
+        "type": "http",
+        "description": "Insira um refresh token válido para obter novos tokens. Validade de 7 dias.",
+        "name": "refreshToken",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    }
+  }
+}
