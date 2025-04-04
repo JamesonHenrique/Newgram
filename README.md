@@ -3,9 +3,11 @@
 </div>
 <div align="center">
 
-## Índice
+<div align="center">
+
 | Essenciais                          | Desenvolvimento             | Documentação                  |
-@@ -10,7 +10,7 @@
+| -------------------------------------- | ------------------------------ | -------------------------------- |
+| [Sobre](#sobre)                     | [Tecnologias](#tecnologias) | [API](#api)                   |
 | [Funcionalidades](#funcionalidades) | [Requisitos](#requisitos)   | [Contribuição](#contribuindo) |
 | [Objetivos](#objetivos)             | [Instalação](#instalação)   | [Licença](#licença)           |
 
