@@ -118,7 +118,7 @@ git clone https://github.com/JamesonHenrique/Newgram.git
 cd newgram
 ```
 
-2. Configure o banco de dados PostgreSQL no arquivo `src/main/resources/application.yml`
+2. Configure o banco de dados PostgreSQL no arquivo `src/main/resources/application.properties`
 
 3. Execute o backend:
 
