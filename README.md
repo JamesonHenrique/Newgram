@@ -1,5 +1,6 @@
-# <img src="newgram-ui/public/images/logo.png" height=100px alt="Logo"> 
-
+<div align="center">
+# <img src="newgram-ui/public/images/logo.png" height=60px alt="Logo"> 
+</div>
 ## Índice
 
 <div align="center">
