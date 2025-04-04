@@ -389,6 +389,58 @@
         }
       }
     },
+    "/posts/tendencias": {
+      "get": {
+        "tags": ["Posts"],
+        "summary": "Listar posts em tendência",
+        "description": "Retorna os posts que estão em tendência na plataforma baseado em engajamento recente",
+        "operationId": "listarPostsTendencias",
+        "parameters": [
+          {
+            "name": "pageable",
+            "in": "query",
+            "description": "Parâmetros de paginação (page=0, size=10, sort=dataCriacao,desc)",
+            "required": true,
+            "schema": { "$ref": "#/components/schemas/Pageable" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Posts em tendência listados com sucesso",
+            "content": {
+              "*/*": { "schema": { "$ref": "#/components/schemas/Page" } }
+            }
+          },
+          "401": { "description": "Não autorizado" }
+        }
+      }
+    },
+    "/posts/seguidos-populares": {
+      "get": {
+        "tags": ["Posts"],
+        "summary": "Listar posts populares de seguidos",
+        "description": "Retorna os posts mais populares dos usuários que o usuário autenticado segue",
+        "operationId": "listarPostsPopularesSeguidores",
+        "parameters": [
+          {
+            "name": "pageable",
+            "in": "query",
+            "description": "Parâmetros de paginação (page=0, size=10, sort=dataCriacao,desc)",
+            "required": true,
+            "schema": { "$ref": "#/components/schemas/Pageable" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Posts populares dos seguidos listados com sucesso",
+            "content": {
+              "*/*": { "schema": { "$ref": "#/components/schemas/Page" } }
+            }
+          },
+          "401": { "description": "Não autorizado" }
+        }
+      }
+    },
     "/posts/salvos": {
       "get": {
         "tags": ["Posts"],
@@ -767,8 +819,8 @@
           "offset": { "type": "integer", "format": "int64" },
           "sort": { "$ref": "#/components/schemas/SortObject" },
           "unpaged": { "type": "boolean" },
-          "paged": { "type": "boolean" },
           "pageNumber": { "type": "integer", "format": "int32" },
+          "paged": { "type": "boolean" },
           "pageSize": { "type": "integer", "format": "int32" }
         }
       },

@@ -18,20 +18,18 @@
             <div class="flex-between mb-4">
               <div class="flex-start gap-3">
                 <img
-                  [src]="post.avatar"
+                 src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRV61NGGfrNzInHErojPbfVKVdx_KvNiT_bmg&s"
                   alt="Avatar do Usuário"
-                  width="55"
-                  height="55"
-                  class="story-border"
+                  class="w-16 h-16 story-border"
                 />
                 <div>
-                  <h4 class="base-semibold">{{ post.author }}</h4>
+                  <h4 class="base-semibold">{{ post.autor.nome }}</h4>
                   <div
                     class="flex gap-2 small-medium text-principal text-light-3"
                   >
-                    <span>{{ post.time }}</span>
+                    <span>{{ post.dataCriacao | dateFormat }}</span>
                     <span>•</span>
-                    <span>{{ post.location }}</span>
+                    <span>{{ post.localizacao }}</span>
                   </div>
                 </div>
               </div>
@@ -40,7 +38,7 @@
               </button>
             </div>
 
-            <p class="base-medium mb-3">{{ post.text }}</p>
+            <p class="base-medium mb-3">{{ post.legenda }}</p>
             <div
               class="flex gap-2 small-medium text-principal text-light-3 mb-4"
             >
@@ -48,7 +46,7 @@
             </div>
 
             <img
-              [src]="post.image"
+             src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRV61NGGfrNzInHErojPbfVKVdx_KvNiT_bmg&s"
               alt="Imagem do Post"
               class="post-card_img"
             />
@@ -74,7 +72,7 @@
                     }"
                   ></i>
                   <span class="small-medium">{{
-                    post.likes | formatNumber
+                    post.numeroCurtidas | formatNumber
                   }}</span>
                 </button>
                 <button
@@ -88,7 +86,7 @@
                 class="small-medium text-light-3"
                 (click)="$event.stopPropagation()"
               >
-                {{ post.comments | formatNumber }} comentários
+                {{ post.numeroComentarios | formatNumber }} comentários
               </button>
             </div>
           </label>

@@ -11,12 +11,12 @@ import { RequestBuilder } from '../../request-builder';
 import { Page } from '../../models/page';
 import { Pageable } from '../../models/pageable';
 
-export interface ListarPostsSalvosPorColecao$Params {
+export interface ListarPostsPorLegenda$Params {
 
 /**
- * Nome da coleção
+ * Nome da localização
  */
-  colecao: string;
+  termo: string;
 
 /**
  * Parâmetros de paginação (page=0, size=10, sort=dataCriacao,desc)
@@ -24,10 +24,10 @@ export interface ListarPostsSalvosPorColecao$Params {
   pageable: Pageable;
 }
 
-export function listarPostsSalvosPorColecao(http: HttpClient, rootUrl: string, params: ListarPostsSalvosPorColecao$Params, context?: HttpContext): Observable<StrictHttpResponse<Page>> {
-  const rb = new RequestBuilder(rootUrl, listarPostsSalvosPorColecao.PATH, 'get');
+export function listarPostsPorLegenda(http: HttpClient, rootUrl: string, params: ListarPostsPorLegenda$Params, context?: HttpContext): Observable<StrictHttpResponse<Page>> {
+  const rb = new RequestBuilder(rootUrl, listarPostsPorLegenda.PATH, 'get');
   if (params) {
-    rb.path('colecao', params.colecao, {});
+    rb.query('termo', params.termo, {});
     rb.query('pageable', params.pageable, {});
   }
 
@@ -41,4 +41,4 @@ export function listarPostsSalvosPorColecao(http: HttpClient, rootUrl: string, p
   );
 }
 
-listarPostsSalvosPorColecao.PATH = '/posts/salvos/colecao/{colecao}';
+listarPostsPorLegenda.PATH = '/posts/buscar';

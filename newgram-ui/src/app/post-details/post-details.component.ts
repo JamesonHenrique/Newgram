@@ -2,10 +2,11 @@ import { CommonModule } from '@angular/common';
 import { Component, ElementRef, EventEmitter, inject, Input, Output } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormatNumberPipe } from '../format-number.pipe';
+import { DateFormatPipe } from '../services/pipes/date-format-pipe';
 
 @Component({
   selector: 'app-post-details',
-  imports: [CommonModule, FormatNumberPipe],
+  imports: [CommonModule, FormatNumberPipe, DateFormatPipe],
   templateUrl: './post-details.component.html',
   styleUrl: './post-details.component.css',
 })

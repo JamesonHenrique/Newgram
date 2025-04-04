@@ -1,14 +1,27 @@
 import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
+import { Title } from '@angular/platform-browser';
+import { PostsService } from '../services/services';
+import { Pageable } from '../services/models';
+import { PostDetailsComponent } from '../post-details/post-details.component';
 
 @Component({
   selector: 'app-favorite',
-  imports: [CommonModule, ],
+  imports: [CommonModule, PostDetailsComponent],
   templateUrl: './favorite.component.html',
   styleUrl: './favorite.component.css'
 })
 export class FavoriteComponent {
-  savedPosts = [
+  constructor(private title: Title, private postsService: PostsService) {
+    this.title.setTitle('Favoritos');
+  }
+  savedPosts: any[] = [];
+    pageable: Pageable = {
+      page: 0,
+      size: 10,
+      sort: ['string'],
+    };
+  savedPostss = [
     {
       id: 1,
       author: 'Whindersson Nunes',
@@ -52,5 +65,28 @@ export class FavoriteComponent {
       time: '4h'
     }
   ];
+  postSelected: any;
+  selectedIndex: any;
+  ngOnInit(): void {
+    this.listSavedPosts();
+  }
+  openModal(post: any, index: number) {
+    this.postSelected = post;
+    this.selectedIndex = index;
 
+
+  }
+  openPostDetails(post: any, event: Event) {
+    this.postSelected = post;
+  }
+
+  listSavedPosts() {
+    this.postsService.listarPostsSalvos(
+      {
+        pageable: this.pageable
+      }
+    ).subscribe((response) => {
+      this.savedPosts = response.content || [];
+    });
+  }
 }

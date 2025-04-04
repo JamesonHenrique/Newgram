@@ -10,15 +10,15 @@
       <input
         type="text"
         class="search-input w-full py-2 px-4 pl-10 text-sm sm:text-base rounded-lg border border-gray-600 bg-gray-800 text-white focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-        placeholder="Pesquisar posts, tags, pessoas..."
+        placeholder="Pesquisar posts"
+        [(ngModel)]="termo"
+        (keyup)="listPostsByLegenda()"
       />
     </div>
 
     <!-- Popular Tags -->
     <div class="mb-4 sm:mb-6 animate-slideUp" style="animation-delay: 0.1s">
-      <h3 class="font-semibold mb-3  text-sm sm:text-base">
-        Tags Populares
-      </h3>
+      <h3 class="font-semibold mb-3 text-sm sm:text-base">Tags Populares</h3>
       <div
         class="popular-tags flex overflow-x-auto pb-2 gap-2 scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-gray-800"
       >
@@ -135,7 +135,9 @@
       class="flex-between mb-6 animate-slideUp"
       style="animation-delay: 0.4s"
     >
-      <h3 class="base-semibold text-light-2">Resultados</h3>
+      <h3 class="base-semibold text-light-2">
+        Resultados
+      </h3>
       <div class="view-toggle">
         <div class="view-toggle-btn active" data-view="grid">
           <i class="fas fa-th-large"></i>
@@ -145,12 +147,187 @@
         </div>
       </div>
     </div>
+    <section
+    class="trending-section mb-4 sm:mb-8 animate-slideUp"
+    style="animation-delay: 0.5s"
+    *ngIf="pesquisaOcorreu"
+  >
+    <div
+      class="trending-header flex justify-between items-center mb-2 sm:mb-4"
+    >
+      <h3 class="font-semibold text-primary-custom text-sm sm:text-lg">
+        Resultados ao pesquisar por "{{ termo }}"
+      </h3>
+    </div>
 
+    <div
+      class="trending-posts grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4"
+    >
+      <div
+        *ngFor="let post of postsPorLegenda; let i = index"
+        (click)="openPostDetails(post, $event)"
+        class="trending-post bg-gray-800 rounded-lg sm:rounded-xl overflow-hidden transition-transform hover:scale-[1.02] active:scale-[0.98]"
+      >
+        <label [for]="'modal-1'" class="cursor-pointer">
+          <img
+            src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRV61NGGfrNzInHErojPbfVKVdx_KvNiT_bmg&s"
+            alt="Post em Tendência"
+            class="trending-post-img w-full h-32 xs:h-36 sm:h-40 md:h-48 object-cover"
+          />
+
+          <div class="trending-post-content p-2 sm:p-3 md:p-4">
+            <div class="flex justify-between items-center mb-1 sm:mb-2">
+              <div class="flex items-center gap-1 sm:gap-2">
+                <img
+                  src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRV61NGGfrNzInHErojPbfVKVdx_KvNiT_bmg&s"
+                  alt="Avatar"
+                  class="w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7 rounded-full object-cover"
+                />
+                <p
+                  class="text-xs sm:text-sm font-medium text-gray-300 truncate max-w-[80px] xs:max-w-[100px] sm:max-w-none"
+                >
+                  {{ post.autor.nome }}
+                </p>
+              </div>
+              <span
+                class="text-[10px] xs:text-xs font-semibold text-gray-400"
+              >
+                {{ post.dataCriacao | dateFormat }}
+              </span>
+            </div>
+
+            <h4
+              class="font-semibold text-gray-100 mb-1 text-xs sm:text-sm md:text-base line-clamp-2"
+            >
+              {{ post.legenda }}
+            </h4>
+
+            <div class="flex flex-wrap gap-1 sm:gap-2 mb-2">
+              <span
+                *ngFor="let tag of popularTags.slice(0, 2)"
+                class="text-[10px] xs:text-xs font-semibold text-gray-400"
+              >
+                #{{ tag }}
+              </span>
+            </div>
+
+            <div class="flex justify-between items-center">
+              <div class="flex gap-2 sm:gap-3 md:gap-4">
+                <span
+                  class="flex items-center gap-1 text-gray-400 text-[10px] xs:text-xs sm:text-sm"
+                >
+                  <i class="far fa-heart"></i>
+                  <span>{{ post.numeroCurtidas | formatNumber }}</span>
+                </span>
+                <span
+                  class="flex items-center gap-1 text-gray-400 text-[10px] xs:text-xs sm:text-sm"
+                >
+                  <i class="far fa-comment"></i>
+                  <span>{{ post.numeroComentarios | formatNumber }}</span>
+                </span>
+              </div>
+              <i
+                class="far fa-bookmark text-gray-400 hover:text-primary-500 cursor-pointer text-xs sm:text-sm"
+              ></i>
+            </div>
+          </div>
+        </label>
+      </div>
+    </div>
+  </section>
+  <section
+  class="trending-section mb-4 sm:mb-8 animate-slideUp"
+  style="animation-delay: 0.5s"
+  *ngIf="!pesquisaOcorreu && postsRecomendados.length > 0"
+>
+  <div
+    class="trending-header flex justify-between items-center mb-2 sm:mb-4"
+  >
+    <h3 class="font-semibold text-primary-custom text-sm sm:text-lg">
+      Recomendações
+    </h3>
+  </div>
+
+  <div
+    class="trending-posts grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4"
+  >
+    <div
+      *ngFor="let post of postsRecomendados; let i = index"
+      (click)="openPostDetails(post, $event)"
+      class="trending-post bg-gray-800 rounded-lg sm:rounded-xl overflow-hidden transition-transform hover:scale-[1.02] active:scale-[0.98]"
+    >
+      <label [for]="'modal-1'" class="cursor-pointer">
+        <img
+          src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRV61NGGfrNzInHErojPbfVKVdx_KvNiT_bmg&s"
+          alt="Post em Tendência"
+          class="trending-post-img w-full h-32 xs:h-36 sm:h-40 md:h-48 object-cover"
+        />
+
+        <div class="trending-post-content p-2 sm:p-3 md:p-4">
+          <div class="flex justify-between items-center mb-1 sm:mb-2">
+            <div class="flex items-center gap-1 sm:gap-2">
+              <img
+                src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRV61NGGfrNzInHErojPbfVKVdx_KvNiT_bmg&s"
+                alt="Avatar"
+                class="w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7 rounded-full object-cover"
+              />
+              <p
+                class="text-xs sm:text-sm font-medium text-gray-300 truncate max-w-[80px] xs:max-w-[100px] sm:max-w-none"
+              >
+                {{ post.autor.nome }}
+              </p>
+            </div>
+            <span
+              class="text-[10px] xs:text-xs font-semibold text-gray-400"
+            >
+              {{ post.dataCriacao | dateFormat }}
+            </span>
+          </div>
+
+          <h4
+            class="font-semibold text-gray-100 mb-1 text-xs sm:text-sm md:text-base line-clamp-2"
+          >
+            {{ post.legenda }}
+          </h4>
+
+          <div class="flex flex-wrap gap-1 sm:gap-2 mb-2">
+            <span
+              *ngFor="let tag of popularTags.slice(0, 2)"
+              class="text-[10px] xs:text-xs font-semibold text-gray-400"
+            >
+              #{{ tag }}
+            </span>
+          </div>
+
+          <div class="flex justify-between items-center">
+            <div class="flex gap-2 sm:gap-3 md:gap-4">
+              <span
+                class="flex items-center gap-1 text-gray-400 text-[10px] xs:text-xs sm:text-sm"
+              >
+                <i class="far fa-heart"></i>
+                <span>{{ post.numeroCurtidas | formatNumber }}</span>
+              </span>
+              <span
+                class="flex items-center gap-1 text-gray-400 text-[10px] xs:text-xs sm:text-sm"
+              >
+                <i class="far fa-comment"></i>
+                <span>{{ post.numeroComentarios | formatNumber }}</span>
+              </span>
+            </div>
+            <i
+              class="far fa-bookmark text-gray-400 hover:text-primary-500 cursor-pointer text-xs sm:text-sm"
+            ></i>
+          </div>
+        </div>
+      </label>
+    </div>
+  </div>
+</section>
     <section
       class="trending-section mb-4 sm:mb-8 animate-slideUp"
       style="animation-delay: 0.5s"
     >
-      <div
+      <div     *ngIf="!pesquisaOcorreu && postsRecomendados.length > 0"
         class="trending-header flex justify-between items-center mb-2 sm:mb-4"
       >
         <h3 class="font-semibold text-primary-custom text-sm sm:text-lg">
@@ -174,7 +351,7 @@
         >
           <label [for]="'modal-1'" class="cursor-pointer">
             <img
-              [src]="post.image"
+              src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRV61NGGfrNzInHErojPbfVKVdx_KvNiT_bmg&s"
               alt="Post em Tendência"
               class="trending-post-img w-full h-32 xs:h-36 sm:h-40 md:h-48 object-cover"
             />
@@ -183,32 +360,32 @@
               <div class="flex justify-between items-center mb-1 sm:mb-2">
                 <div class="flex items-center gap-1 sm:gap-2">
                   <img
-                    [src]="post.avatar"
+                    src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRV61NGGfrNzInHErojPbfVKVdx_KvNiT_bmg&s"
                     alt="Avatar"
                     class="w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7 rounded-full object-cover"
                   />
                   <p
                     class="text-xs sm:text-sm font-medium text-gray-300 truncate max-w-[80px] xs:max-w-[100px] sm:max-w-none"
                   >
-                    {{ post.author }}
+                    {{ post.autor.nome }}
                   </p>
                 </div>
                 <span
                   class="text-[10px] xs:text-xs font-semibold text-gray-400"
                 >
-                  {{ post.time }}
+                  {{ post.dataCriacao | dateFormat }}
                 </span>
               </div>
 
               <h4
                 class="font-semibold text-gray-100 mb-1 text-xs sm:text-sm md:text-base line-clamp-2"
               >
-                {{ post.text }}
+                {{ post.legenda }}
               </h4>
 
               <div class="flex flex-wrap gap-1 sm:gap-2 mb-2">
                 <span
-                  *ngFor="let tag of post.tags.slice(0, 2)"
+                  *ngFor="let tag of popularTags.slice(0, 2)"
                   class="text-[10px] xs:text-xs font-semibold text-gray-400"
                 >
                   #{{ tag }}
@@ -221,13 +398,13 @@
                     class="flex items-center gap-1 text-gray-400 text-[10px] xs:text-xs sm:text-sm"
                   >
                     <i class="far fa-heart"></i>
-                    <span>{{ post.likes | formatNumber }}</span>
+                    <span>{{ post.numeroCurtidas | formatNumber }}</span>
                   </span>
                   <span
                     class="flex items-center gap-1 text-gray-400 text-[10px] xs:text-xs sm:text-sm"
                   >
                     <i class="far fa-comment"></i>
-                    <span>{{ post.comments | formatNumber }}</span>
+                    <span>{{ post.numeroComentarios | formatNumber }}</span>
                   </span>
                 </div>
                 <i
@@ -240,7 +417,7 @@
       </div>
     </section>
 
-    <div>
+    <div *ngIf="!pesquisaOcorreu && celebrityPosts.length > 0">
       <div
         class="trending-header flex justify-between items-center mb-3 sm:mb-4"
       >
@@ -249,16 +426,15 @@
         </h3>
       </div>
       <label [for]="'modal-1'" class="cursor-pointer">
-      <div
-        id="gridView"
-        class="post-grid animate-slideUp"
-        style="animation-delay: 0.6s"
-      >
-
+        <div
+          id="gridView"
+          class="post-grid animate-slideUp"
+          style="animation-delay: 0.6s"
+        >
           <!-- Post 1 -->
           <div class="post-card" *ngFor="let celebrity of celebrityPosts">
             <img
-              [src]="celebrity.image"
+              src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRV61NGGfrNzInHErojPbfVKVdx_KvNiT_bmg&s"
               alt="Post"
               class="post-card-img"
               (click)="openPostDetails(celebrity, $event)"
@@ -267,34 +443,37 @@
               <div class="flex-between mb-2">
                 <div class="flex-start gap-2">
                   <img
-                    [src]="celebrity.avatar"
+                    src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRV61NGGfrNzInHErojPbfVKVdx_KvNiT_bmg&s"
                     alt="Avatar"
                     class="w-6 h-6 rounded-full object-cover"
                   />
-                  <p class="small-medium">{{ celebrity.author }}</p>
+                  <p class="small-medium">{{ celebrity.autor.nome }}</p>
                 </div>
-                <span class="subtle-semibold text-light-3">6h</span>
+                <span class="subtle-semibold text-light-3">{{
+                  celebrity.dataCriacao | dateFormat
+                }}</span>
               </div>
               <h4 class="base-semibold mb-1 truncate">
-                {{ celebrity.text }}
+                {{ celebrity.legenda }}
               </h4>
               <div class="post-card-stats">
                 <span class="flex-center gap-1 text-light-3">
                   <i class="far fa-heart"></i>
-                  <small>{{ celebrity.likes | formatNumber }}</small>
+                  <small>{{ celebrity.numeroCurtidas | formatNumber }}</small>
                 </span>
                 <span class="flex-center gap-1 text-light-3">
                   <i class="far fa-comment"></i>
-                  <small>{{ celebrity.comments | formatNumber }}</small>
+                  <small>{{
+                    celebrity.numeroComentarios | formatNumber
+                  }}</small>
                 </span>
               </div>
             </div>
           </div>
-
-      </div>
-              </label>
+        </div>
+      </label>
     </div>
-    <div>
+    <div *ngIf="followedPeoplePosts.length > 0">
       <div
         class="trending-header flex justify-between items-center mb-3 sm:mb-4"
       >
@@ -305,48 +484,55 @@
       <div id="listView" class="post-list hidden">
         <!-- List Item 1 -->
         <label [for]="'modal-1'" class="cursor-pointer">
-        <div
-          class="post-list-item"
-          (click)="openPostDetails(followedPeople, $event)"
-          *ngFor="let followedPeople of followedPeoplePosts; let i = index"
-        >
-
-          <img [src]="followedPeople.image" alt="Post" class="post-list-img" />
-          <div class="post-list-content">
-            <div>
-              <div class="flex-between mb-2">
-                <div class="flex-start gap-2">
-                  <img
-                    [src]="followedPeople.avatar"
-                    alt="Avatar"
-                    class="w-6 h-6 rounded-full object-cover"
-                  />
-                  <p class="small-medium">{{ followedPeople.author }}</p>
+          <div
+            class="post-list-item"
+            (click)="openPostDetails(followedPeople, $event)"
+            *ngFor="let followedPeople of followedPeoplePosts; let i = index"
+          >
+            <img
+              src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRV61NGGfrNzInHErojPbfVKVdx_KvNiT_bmg&s"
+              alt="Post"
+              class="post-list-img"
+            />
+            <div class="post-list-content">
+              <div>
+                <div class="flex-between mb-2">
+                  <div class="flex-start gap-2">
+                    <img
+                      src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRV61NGGfrNzInHErojPbfVKVdx_KvNiT_bmg&s"
+                      alt="Avatar"
+                      class="w-6 h-6 rounded-full object-cover"
+                    />
+                    <p class="small-medium">{{ followedPeople.autor.nome }}</p>
+                  </div>
+                  <span class="subtle-semibold text-light-3">6h</span>
                 </div>
-                <span class="subtle-semibold text-light-3">6h</span>
+                <h4 class="base-semibold mb-1">
+                  {{ followedPeople.legenda }}
+                </h4>
+                <p class="small-medium text-light-3 mb-2 line-clamp-2">
+                  {{ followedPeople.tags }}
+                </p>
               </div>
-              <h4 class="base-semibold mb-1">
-                {{ followedPeople.text }}
-              </h4>
-              <p class="small-medium text-light-3 mb-2 line-clamp-2">
-                {{ followedPeople.tags }}
-              </p>
-            </div>
-            <div class="flex-between">
-              <div class="flex gap-3">
-                <span class="flex-center gap-1 text-light-3">
-                  <i class="far fa-heart"></i>
-                  <small>{{ followedPeople.likes | formatNumber }}</small>
-                </span>
-                <span class="flex-center gap-1 text-light-3">
-                  <i class="far fa-comment"></i>
-                  <small>{{ followedPeople.comments | formatNumber }}</small>
-                </span>
+              <div class="flex-between">
+                <div class="flex gap-3">
+                  <span class="flex-center gap-1 text-light-3">
+                    <i class="far fa-heart"></i>
+                    <small>{{
+                      followedPeople.numeroCurtidas | formatNumber
+                    }}</small>
+                  </span>
+                  <span class="flex-center gap-1 text-light-3">
+                    <i class="far fa-comment"></i>
+                    <small>{{
+                      followedPeople.numeroComentarios | formatNumber
+                    }}</small>
+                  </span>
+                </div>
+                <i class="far fa-bookmark text-light-3"></i>
               </div>
-              <i class="far fa-bookmark text-light-3"></i>
             </div>
           </div>
-        </div>
         </label>
       </div>
     </div>
@@ -357,6 +543,6 @@
   </div>
   <app-post-details
     [postSelected]="postSelected"
-      [modalId]="'modal-1'"
+    [modalId]="'modal-1'"
   ></app-post-details>
 </div>

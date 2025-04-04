@@ -14,6 +14,8 @@ public class PostSummaryDTO {
     private ArquivoDTO imagemPrincipal; // Trocar String por ArquivoDTO
     private Date dataCriacao;
     private UsuarioSummaryDTO autor;
+    private String localizacao;
+    private String legenda;
     private Long numeroCurtidas;
     private Long numeroComentarios;
 }

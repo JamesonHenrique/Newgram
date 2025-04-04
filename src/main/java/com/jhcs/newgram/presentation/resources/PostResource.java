@@ -112,7 +112,74 @@ public class PostResource {
         Page<PostSummaryDTO> posts = postService.listarPostsPopulares(pageable, usuario.getId());
         return ResponseEntity.ok(posts);
     }
+    @GetMapping("/recomendados")
+    @Operation(summary = "Listar posts recomendados",
+            description = "Retorna posts personalizados baseados nos interesses e interações do usuário")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Posts recomendados listados com sucesso",
+                    content = @Content(schema = @Schema(implementation = Page.class))),
+            @ApiResponse(responseCode = "401", description = "Não autorizado",
+                    content = @Content)
+    })
+    public ResponseEntity<Page<PostSummaryDTO>> listarPostsRecomendados(
+            @AuthenticationPrincipal Usuario usuario,
+            @Parameter(description = "Parâmetros de paginação (page=0, size=10)")
+            @PageableDefault(page = 0, size = 10) Pageable pageable) {
 
+        Page<PostSummaryDTO> posts = postService.listarPostsRecomendados(usuario.getId(), pageable);
+        return ResponseEntity.ok(posts);
+    }
+    @GetMapping("/buscar")
+    @Operation(summary = "Buscar posts por legenda", description = "Retorna posts que contêm o termo buscado na legenda")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Posts encontrados com sucesso",
+                    content = @Content(schema = @Schema(implementation = Page.class))),
+            @ApiResponse(responseCode = "401", description = "Não autorizado",
+                    content = @Content)
+    })
+    public ResponseEntity<Page<PostSummaryDTO>> buscarPostsPorLegenda(
+            @Parameter(description = "Termo a ser buscado na legenda", required = true)
+            @RequestParam String termo,
+            @AuthenticationPrincipal Usuario usuario,
+            @Parameter(description = "Parâmetros de paginação (page=0, size=10, sort=dataCriacao,desc)")
+            @PageableDefault(page = 0, size = 10, sort = "dataCriacao", direction = Sort.Direction.DESC) Pageable pageable) {
+
+        Page<PostSummaryDTO> posts = postService.listarPostsPorLegenda(termo, pageable, usuario.getId());
+        return ResponseEntity.ok(posts);
+    }
+    @GetMapping("/tendencias")
+    @Operation(summary = "Listar posts em tendência", description = "Retorna os posts que estão em tendência na plataforma baseado em engajamento recente")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Posts em tendência listados com sucesso",
+                    content = @Content(schema = @Schema(implementation = Page.class))),
+            @ApiResponse(responseCode = "401", description = "Não autorizado",
+                    content = @Content)
+    })
+    public ResponseEntity<Page<PostSummaryDTO>> listarPostsTendencias(
+            @AuthenticationPrincipal Usuario usuario,
+            @Parameter(description = "Parâmetros de paginação (page=0, size=10, sort=dataCriacao,desc)")
+            @PageableDefault(page = 0, size = 10, sort = "dataCriacao", direction = Sort.Direction.DESC) Pageable pageable) {
+
+        Page<PostSummaryDTO> posts = postService.listarPostsTendencias(pageable, usuario.getId());
+        return ResponseEntity.ok(posts);
+    }
+    @GetMapping("/seguidos-populares")
+    @Operation(summary = "Listar posts populares de seguidos",
+            description = "Retorna os posts mais populares dos usuários que o usuário autenticado segue")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Posts populares dos seguidos listados com sucesso",
+                    content = @Content(schema = @Schema(implementation = Page.class))),
+            @ApiResponse(responseCode = "401", description = "Não autorizado",
+                    content = @Content)
+    })
+    public ResponseEntity<Page<PostSummaryDTO>> listarPostsPopularesSeguidores(
+            @AuthenticationPrincipal Usuario usuario,
+            @Parameter(description = "Parâmetros de paginação (page=0, size=10, sort=dataCriacao,desc)")
+            @PageableDefault(page = 0, size = 10, sort = "dataCriacao", direction = Sort.Direction.DESC) Pageable pageable) {
+
+        Page<PostSummaryDTO> posts = postService.listarPostsPopularesSeguidores(usuario.getId(), pageable);
+        return ResponseEntity.ok(posts);
+    }
     @GetMapping("/hashtag/{nome}")
     @Operation(summary = "Listar posts por hashtag", description = "Retorna posts que contêm uma hashtag específica")
     @ApiResponses(value = {

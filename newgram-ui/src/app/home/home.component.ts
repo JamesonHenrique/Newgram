@@ -4,17 +4,21 @@ import { Router } from '@angular/router';
 import { PostDetailsComponent } from '../post-details/post-details.component';
 import { Title } from '@angular/platform-browser';
 import { FormatNumberPipe } from '../format-number.pipe';
+import { PostsService } from '../services/services';
+import { Pageable } from '../services/models';
+import { DateFormatPipe } from '../services/pipes/date-format-pipe';
 
 @Component({
   selector: 'app-home',
-  imports: [CommonModule, PostDetailsComponent, FormatNumberPipe],
+  imports: [CommonModule, PostDetailsComponent, FormatNumberPipe, DateFormatPipe],
   templateUrl: './home.component.html',
   styleUrl: './home.component.css'
 })
 export class HomeComponent {
-  constructor(private title:  Title) {}
+  constructor(private title:  Title, private postsService: PostsService) {}
   ngOnInit(): void {
     this.title.setTitle('Feed');
+    this.listFeed();
   }
   postSelected:any = []
   selectedIndex:any = []
@@ -35,7 +39,7 @@ export class HomeComponent {
     'gastronomia'
   ]
 
-  posts = [
+  postss = [
     {
       id: 1,
       avatar: 'https://www.cnnbrasil.com.br/wp-content/uploads/sites/12/2025/01/santos-neymar_ce226e-e1738361128243.jpg?w=1200&h=1200&crop=1',
@@ -116,13 +120,17 @@ otherUsers = [
   },
 
 ]
+posts: any[] = [];
   selectedPost: any = null;
   showDetail = false;
-
+  pageable: Pageable = {
+    page: 0,
+    size: 10,
+    sort: ['string'],
+  };
   openPostDetails(post: any, event: Event) {
     this.postSelected = post;
   }
-
   toggleLike(post: any, event: Event) {
     event.stopPropagation();
     post.isAnimating = true;
@@ -135,6 +143,15 @@ otherUsers = [
   toggleFavorite(post: any, event: Event) {
     event.stopPropagation();
     post.isFavorite = !post.isFavorite;
+  }
+  listFeed() {
+    this.postsService.listarFeed(
+      {
+        pageable: this.pageable
+      }
+    ).subscribe((response) => {
+      this.posts = response.content || [];
+    });
   }
 
 }

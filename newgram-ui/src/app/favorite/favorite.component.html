@@ -167,14 +167,17 @@
         class="post-grid animate-slideUp"
         style="animation-delay: 0.3s"
       >
-        <!-- Post 1 -->
-        <div class="post-card" *ngFor="let post of savedPosts">
-          <img [src]="post.image" alt="Post" class="post-card-img" />
 
-          <!-- Avatar (canto superior esquerdo) -->
+        <div class="post-card" *ngFor="let post of savedPosts; let i = index" (click)="openModal(post, i)">
+          <label [for]="'modal-1'" class="cursor-pointer">
+          <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRV61NGGfrNzInHErojPbfVKVdx_KvNiT_bmg&s"
+          alt="Post" class="post-card-img" />
+
+
           <div class="absolute bottom-3 left-3 z-10">
             <img
-              [src]="post.avatar"
+
+            src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRV61NGGfrNzInHErojPbfVKVdx_KvNiT_bmg&s"
               alt="Avatar"
               class="w-8 h-8 rounded-full object-cover shadow-md hover:scale-110 hover:border-primary-500 transition-all duration-300"
             />
@@ -197,9 +200,14 @@
               </button>
             </div>
           </div>
+        </label>
         </div>
-      </div>
 
+      </div>
+      <app-post-details
+      [postSelected]="postSelected"
+      [modalId]="'modal-1'"
+    ></app-post-details>
       <!-- More list items would follow the same pattern -->
 
       <!-- Empty State (Hidden by default) -->

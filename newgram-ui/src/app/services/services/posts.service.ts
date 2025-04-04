@@ -33,6 +33,8 @@ import { listarPostsDoUsuario } from '../fn/posts/listar-posts-do-usuario';
 import { ListarPostsDoUsuario$Params } from '../fn/posts/listar-posts-do-usuario';
 import { listarPostsPopulares } from '../fn/posts/listar-posts-populares';
 import { ListarPostsPopulares$Params } from '../fn/posts/listar-posts-populares';
+import { listarPostsPopularesSeguidores } from '../fn/posts/listar-posts-populares-seguidores';
+import { ListarPostsPopularesSeguidores$Params } from '../fn/posts/listar-posts-populares-seguidores';
 import { listarPostsPorHashtag } from '../fn/posts/listar-posts-por-hashtag';
 import { ListarPostsPorHashtag$Params } from '../fn/posts/listar-posts-por-hashtag';
 import { listarPostsPorLocalizacao } from '../fn/posts/listar-posts-por-localizacao';
@@ -41,12 +43,16 @@ import { listarPostsSalvos } from '../fn/posts/listar-posts-salvos';
 import { ListarPostsSalvos$Params } from '../fn/posts/listar-posts-salvos';
 import { listarPostsSalvosPorColecao } from '../fn/posts/listar-posts-salvos-por-colecao';
 import { ListarPostsSalvosPorColecao$Params } from '../fn/posts/listar-posts-salvos-por-colecao';
+import { listarPostsTendencias } from '../fn/posts/listar-posts-tendencias';
+import { ListarPostsTendencias$Params } from '../fn/posts/listar-posts-tendencias';
 import { Page } from '../models/page';
 import { PostResponseDto } from '../models/post-response-dto';
 import { removerPostSalvo } from '../fn/posts/remover-post-salvo';
 import { RemoverPostSalvo$Params } from '../fn/posts/remover-post-salvo';
 import { salvarPost } from '../fn/posts/salvar-post';
 import { SalvarPost$Params } from '../fn/posts/salvar-post';
+import { listarPostsPorLegenda, ListarPostsPorLegenda$Params } from '../fn/posts/listar-posts-por-legenda';
+import { listarPostsRecomendados, ListarPostsRecomendados$Params } from '../fn/posts/listar-post-recomendados';
 
 
 /**
@@ -355,6 +361,72 @@ export class PostsService extends BaseService {
     );
   }
 
+  /** Path part for operation `listarPostsTendencias()` */
+  static readonly ListarPostsTendenciasPath = '/posts/tendencias';
+
+  /**
+   * Listar posts em tendência.
+   *
+   * Retorna os posts que estão em tendência na plataforma baseado em engajamento recente
+   *
+   * This method provides access to the full `HttpResponse`, allowing access to response headers.
+   * To access only the response body, use `listarPostsTendencias()` instead.
+   *
+   * This method doesn't expect any request body.
+   */
+  listarPostsTendencias$Response(params: ListarPostsTendencias$Params, context?: HttpContext): Observable<StrictHttpResponse<Page>> {
+    return listarPostsTendencias(this.http, this.rootUrl, params, context);
+  }
+
+  /**
+   * Listar posts em tendência.
+   *
+   * Retorna os posts que estão em tendência na plataforma baseado em engajamento recente
+   *
+   * This method provides access only to the response body.
+   * To access the full response (for headers, for example), `listarPostsTendencias$Response()` instead.
+   *
+   * This method doesn't expect any request body.
+   */
+  listarPostsTendencias(params: ListarPostsTendencias$Params, context?: HttpContext): Observable<Page> {
+    return this.listarPostsTendencias$Response(params, context).pipe(
+      map((r: StrictHttpResponse<Page>): Page => r.body)
+    );
+  }
+
+  /** Path part for operation `listarPostsPopularesSeguidores()` */
+  static readonly ListarPostsPopularesSeguidoresPath = '/posts/seguidos-populares';
+
+  /**
+   * Listar posts populares de seguidos.
+   *
+   * Retorna os posts mais populares dos usuários que o usuário autenticado segue
+   *
+   * This method provides access to the full `HttpResponse`, allowing access to response headers.
+   * To access only the response body, use `listarPostsPopularesSeguidores()` instead.
+   *
+   * This method doesn't expect any request body.
+   */
+  listarPostsPopularesSeguidores$Response(params: ListarPostsPopularesSeguidores$Params, context?: HttpContext): Observable<StrictHttpResponse<Page>> {
+    return listarPostsPopularesSeguidores(this.http, this.rootUrl, params, context);
+  }
+
+  /**
+   * Listar posts populares de seguidos.
+   *
+   * Retorna os posts mais populares dos usuários que o usuário autenticado segue
+   *
+   * This method provides access only to the response body.
+   * To access the full response (for headers, for example), `listarPostsPopularesSeguidores$Response()` instead.
+   *
+   * This method doesn't expect any request body.
+   */
+  listarPostsPopularesSeguidores(params: ListarPostsPopularesSeguidores$Params, context?: HttpContext): Observable<Page> {
+    return this.listarPostsPopularesSeguidores$Response(params, context).pipe(
+      map((r: StrictHttpResponse<Page>): Page => r.body)
+    );
+  }
+
   /** Path part for operation `listarPostsSalvos()` */
   static readonly ListarPostsSalvosPath = '/posts/salvos';
 
@@ -454,6 +526,19 @@ export class PostsService extends BaseService {
     );
   }
 
+  static readonly ListarPostsRecomendadosPath = '/posts/recomendados';
+
+
+  listarPostsRecomendados$Response(params:  ListarPostsRecomendados$Params, context?: HttpContext): Observable<StrictHttpResponse<Page>> {
+    return listarPostsRecomendados(this.http, this.rootUrl, params, context);
+  }
+
+  listarPostsRecomendados(params: ListarPostsRecomendados$Params, context?: HttpContext): Observable<Page> {
+    return this.listarPostsRecomendados$Response(params, context).pipe(
+      map((r: StrictHttpResponse<Page>): Page => r.body)
+    );
+  }
+
   /** Path part for operation `listarPostsPorLocalizacao()` */
   static readonly ListarPostsPorLocalizacaoPath = '/posts/localizacao';
 
@@ -486,7 +571,38 @@ export class PostsService extends BaseService {
       map((r: StrictHttpResponse<Page>): Page => r.body)
     );
   }
+  /** Path part for operation `listarPostsPorLocalizacao()` */
+  static readonly ListarPostsPorLegendaPath = '/posts/localizacao';
 
+  /**
+   * Listar posts por localização.
+   *
+   * Retorna posts associados a uma localização específica
+   *
+   * This method provides access to the full `HttpResponse`, allowing access to response headers.
+   * To access only the response body, use `listarPostsPorLocalizacao()` instead.
+   *
+   * This method doesn't expect any request body.
+   */
+listarPostsPorLegenda$Response(params: ListarPostsPorLegenda$Params, context?: HttpContext): Observable<StrictHttpResponse<Page>> {
+  return listarPostsPorLegenda(this.http, this.rootUrl, params, context);
+}
+
+  /**
+   * Listar posts por localização.
+   *
+   * Retorna posts associados a uma localização específica
+   *
+   * This method provides access only to the response body.
+   * To access the full response (for headers, for example), `listarPostsPorLocalizacao$Response()` instead.
+   *
+   * This method doesn't expect any request body.
+   */
+  listarPostsPorLegenda(params: ListarPostsPorLegenda$Params, context?: HttpContext): Observable<Page> {
+    return this.listarPostsPorLegenda$Response(params, context).pipe(
+      map((r: StrictHttpResponse<Page>): Page => r.body)
+    );
+  }
   /** Path part for operation `listarPostsPorHashtag()` */
   static readonly ListarPostsPorHashtagPath = '/posts/hashtag/{nome}';
 

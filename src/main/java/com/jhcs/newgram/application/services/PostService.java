@@ -17,14 +17,15 @@ import com.jhcs.newgram.infrastructure.exception.BusinessException;
 import com.jhcs.newgram.infrastructure.exception.ResourceNotFoundException;
 import com.jhcs.newgram.infrastructure.exception.UnauthorizedException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
+import org.springframework.cglib.core.Local;
+import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.sql.Timestamp;
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -184,7 +185,33 @@ public class PostService {
 
         return converterParaResponseDTO(post, usuarioId);
     }
+    @Transactional(readOnly = true)
+    public Page<PostSummaryDTO> listarPostsRecomendados(Long usuarioId, Pageable pageable) {
 
+        Pageable safePageable = PageRequest.of(
+                pageable.getPageNumber(),
+                pageable.getPageSize(),
+                Sort.unsorted()
+        );
+        Page<Post> posts = postRepository.buscarPostsRecomendadosParaUsuario(
+                usuarioId,
+                safePageable
+        );
+
+        // Converter para DTOs
+        return posts.map(post -> converterParaSummaryDTO(post, usuarioId));
+    }
+    @Transactional(readOnly = true)
+    public Page<PostSummaryDTO> listarPostsPorLegenda(String termo, Pageable pageable, Long usuarioId) {
+        Sort sort = Sort.by(Sort.Direction.DESC, "dataCriacao");
+        Pageable safePageable = PageRequest.of(
+                pageable.getPageNumber(),
+                pageable.getPageSize(),
+                sort
+        );
+        Page<Post> posts = postRepository.buscarPostsPorLegenda(termo, safePageable);
+        return posts.map(post -> converterParaSummaryDTO(post, usuarioId));
+    }
     @Transactional(readOnly = true)
     public Page<PostSummaryDTO> listarPostsDoUsuario(Long usuarioId, Pageable pageable, Long usuarioLogadoId) {
         Sort sort = Sort.by(Sort.Direction.DESC, "dataCriacao");
@@ -211,16 +238,47 @@ public class PostService {
 
     @Transactional(readOnly = true)
     public Page<PostSummaryDTO> listarPostsPopulares(Pageable pageable, Long usuarioId) {
+
+        Pageable safePageable = PageRequest.of(
+                pageable.getPageNumber(),
+                pageable.getPageSize(),
+                Sort.unsorted()
+        );
+        Page<Post> posts = postRepository.findPostsPopulares(safePageable);
+        return posts.map(post -> converterParaSummaryDTO(post, usuarioId));
+    }
+    @Transactional(readOnly = true)
+    public Page<PostSummaryDTO> listarPostsTendencias(Pageable pageable, Long usuarioId) {
+        LocalDateTime dataCorte = LocalDateTime.now().minusHours(48);
+        int minimoInteracoes = 10;
+
+        List<Post> posts = postRepository.findPostsTendencias(
+                dataCorte,
+                minimoInteracoes,
+                pageable.getPageSize(),
+                (int) pageable.getOffset()
+        );
+
+        long total = postRepository.countPostsTendencias(dataCorte, minimoInteracoes);
+
+        List<PostSummaryDTO> dtos = posts.stream()
+                .map(post -> converterParaSummaryDTO(post, usuarioId))
+                .collect(Collectors.toList());
+
+        return new PageImpl<>(dtos, pageable, total);
+    }
+    @Transactional(readOnly = true)
+    public Page<PostSummaryDTO> listarPostsPopularesSeguidores(Long usuarioId, Pageable pageable) {
         Sort sort = Sort.by(Sort.Direction.DESC, "dataCriacao");
         Pageable safePageable = PageRequest.of(
                 pageable.getPageNumber(),
                 pageable.getPageSize(),
                 sort
         );
-        Page<Post> posts = postRepository.findPostsPopulares(safePageable);
+
+        Page<Post> posts = postRepository.findPopularPostsFromFollowing(usuarioId, safePageable);
         return posts.map(post -> converterParaSummaryDTO(post, usuarioId));
     }
-
     @Transactional(readOnly = true)
     public Page<PostSummaryDTO> listarPostsPorHashtag(String hashtag, Pageable pageable, Long usuarioId) {
         Sort sort = Sort.by(Sort.Direction.DESC, "dataCriacao");
@@ -451,6 +509,9 @@ public class PostService {
                 Arquivo.TipoEntidadeRelacionada.POST,
                 post.getId()
         );
+        dto.setLegenda(post.getLegenda());
+        dto.setLocalizacao(post.getLocalizacao());
+
         dto.setImagemPrincipal(arquivos.isEmpty() ? null : arquivos.get(0));
         dto.setNumeroCurtidas(curtidaRepository.countByPostId(post.getId()));
         dto.setNumeroComentarios(comentarioRepository.countByPostId(post.getId()));

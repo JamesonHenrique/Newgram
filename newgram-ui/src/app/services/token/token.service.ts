@@ -1,7 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { JwtHelperService } from '@auth0/angular-jwt';
-import { Observable, catchError, tap, throwError } from 'rxjs';
+import { Observable, catchError, of, tap, throwError } from 'rxjs';
 
 interface TokenResponse {
   accessToken: string;
@@ -93,5 +93,23 @@ export class TokenService {
   hasRequiredRole(requiredRoles: string[]): boolean {
     const userRoles = this.userRoles;
     return requiredRoles.some(role => userRoles.includes(role));
+  }
+  isTokenAboutToExpire(minutesBefore = 5): boolean {
+    if (!this.token) return true;
+
+    const expirationDate = this.jwtHelper.getTokenExpirationDate(this.token);
+    if (!expirationDate) return true;
+
+    const now = new Date();
+    const threshold = new Date(now.getTime() + minutesBefore * 60 * 1000);
+    return expirationDate <= threshold;
+  }
+
+  // Método para renovar o token se estiver prestes a expirar
+  renewTokenIfAboutToExpire(): Observable<TokenResponse | null> {
+    if (!this.isTokenAboutToExpire() || !this.refreshToken) {
+      return of(null);
+    }
+    return this.renewToken();
   }
 }

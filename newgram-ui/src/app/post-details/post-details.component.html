@@ -19,42 +19,42 @@
       <div class="flex-between p-4 border-b border-dark-4">
         <div class="flex-start gap-3">
           <img
-            [src]="postSelected.avatar"
+            src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRV61NGGfrNzInHErojPbfVKVdx_KvNiT_bmg&s"
             alt="Avatar do Usuário"
             class="w-12 h-12 rounded-full object-cover border border-primary-custom"
           />
           <div>
-            <h4 class="base-semibold">{{ postSelected.author }}</h4>
+            <h4 class="base-semibold">{{ postSelected.autor?.nome }}</h4>
             <div class="flex gap-2 small-medium text-light-3">
-              <span>{{ postSelected.time }}</span>
+              <span>{{ postSelected.dataCriacao | dateFormat }}</span>
               <span>•</span>
-              <span>{{ postSelected.location }}</span>
+              <span>{{ postSelected.localizacao }}</span>
             </div>
           </div>
         </div>
       </div>
 
       <img
-        [src]="postSelected.image"
+        src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRV61NGGfrNzInHErojPbfVKVdx_KvNiT_bmg&s"
         alt="Imagem do Post"
         class="post-detail-image"
       />
 
       <div class="post-detail-info">
-        <p class="base-medium mb-3">{{ postSelected.text }}</p>
+        <p class="base-medium mb-3">{{ postSelected.legenda }}</p>
         <p class="base-medium mb-3 text-principal">{{ postSelected.tags }}</p>
         <div class="flex gap-2 flex-wrap mt-4"></div>
         <div class="flex-between mt-6">
           <div class="flex gap-2 items-center">
             <i class="fas fa-heart text-red"></i>
             <span class="small-medium">
-              {{ postSelected?.likes | formatNumber }} curtidas
+              {{ postSelected.numeroCurtidas | formatNumber }} curtidas
             </span>
           </div>
           <span class="small-medium text-light-3">
-            {{ postSelected?.comments | formatNumber }} comentários
+            {{ postSelected.numeroComentarios | formatNumber }} comentários
           </span>
-          >
+          
         </div>
       </div>
     </div>

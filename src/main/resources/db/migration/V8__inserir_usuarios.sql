@@ -1,6 +1,6 @@
 -- Inserir usuários
 INSERT INTO usuario (nome, username, email, senha, bio, data_criacao) VALUES
-('Rodrigo Faro', 'rodrigofaro', 'rodrigo@exemplo.com', '$2a$10$hKDVYxLefVHV/vtuPhWD3OigtRyOykRLDdUAp80Z1crSoS1lFqaFS', 'Apresentador e empresário', '2025-03-01'),
+('Rodrigo Faro', 'rodrigofaro', 'rodrigo@exemplo.com', '$2a$10$up1Fz5FymSble4vxQsPDf.3qLiu18limnVW5d5GMW/BpRXgyarOQW', 'Apresentador e empresário', '2025-03-01'),
 ('Sabrina Sato', 'sabrinasato', 'sabrina@exemplo.com', '$2a$10$hKDVYxLefVHV/vtuPhWD3OigtRyOykRLDdUAp80Z1crSoS1lFqaFS', 'Apresentadora, ex-BBB e empresária', '2025-03-02'),
 ('Luciano Huck', 'lucianohuck', 'luciano@exemplo.com', '$2a$10$hKDVYxLefVHV/vtuPhWD3OigtRyOykRLDdUAp80Z1crSoS1lFqaFS', 'Apresentador e empreendedor social', '2025-03-03'),
 ('Ivete Sangalo', 'ivetesangalo', 'ivete@exemplo.com', '$2a$10$hKDVYxLefVHV/vtuPhWD3OigtRyOykRLDdUAp80Z1crSoS1lFqaFS', 'Cantora e apresentadora', '2025-03-04'),

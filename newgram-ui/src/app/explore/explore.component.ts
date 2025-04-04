@@ -1,24 +1,37 @@
+import { Pageable } from './../services/models/pageable';
+import { PostsService } from './../services/services/posts.service';
 import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
 import { PostDetailsComponent } from '../post-details/post-details.component';
 import { Title } from '@angular/platform-browser';
 import { FormatNumberPipe } from '../format-number.pipe';
+import { DateFormatPipe } from "../services/pipes/date-format-pipe";
+import { FormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-explore',
-  imports: [CommonModule, PostDetailsComponent, FormatNumberPipe],
+  imports: [CommonModule, PostDetailsComponent, FormatNumberPipe, DateFormatPipe, FormsModule],
   templateUrl: './explore.component.html',
   styleUrl: './explore.component.css'
 })
 export class ExploreComponent {
-  constructor(private title:Title) {
+  constructor(private title:Title, private postsService: PostsService) {
     this.title.setTitle('Explore');
   }
   postSelected: any = null;
   selectedIndex: any = null;
   selectedPost: any = null;
   selectedPostType: string = '';
-  viralPosts = [
+  pageable: Pageable = {
+    page: 0,
+    size: 10,
+    sort: ['string'],
+  };
+  celebrityPosts: any[] = [];
+  viralPosts: any[] = [];
+  followedPeoplePosts: any[] = [];
+
+  viralPostss = [
   {
     id: 1,
     author: 'Whindersson Nunes',
@@ -63,7 +76,7 @@ export class ExploreComponent {
   }
 ];
 
-celebrityPosts = [
+celebrityPostss = [
   {
     id: 1,
     author: 'Ivete Sangalo',
@@ -108,7 +121,7 @@ celebrityPosts = [
   }
 ];
 
-followedPeoplePosts = [
+followedPeoplePostss = [
   {
     id: 1,
     author: 'Sabrina Sato',
@@ -168,6 +181,19 @@ popularTags = [
   'TV',
   'Entretenimento'
 ]
+termo: string = '';
+postsPorLegenda: any[] = [];
+postsRecomendados: any[] = [];
+get pesquisaOcorreu(): boolean {
+  return this.termo.length > 0;
+}
+ngOnInit(): void {
+  this.listCelebritiesPost();
+  this.listViralPost();
+  this.listFollowedPeoplePost();
+  this.listPostRecomendados();
+
+}
 openModal(post: any, index: number) {
   this.postSelected = post;
   this.selectedIndex = index;
@@ -180,5 +206,51 @@ openPostDetails(post: any, event: Event) {
 
 getModalId(): string {
   return `modal-${this.selectedPostType}-${this.selectedIndex}`;
+}
+listPostRecomendados() {
+  this.postsService.listarPostsRecomendados(
+    {
+      pageable: this.pageable
+    }
+  ).subscribe((response) => {
+    this.postsRecomendados = response.content || [];
+  });
+}
+listPostsByLegenda() {
+  this.postsService.listarPostsPorLegenda(
+    {
+      termo: this.termo,
+      pageable: this.pageable
+    }
+  ).subscribe((response) => {
+    this.postsPorLegenda = response.content || [];
+  });
+}
+listCelebritiesPost() {
+  this.postsService.listarPostsPopulares(
+    {
+      pageable: this.pageable
+    }
+  ).subscribe((response) => {
+    this.celebrityPosts = response.content || [];
+  });
+}
+listViralPost() {
+  this.postsService.listarPostsTendencias(
+    {
+      pageable: this.pageable
+    }
+  ).subscribe((response) => {
+    this.viralPosts = response.content || [];
+  });
+}
+listFollowedPeoplePost() {
+  this.postsService.listarPostsPopularesSeguidores(
+    {
+      pageable: this.pageable
+    }
+  ).subscribe((response) => {
+    this.followedPeoplePosts = response.content || [];
+  });
 }
 }
