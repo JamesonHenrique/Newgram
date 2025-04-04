@@ -182,6 +182,6 @@ Este projeto está sob a licença MIT - veja o arquivo [LICENSE](LICENSE) para d
 
 Se este projeto te ajudou, considere dar uma estrela!
 
-[ Voltar ao topo](#sobre)
+[ Voltar ao topo](#indice)
 
 </div>
