@@ -1,6 +1,5 @@
-Aqui está o seu README aprimorado com recursos avançados do Markdown, mantendo todo o conteúdo original:
 
-```markdown
+
 # ✨ Newgram - Uma Plataforma Moderna de Compartilhamento e Conexão
 
 <!-- Banner animado com shields personalizados -->
