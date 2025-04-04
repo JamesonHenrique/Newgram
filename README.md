@@ -1,135 +1,183 @@
-<!-- Newgram Project README -->
-<style>
-    body {
-        font-family: 'Arial', sans-serif;
-        line-height: 1.6;
-        max-width: 800px;
-        margin: 0 auto;
-        padding: 20px;
-        color: #333;
-        background-color: #f4f4f4;
-    }
-    .header {
-        background-color: #4a4a4a;
-        color: white;
-        text-align: center;
-        padding: 1rem;
-        border-radius: 5px;
-    }
-    .section {
-        background-color: white;
-        margin: 15px 0;
-        padding: 20px;
-        border-radius: 5px;
-        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-    }
-    .badge {
-        display: inline-block;
-        padding: 5px 10px;
-        margin: 5px;
-        background-color: #007bff;
-        color: white;
-        border-radius: 3px;
-        text-decoration: none;
-    }
-    .technologies {
-        display: flex;
-        flex-wrap: wrap;
-        justify-content: center;
-        gap: 10px;
-    }
-    .technologies img {
-        width: 50px;
-        height: 50px;
-        object-fit: contain;
-    }
-</style>
+# <img src="newgram-ui/public/favicon.ico" alt="Logo" width="35" height="35"> Newgram
 
-<div class="header">
-    <h1>🌐 Newgram</h1>
-    <p>Uma plataforma social moderna e inovadora</p>
+## Índice
+
+<div align="center">
+
+| Essenciais                          | Desenvolvimento             | Documentação                  |
+| -------------------------------------- | ------------------------------ | -------------------------------- |
+| [Sobre](#sobre)                     | [Tecnologias](#tecnologias) | [API](#api)                   |
+| [Funcionalidades](#funcionalidades) | [Requisitos](#requisitos)   | [Contribuição](#contribuindo) |
+| [Objetivos](#objetivos)             | [Instalação](#instalação)   | [Licença](#licença)           |
+
 </div>
 
-<div class="section">
-    <h2>📋 Índice</h2>
-    <ul>
-        <li><a href="#sobre">Sobre o Projeto</a></li>
-        <li><a href="#funcionalidades">Funcionalidades</a></li>
-        <li><a href="#tecnologias">Tecnologias Utilizadas</a></li>
-        <li><a href="#instalacao">Instalação</a></li>
-        <li><a href="#uso">Como Usar</a></li>
-        <li><a href="#contribuicao">Contribuição</a></li>
-        <li><a href="#licenca">Licença</a></li>
-    </ul>
-</div>
+## Sobre
 
-<div id="sobre" class="section">
-    <h2>🚀 Sobre o Projeto</h2>
-    <p>Newgram é uma plataforma social moderna que permite aos usuários conectar, compartilhar e interagir de maneiras inovadoras. Desenvolvido com tecnologias de ponta, o Newgram oferece uma experiência de usuário única e envolvente.</p>
-</div>
+Newgram é uma aplicação web de compartilhamento e descoberta de conteúdo, focada em conectar pessoas através de interesses comuns e experiências compartilhadas. A plataforma permite aos usuários explorar, favoritar e interagir com diversos tipos de conteúdo de forma intuitiva e envolvente.
 
-<div id="funcionalidades" class="section">
-    <h2>✨ Funcionalidades</h2>
-    <ul>
-        <li>🤝 Criação de perfil personalizado</li>
-        <li>📸 Compartilhamento de conteúdo</li>
-        <li>❤️ Sistema de curtidas e comentários</li>
-        <li>🔍 Exploração de conteúdo</li>
-        <li>💬 Mensagens diretas</li>
-        <li>🌟 Favoritos e marcações</li>
-    </ul>
-</div>
+### Objetivos
 
-<div id="tecnologias" class="section">
-    <h2>�️ Tecnologias Utilizadas</h2>
-    <div class="technologies">
-        <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/typescript/typescript-original.svg" alt="TypeScript">
-        <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/angular/angular-original.svg" alt="Angular">
-        <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/nodejs/nodejs-original.svg" alt="Node.js">
-        <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/mongodb/mongodb-original.svg" alt="MongoDB">
-    </div>
-</div>
+- Criar uma plataforma de descoberta de conteúdo personalizada
+- Facilitar a conexão entre usuários com interesses semelhantes
+- Oferecer uma experiência de navegação intuitiva e agradável
+- Permitir interações significativas através de favoritos e exploração
+- Promover a diversidade de conteúdo
 
-<div id="instalacao" class="section">
-    <h2>🔧 Instalação</h2>
-    <pre><code>
-# Clone o repositório
+
+### Diferenciais
+
+- Interface moderna e responsiva
+- Sistema de recomendação personalizado
+- Exploração de conteúdo intuitiva
+- Funcionalidade de favoritos
+- Design minimalista e elegante
+- Carregamento rápido e eficiente
+
+## Tecnologias
+
+### Backend
+
+- Java 17
+- Spring Boot
+- Spring Security
+- Spring Data JPA
+- PostgreSQL
+- Flyway
+- Maven
+- Swagger
+- JWT Authentication
+
+### Frontend
+
+- TypeScript
+- Angular
+- RxJS
+- Angular Material
+- Tailwind CSS
+- Responsive Design
+- Angular JWT
+- WebSocket para atualizações em tempo real
+
+## Funcionalidades
+
+### Autenticação
+
+- Registro de usuários
+- Login seguro
+- Recuperação de senha
+- Autenticação JWT
+
+### Exploração de Conteúdo
+
+- Feed personalizado
+- Filtros de busca avançados
+- Recomendações baseadas em interesses
+- Visualização detalhada de conteúdo
+
+### Favoritos
+
+- Adicionar e remover favoritos
+- Categorização de favoritos
+- Sincronização entre dispositivos
+- Compartilhamento de favoritos
+
+### Perfil de Usuário
+
+- Personalização de perfil
+- Histórico de interações
+- Configurações de privacidade
+- Estatísticas de uso
+
+### Notificações
+
+- Notificações em tempo real
+- Alertas personalizados
+- Configurações de notificação
+
+## Requisitos
+
+- Java 17+
+- Node.js 18+
+- Angular CLI
+- PostgreSQL 12+
+- Maven 3.6+
+
+## Instalação
+
+### Backend
+
+1. Clone o repositório:
+
+```bash
 git clone https://github.com/JamesonHenrique/Newgram.git
+cd newgram
+```
 
-# Instale as dependências
-cd Newgram
+2. Configure o banco de dados PostgreSQL no arquivo `src/main/resources/application.yml`
+
+3. Execute o backend:
+
+```bash
+mvn spring-boot:run
+```
+
+O servidor estará disponível em `http://localhost:8080`
+
+### Frontend
+
+1. Navegue até a pasta do frontend:
+
+```bash
+cd newgram-ui
+```
+
+2. Instale as dependências:
+
+```bash
 npm install
+```
 
-# Inicie o servidor de desenvolvimento
+3. Execute o frontend:
+
+```bash
 ng serve
-    </code></pre>
-</div>
+```
 
-<div id="uso" class="section">
-    <h2>💻 Como Usar</h2>
-    <ol>
-        <li>Registre-se ou faça login</li>
-        <li>Crie seu perfil</li>
-        <li>Comece a compartilhar conteúdo</li>
-        <li>Explore e interaja com outros usuários</li>
-    </ol>
-</div>
+A aplicação estará disponível em `http://localhost:4200`
 
-<div id="contribuicao" class="section">
-    <h2>🤝 Contribuição</h2>
-    <p>Contribuições são bem-vindas! Por favor, leia nossas diretrizes de contribuição antes de começar.</p>
-    <a href="#" class="badge">Abrir Issue</a>
-    <a href="#" class="badge">Enviar Pull Request</a>
-</div>
+## API
 
-<div id="licenca" class="section">
-    <h2>📄 Licença</h2>
-    <p>Este projeto está licenciado sob a Licença MIT.</p>
-</div>
+A documentação da API está disponível através do Swagger UI:
 
-<div class="section">
-    <h2>📞 Contato</h2>
-    <p>Jameson Henrique - jameson.henrique@example.com</p>
-    <a href="https://github.com/JamesonHenrique" class="badge">GitHub</a>
-    <a href="https://linkedin.com/in/jamesonhenrique" class="badge">LinkedIn</a>
+```
+http://localhost:8080/swagger-ui.html
+```
+
+### Principais Endpoints
+- `/auth` - Autenticação
+- `/explorar` - Exploração de conteúdo
+- `/favoritos` - Gerenciamento de favoritos
+- `/perfis` - Perfil de usuário
+
+## Contribuindo
+
+1. Faça o fork do projeto
+2. Crie sua feature branch (`git checkout -b feature/NovaFeature`)
+3. Commit suas mudanças (`git commit -m 'Adiciona nova feature'`)
+4. Push para a branch (`git push origin feature/NovaFeature`)
+5. Abra um Pull Request
+
+## Licença
+
+Este projeto está sob a licença MIT - veja o arquivo [LICENSE](LICENSE) para detalhes.
+
+---
+
+<div align="center">
+
+Se este projeto te ajudou, considere dar uma estrela!
+
+[ Voltar ao topo](#sobre)
+
 </div>
