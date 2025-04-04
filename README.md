@@ -249,30 +249,29 @@ classDiagram
 
 ## 🛠️ Tecnologias
 
-```diff
 ### Backend
 
-+ Java 17 - Versão LTS
-+ Spring Boot 3 - Framework principal
-+ Spring Security - Autenticação/autorização
-+ Spring Data JPA - Persistência de dados
-+ PostgreSQL 15 - Banco relacional
-+ Flyway - Migrações de banco
-+ Maven - Gerenciamento de dependências
-+ Swagger UI - Documentação de API
-+ JWT Authentication - Tokens stateless
+- Java 17
+- Spring Boot
+- Spring Security
+- Spring Data JPA
+- PostgreSQL
+- Flyway
+- Maven
+- Swagger
+- JWT Authentication
 
 ### Frontend
 
-+ TypeScript 5 - Tipagem estática
-+ Angular 16 - Framework com Signals
-+ RxJS 7 - Programação reativa
-+ Angular Material - Componentes UI
-+ Tailwind CSS 3 - Estilização utilitária
-+ Responsive Design - Mobile-first
-+ Angular JWT - Integração com autenticação
-+ WebSocket - Comunicação em tempo real
-```
+- TypeScript
+- Angular
+- RxJS
+- Angular Material
+- Tailwind CSS
+- Responsive Design
+- Angular JWT
+- WebSocket para atualizações em tempo real
+- 
 ## 🎯 Funcionalidades
 
 ### 🔑 Autenticação Avançada
