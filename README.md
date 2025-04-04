@@ -7,11 +7,11 @@
 ## 📑 Índice
 <div align="center">
 
-| Essenciais                          | Desenvolvimento             | Documentação                  |
+| 🌟 Essenciais                          | 🛠️ Desenvolvimento             | 📚 Documentação                  |
 | -------------------------------------- | ------------------------------ | -------------------------------- |
-| [Sobre](#sobre)                     | [Tecnologias](#tecnologias) | [API](#api)                   |
-| [Funcionalidades](#funcionalidades) | [Requisitos](#requisitos)   | [Contribuição](#contribuindo) |
-| [Objetivos](#objetivos)             | [Instalação](#instalação)   | [Licença](#licença)           |
+| [📋 Sobre](#sobre)                     | [💻 Tecnologias](#tecnologias) | [📖 API](#api)                   |
+| [⚙️ Funcionalidades](#funcionalidades) | [📦 Requisitos](#requisitos)   | [🤝 Contribuição](#contribuindo) |
+| [🎯 Objetivos](#objetivos)             | [🔧 Instalação](#instalação)   | [📄 Licença](#licença)           |
 
 </div>
 
