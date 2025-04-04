@@ -1,14 +1,14 @@
 <div align="center">
  <img src="newgram-ui/public/images/logo.png" height=60px alt="Logo"> 
 </div>
+<div align="center">
 
 ## Índice
-<div align="center">
 | Essenciais                          | Desenvolvimento             | Documentação                  |
-| -------------------------------------- | ------------------------------ | -------------------------------- |
-| [Sobre](#sobre)                     | [Tecnologias](#tecnologias) | [API](#api)                   |
+@@ -10,7 +10,7 @@
 | [Funcionalidades](#funcionalidades) | [Requisitos](#requisitos)   | [Contribuição](#contribuindo) |
 | [Objetivos](#objetivos)             | [Instalação](#instalação)   | [Licença](#licença)           |
+
 </div>
 
 
