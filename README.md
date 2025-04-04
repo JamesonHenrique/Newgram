@@ -2,8 +2,7 @@
 
 <div align="center">
   <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="newgram-ui/public/images/logo-dark.png">
-    <source media="(prefers-color-scheme: light)" srcset="newgram-ui/public/images/logo.png">
+    <source  srcset="newgram-ui/public/images/logo.png">
     <img src="newgram-ui/public/images/logo.png" height="60px" alt="Logo Newgram">
   </picture>
   
