@@ -1,4 +1,4 @@
-# <img src="newgram-ui/public/iamges/logo.png" alt="Logo" width="35" height="35"> 
+# <img src="newgram-ui/public/images/logo.png" alt="Logo" width="35" height="35"> 
 
 ## Índice
 
