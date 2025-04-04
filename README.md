@@ -1,111 +1,100 @@
+# ✨ Newgram - Uma Plataforma Moderna de Compartilhamento e Conexão
+
 <div align="center">
- <img src="newgram-ui/public/images/logo.png" height=60px alt="Logo"> 
+  <img src="public/images/logo.png" height="80px" alt="Logo Newgram">
+  <p>Conectando pessoas através de conteúdos significativos</p>
+  
+  ![GitHub stars](https://img.shields.io/github/stars/JamesonHenrique/Newgram?style=social)
+  ![GitHub last commit](https://img.shields.io/github/last-commit/JamesonHenrique/Newgram)
+  ![License](https://img.shields.io/badge/license-MIT-blue)
 </div>
 
- 
+## 🌟 Destaques do Projeto
 
-## 📑 Índice
 <div align="center">
-
-| 🌟 Essenciais                          | 🛠️ Desenvolvimento             | 📚 Documentação                  |
-| -------------------------------------- | ------------------------------ | -------------------------------- |
-| [📋 Sobre](#sobre)                     | [💻 Tecnologias](#tecnologias) | [📖 API](#api)                   |
-| [⚙️ Funcionalidades](#funcionalidades) | [📦 Requisitos](#requisitos)   | [🤝 Contribuição](#contribuindo) |
-| [🎯 Objetivos](#objetivos)             | [🔧 Instalação](#instalação)   | [📄 Licença](#licença)           |
+  
+| 🚀 Tecnologias Avançadas | 💡 Recursos Inovadores | 🛡️ Segurança |
+|-------------------------|-----------------------|--------------|
+| Angular 16 com Signals | Feed Inteligente | JWT Authentication |
+| Spring Boot 3.x | Recomendações Personalizadas | Spring Security |
+| Tailwind CSS | Interações em Tempo Real | Data Protection |
+| PostgreSQL | Favoritos Inteligentes | Rate Limiting |
 
 </div>
 
+## 📑 Índice Rápido
+- [✨ Visão Geral](#-visão-geral)
+- [🛠️ Tecnologias](#️-tecnologias)
+- [🎯 Funcionalidades](#-funcionalidades)
+- [🚀 Começando](#-começando)
+  - [📋 Pré-requisitos](#-pré-requisitos)
+  - [⚙️ Configuração](#️-configuração)
+- [🌐 API](#-api)
+- [🤝 Como Contribuir](#-como-contribuir)
+- [📜 Licença](#-licença)
+- [📬 Contato](#-contato)
 
-## Sobre
+## ✨ Visão Geral
 
-Newgram é uma aplicação web de compartilhamento e descoberta de conteúdo, focada em conectar pessoas através de interesses comuns e experiências compartilhadas. A plataforma permite aos usuários explorar, favoritar e interagir com diversos tipos de conteúdo de forma intuitiva e envolvente.
+O Newgram redefine a experiência de compartilhamento de conteúdo, oferecendo:
 
-### Objetivos
+- **Conexões autênticas** baseadas em interesses compartilhados
+- **Descoberta inteligente** com algoritmos de recomendação
+- **Performance excepcional** graças à arquitetura moderna
+- **Experiência fluida** em qualquer dispositivo
 
-- Criar uma plataforma de descoberta de conteúdo personalizada
-- Facilitar a conexão entre usuários com interesses semelhantes
-- Oferecer uma experiência de navegação intuitiva e agradável
-- Permitir interações significativas através de favoritos e exploração
-- Promover a diversidade de conteúdo
+### 🎯 Objetivos Estratégicos
 
+```mermaid
+graph TD
+  A[Engajamento] --> B[Interface Intuitiva]
+  A --> C[Conteúdo Relevante]
+  D[Performance] --> E[Tempo de Carregamento]
+  D --> F[Resiliência]
+  G[Segurança] --> H[Proteção de Dados]
+  G --> I[Autenticação Forte]
+```
 
-### Diferenciais
+## 🛠️ Tecnologias
 
-- Interface moderna e responsiva
-- Sistema de recomendação personalizado
-- Exploração de conteúdo intuitiva
-- Funcionalidade de favoritos
-- Design minimalista e elegante
-- Carregamento rápido e eficiente
+### Backend (Poder e Robustez)
+- **Java 17** - Tipagem forte e performance
+- **Spring Boot 3** - Produtividade acelerada
+- **PostgreSQL** - Confiabilidade em dados
+- **Flyway** - Migrações de banco versionadas
+- **WebSocket** - Comunicação em tempo real
 
-## Tecnologias
+### Frontend (Elegância e Interação)
+- **Angular 16** - Componentes reativos
+- **Tailwind CSS** - Design utilitário
+- **Angular Material** - UI consistente
+- **RxJS** - Programação reativa
+- **Chart.js** - Visualização de dados
 
-### Backend
+## 🎯 Funcionalidades
 
-- Java 17
-- Spring Boot
-- Spring Security
-- Spring Data JPA
-- PostgreSQL
-- Flyway
-- Maven
-- Swagger
-- JWT Authentication
+### 🔑 Autenticação Avançada
+- Fluxo OAuth2 integrado
+- Autenticação multifator
+- Gerenciamento de sessões
 
-### Frontend
+### 🌍 Exploração de Conteúdo
+- **Feed algorítmico** - Aprende com suas interações
+- **Busca semântica** - Encontre o que realmente importa
+- **Coleções temáticas** - Conteúdo organizado por tópicos
 
-- TypeScript
-- Angular
-- RxJS
-- Angular Material
-- Tailwind CSS
-- Responsive Design
-- Angular JWT
-- WebSocket para atualizações em tempo real
+### ❤️ Sistema de Favoritos
+- Tags inteligentes
+- Organização visual
+- Sincronização cross-device
 
-## Funcionalidades
+## 🚀 Começando
 
-### Autenticação
-
-- Registro de usuários
-- Login seguro
-- Recuperação de senha
-- Autenticação JWT
-
-### Exploração de Conteúdo
-
-- Feed personalizado
-- Filtros de busca avançados
-- Recomendações baseadas em interesses
-- Visualização detalhada de conteúdo
-
-### Favoritos
-
-- Adicionar e remover favoritos
-- Categorização de favoritos
-- Sincronização entre dispositivos
-- Compartilhamento de favoritos
-
-### Perfil de Usuário
-
-- Personalização de perfil
-- Histórico de interações
-- Configurações de privacidade
-- Estatísticas de uso
-
-### Notificações
-
-- Notificações em tempo real
-- Alertas personalizados
-- Configurações de notificação
-
-## Requisitos
-
+### 📋 Pré-requisitos
+- Docker (recomendado)
 - Java 17+
-- Node.js 18+
-- Angular CLI
-- PostgreSQL 12+
-- Maven 3.6+
+- Node 18+
+- PostgreSQL 15+
 
 ## Instalação
 
@@ -150,7 +139,7 @@ ng serve
 
 A aplicação estará disponível em `http://localhost:4200`
 
-## API
+## 🌐 API
 
 A documentação da API está disponível através do Swagger UI:
 
@@ -158,30 +147,39 @@ A documentação da API está disponível através do Swagger UI:
 http://localhost:8080/swagger-ui.html
 ```
 
-### Principais Endpoints
-- `/auth` - Autenticação
-- `/explorar` - Exploração de conteúdo
-- `/favoritos` - Gerenciamento de favoritos
-- `/perfis` - Perfil de usuário
+Principais endpoints:
 
-## Contribuindo
+| Método | Endpoint | Descrição |
+|--------|----------|-----------|
+| POST | `/auth/login` | Autenticação |
+| GET | `/content?tags=` | Busca filtrada |
+| PUT | `/favorites/{id}` | Gerencia favoritos |
 
-1. Faça o fork do projeto
-2. Crie sua feature branch (`git checkout -b feature/NovaFeature`)
-3. Commit suas mudanças (`git commit -m 'Adiciona nova feature'`)
-4. Push para a branch (`git push origin feature/NovaFeature`)
-5. Abra um Pull Request
+## 🤝 Como Contribuir
 
-## Licença
+Siga nosso fluxo de colaboração:
 
-Este projeto está sob a licença MIT - veja o arquivo [LICENSE](LICENSE) para detalhes.
+1. Crie uma issue descrevendo sua proposta
+2. Faça fork do projeto
+3. Crie um branch descritivo (`feat/new-auth-flow`)
+4. Envie seu PR com:
+   - Descrição clara
+   - Screenshots (se aplicável)
+   - Testes atualizados
+
+## 📜 Licença
+
+MIT License - Veja o arquivo [LICENSE](LICENSE) para detalhes.
+
+## 📬 Contato
+
+**Jameson Henrique**  
+[![LinkedIn](https://img.shields.io/badge/LinkedIn-0077B5?style=flat&logo=linkedin)](https://linkedin.com/in/JamesonHenrique)  
+[![Email](https://img.shields.io/badge/Email-D14836?style=flat&logo=gmail)](mailto:jamesonhenrique14@email.com)
 
 ---
 
 <div align="center">
-
-Se este projeto te ajudou, considere dar uma estrela!
-
-[ Voltar ao topo](#-índice)
-
+  <p>Gostou do projeto? Deixe uma ⭐ no repositório!</p>
+  <a href="#✨-newgram---uma-plataforma-moderna-de-compartilhamento-e-conexão">↑ Voltar ao topo ↑</a>
 </div>
