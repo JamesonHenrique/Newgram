@@ -385,7 +385,7 @@ MIT License - Veja o arquivo [LICENSE](LICENSE) para detalhes.
 <div align="center">
   <p>Gostou do projeto? Deixe uma ⭐ no repositório!</p>
   
-  <a href="#✨-newgram---uma-plataforma-moderna-de-compartilhamento-e-conexão">
+  <a href="#-newgram---uma-plataforma-moderna-de-compartilhamento-e-conexão">
     <img src="https://img.shields.io/badge/-Voltar_ao_Topo-9cf?style=for-the-badge&logo=arrow-up&logoColor=white" alt="Voltar ao topo">
   </a>
 </div>
