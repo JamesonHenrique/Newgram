@@ -243,19 +243,29 @@ classDiagram
 
 ## 🛠️ Tecnologias
 
-### Backend (Poder e Robustez)
-- **Java 17** - Tipagem forte e performance
-- **Spring Boot 3** - Produtividade acelerada
-- **PostgreSQL** - Confiabilidade em dados
-- **Flyway** - Migrações de banco versionadas
-- **WebSocket** - Comunicação em tempo real
 
-### Frontend (Elegância e Interação)
-- **Angular 16** - Componentes reativos
-- **Tailwind CSS** - Design utilitário
-- **Angular Material** - UI consistente
-- **RxJS** - Programação reativa
-- **Chart.js** - Visualização de dados
+### Backend
+
+- Java 17
+- Spring Boot
+- Spring Security
+- Spring Data JPA
+- PostgreSQL
+- Flyway
+- Maven
+- Swagger
+- JWT Authentication
+
+### Frontend
+
+- TypeScript
+- Angular
+- RxJS
+- Angular Material
+- Tailwind CSS
+- Responsive Design
+- Angular JWT
+- WebSocket para atualizações em tempo real
 
 ## 🎯 Funcionalidades
 
