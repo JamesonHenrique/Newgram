@@ -46,13 +46,92 @@ O Newgram redefine a experiência de compartilhamento de conteúdo, oferecendo:
 ### 🎯 Objetivos Estratégicos
 
 ```mermaid
-graph TD
-  A[Engajamento] --> B[Interface Intuitiva]
-  A --> C[Conteúdo Relevante]
-  D[Performance] --> E[Tempo de Carregamento]
-  D --> F[Resiliência]
-  G[Segurança] --> H[Proteção de Dados]
-  G --> I[Autenticação Forte]
+classDiagram
+    %% Entidades Principais
+    class Usuario {
+        +String id
+        +String nome
+        +String email
+        +String senhaHash
+        +List<Interesse> interesses
+        +autenticar()
+        +atualizarPerfil()
+    }
+
+    class Conteudo {
+        +String id
+        +String titulo
+        +String descricao
+        +Usuario autor
+        +List<Tag> tags
+        +DateTime dataPublicacao
+        +adicionarFavorito()
+    }
+
+    class Engajamento {
+        +MetricasUsuario metricas
+        +calcularTaxaEngajamento()
+        +gerarRecomendacoes()
+    }
+
+    %% Componentes de Sistema
+    class InterfaceUsuario {
+        +ComponenteFeed feed
+        +ComponenteBusca busca
+        +ComponentePerfil perfil
+        +atualizarUI()
+    }
+
+    class SistemaRecomendacao {
+        +List<Conteudo> conteudos
+        +List<Usuario> usuarios
+        +gerarFeedPersonalizado()
+        +atualizarModelo()
+    }
+
+    class ServicoAutenticacao {
+        +String secretKey
+        +validarCredenciais()
+        +gerarTokenJWT()
+        +validarToken()
+    }
+
+    class GerenciadorPerformance {
+        +MonitorRecursos monitor
+        +otimizarCarregamento()
+        +testarResiliencia()
+    }
+
+    %% Relacionamentos
+    Usuario "1" *-- "0..*" Conteudo : Publica
+    Usuario "1" --> "1" Engajamento : Possui
+    Engajamento --> SistemaRecomendacao : Usa
+    InterfaceUsuario --> SistemaRecomendacao : Consulta
+    ServicoAutenticacao --> Usuario : Autentica
+    GerenciadorPerformance --> Conteudo : Monitora
+    GerenciadorPerformance --> InterfaceUsuario : Otimiza
+
+    %% Classes de Suporte
+    class Tag {
+        +String nome
+        +String categoria
+    }
+
+    class Interesse {
+        +String tema
+        +int nivelRelevancia
+    }
+
+    class MetricasUsuario {
+        +int visualizacoes
+        +int interacoes
+        +int taxaRetorno
+    }
+
+    class ComponenteFeed {
+        +List<Conteudo> itens
+        +ordenarPorRelevancia()
+    }
 ```
 
 ## 🛠️ Tecnologias
