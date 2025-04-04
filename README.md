@@ -43,94 +43,201 @@ O Newgram redefine a experiência de compartilhamento de conteúdo, oferecendo:
 - **Performance excepcional** graças à arquitetura moderna
 - **Experiência fluida** em qualquer dispositivo
 
-### 🎯 Objetivos Estratégicos
+### 🎯 Diagrama de Classes
 
 ```mermaid
 classDiagram
     %% Entidades Principais
     class Usuario {
-        +String id
+        +Long id
         +String nome
+        +String username
         +String email
-        +String senhaHash
-        +List<Interesse> interesses
-        +autenticar()
-        +atualizarPerfil()
+        +String senha
+        +String bio
+        +Date dataCriacao
+        +List~Post~ posts
+        +List~Usuario~ seguidores
+        +List~Usuario~ seguindo
+        +List~Salvos~ postsSalvos
+        +List~Notificacao~ notificacoes
+        +List~Mensagem~ mensagensEnviadas
+        +List~Mensagem~ mensagensRecebidas
+        +List~Conversa~ conversas
+        +StatusUsuario statusUsuario
     }
 
-    class Conteudo {
-        +String id
-        +String titulo
-        +String descricao
-        +Usuario autor
-        +List<Tag> tags
-        +DateTime dataPublicacao
-        +adicionarFavorito()
+    class Post {
+        +Long id
+        +String legenda
+        +Date dataCriacao
+        +String localizacao
+        +boolean arquivado
+        +TipoVisibilidade visibilidade
+        +List~Comentario~ comentarios
+        +List~Curtida~ curtidas
+        +List~Hashtag~ hashtags
+        +List~Usuario~ marcacoes
+        +List~Salvos~ salvosPor
     }
 
-    class Engajamento {
-        +MetricasUsuario metricas
-        +calcularTaxaEngajamento()
-        +gerarRecomendacoes()
+    class Storie {
+        +Long id
+        +Date dataCriacao
+        +Date dataExpiracao
+        +boolean destacado
+        +List~Usuario~ visualizadoPor
+        +List~Usuario~ marcacoes
     }
 
-    %% Componentes de Sistema
-    class InterfaceUsuario {
-        +ComponenteFeed feed
-        +ComponenteBusca busca
-        +ComponentePerfil perfil
-        +atualizarUI()
+    class Conversa {
+        +Long id
+        +Date dataCriacao
+        +Date ultimaInteracao
+        +boolean isGrupo
+        +String nomeGrupo
+        +List~Usuario~ participantes
+        +List~Mensagem~ mensagens
     }
 
-    class SistemaRecomendacao {
-        +List<Conteudo> conteudos
-        +List<Usuario> usuarios
-        +gerarFeedPersonalizado()
-        +atualizarModelo()
-    }
+    %% Relacionamentos Complexos
+    Usuario "1" *-- "0..*" Post : autor
+    Usuario "1" *-- "0..*" Storie : autor
+    Usuario "1" *-- "1" StatusUsuario : possui
+    Usuario "1" *-- "0..*" Salvos : salvou
+    Usuario "1" *-- "0..*" Notificacao : recebeu
+    Usuario "1" *-- "0..*" Mensagem : enviou
+    Usuario "1" *-- "0..*" Mensagem : recebeu
+    Usuario "1" *-- "0..*" Conversa : participa
+    Usuario "1" *-- "0..*" Usuario : segue
+    Usuario "1" *-- "0..*" Usuario : seguidoPor
 
-    class ServicoAutenticacao {
-        +String secretKey
-        +validarCredenciais()
-        +gerarTokenJWT()
-        +validarToken()
-    }
+    Post "1" *-- "0..*" Comentario : tem
+    Post "1" *-- "0..*" Curtida : recebeu
+    Post "1" *-- "0..*" Hashtag : marcadoCom
+    Post "1" *-- "0..*" Usuario : marcou
+    Post "1" *-- "0..*" Salvos : salvoEm
 
-    class GerenciadorPerformance {
-        +MonitorRecursos monitor
-        +otimizarCarregamento()
-        +testarResiliencia()
-    }
-
-    %% Relacionamentos
-    Usuario "1" *-- "0..*" Conteudo : Publica
-    Usuario "1" --> "1" Engajamento : Possui
-    Engajamento --> SistemaRecomendacao : Usa
-    InterfaceUsuario --> SistemaRecomendacao : Consulta
-    ServicoAutenticacao --> Usuario : Autentica
-    GerenciadorPerformance --> Conteudo : Monitora
-    GerenciadorPerformance --> InterfaceUsuario : Otimiza
+    Conversa "1" *-- "0..*" Mensagem : contém
+    Conversa "1" *-- "1" Usuario : criadoPor
 
     %% Classes de Suporte
-    class Tag {
+    class Comentario {
+        +Long id
+        +String texto
+        +Date dataCriacao
+        +List~Curtida~ curtidas
+    }
+
+    class Curtida {
+        +Long id
+        +Date dataCriacao
+    }
+
+    class Hashtag {
+        +Long id
         +String nome
-        +String categoria
     }
 
-    class Interesse {
-        +String tema
-        +int nivelRelevancia
+    class Salvos {
+        +Long id
+        +Date dataSalvo
+        +String colecao
     }
 
-    class MetricasUsuario {
-        +int visualizacoes
-        +int interacoes
-        +int taxaRetorno
+    class Notificacao {
+        +Long id
+        +TipoNotificacao tipo
+        +String conteudo
+        +Date dataCriacao
+        +boolean lida
     }
 
-    class ComponenteFeed {
-        +List<Conteudo> itens
-        +ordenarPorRelevancia()
+    class Mensagem {
+        +Long id
+        +String conteudo
+        +boolean deletadaPeloRemetente
+        +Date dataEnvio
+        +boolean visualizada
+        +boolean entregue
+        +TipoMensagem tipo
+        +String urlMidia
+    }
+
+    class StatusUsuario {
+        +Long id
+        +boolean online
+        +Date ultimoAcesso
+        +String statusPersonalizado
+    }
+
+    class Destaque {
+        +Long id
+        +String nome
+        +Date dataCriacao
+        +List~Storie~ stories
+    }
+
+    class Arquivo {
+        +Long id
+        +String nomeOriginal
+        +String nomeArmazenado
+        +String tipo
+        +Long tamanho
+        +Date dataUpload
+        +String caminho
+        +String contentType
+        +TipoEntidadeRelacionada tipoEntidade
+        +Long entidadeId
+    }
+
+    %% Relacionamentos Adicionais
+    Comentario "1" *-- "0..*" Curtida : recebeu
+    Comentario "1" *-- "0..*" Comentario : respostas
+    Storie "1" *-- "0..*" Destaque : emDestaque
+    Arquivo "1" --o Post : anexo
+    Arquivo "1" --o Storie : anexo
+    Arquivo "1" --o Mensagem : anexo
+
+    %% Enums
+    class TipoVisibilidade {
+        <<enum>>
+        PUBLICO
+        PRIVADO
+        SOMENTE_SEGUIDORES
+    }
+
+    class TipoMensagem {
+        <<enum>>
+        TEXTO
+        IMAGEM
+        VIDEO
+        AUDIO
+        ARQUIVO
+        LOCALIZACAO
+        CONTATO
+        REACAO
+        SISTEMA
+    }
+
+    class TipoNotificacao {
+        <<enum>>
+        SEGUIDOR
+        COMENTARIO
+        CURTIDA
+        MENSAGEM
+        NOVO_SEGUIDOR
+    }
+
+    class TipoEntidadeRelacionada {
+        <<enum>>
+        POST
+        STORIE
+        PERFIL
+        MENSAGEM
+        COMENTARIO
+        CONVERSA
+        DESTAQUE
     }
 ```
 
