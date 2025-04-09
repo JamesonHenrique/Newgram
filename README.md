@@ -21,8 +21,8 @@
 
 | 🚀 Tecnologias Avançadas | 💡 Recursos Inovadores | 🛡️ Segurança |
 |-------------------------|-----------------------|--------------|
-| Angular 16 com Signals | Feed Inteligente | JWT Authentication |
-| Spring Boot 3.x | Recomendações Personalizadas | Spring Security |
+| Angular | Feed Inteligente | JWT Authentication |
+| Spring Boot | Recomendações Personalizadas | Spring Security |
 | Tailwind CSS | Interações em Tempo Real | Data Protection |
 | PostgreSQL | Favoritos Inteligentes | Rate Limiting |
 
