@@ -272,7 +272,7 @@ classDiagram
 - Responsive Design
 - Angular JWT
 - WebSocket para atualizações em tempo real
-- 
+  
 ## 🎯 Funcionalidades
 
 ### 🔑 Autenticação Avançada
