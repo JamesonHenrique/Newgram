@@ -2,19 +2,22 @@ import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
 import { Title } from '@angular/platform-browser';
 import { FormatNumberPipe } from '../format-number.pipe';
+import { UsuariosService } from '../services/services';
+import { Pageable } from '../services/models';
+import { FormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-search-profile',
-  imports: [CommonModule, FormatNumberPipe],
+  imports: [CommonModule, FormatNumberPipe, FormsModule],
   templateUrl: './search-profile.component.html',
   styleUrl: './search-profile.component.css',
 })
 export class SearchProfileComponent {
-  constructor(private title:Title) {
+  constructor(private title:Title, private usuariosService: UsuariosService) {
     this.title.setTitle('Buscar pessoas');
   }
   searchProfiles = ' '
-  connectionUsers = [
+  connectionUserss = [
     {
       id: 1,
       name: 'Whindersson Nunes',
@@ -56,7 +59,7 @@ export class SearchProfileComponent {
         'https://yt3.googleusercontent.com/ytc/AIdro_lG6cShOWXOgqhg4GscLlZavM40kxUr86RQLJpePMjJufY=s900-c-k-c0x00ffffff-no-rj',
     },
   ];
-  randomUsers = [
+  randomUserss = [
     {
       id: 1,
       name: 'Ivete Sangalo',
@@ -151,5 +154,44 @@ export class SearchProfileComponent {
         'https://upload.wikimedia.org/wikipedia/commons/thumb/1/16/Emicida_Festival_Sensacional_2020_%28cropped%29.jpg/800px-Emicida_Festival_Sensacional_2020_%28cropped%29.jpg',
     },
   ];
+  famousUsers: any[] = [];
+  connectionUsers: any[] = [];
+  randomUsers: any[] = [];
+    pageable: Pageable = {
+      page: 0,
+      size: 10,
+      sort: ['string'],
+    };
+    ngOnInit(): void {
+      //Called after the constructor, initializing input properties, and the first call to ngOnChanges.
+      //Add 'implements OnInit' to the class.
+      this.findAllConnectionUsers();
 
+      this.findAllUsuariosFamosos();
+      this.findAllUsuarios();
+
+    }
+  findAllUsuarios(){
+    this.usuariosService.buscarUsuarios({
+      termo: this.searchProfiles,
+      pageable: this.pageable
+    }).subscribe((response) => {
+      this.randomUsers = response.content || [];
+    });
+  }
+  findAllConnectionUsers() {
+    this.usuariosService.listarUsuariosPorAmigosEmComum({
+      pageable: this.pageable
+    }).subscribe((response) => {
+      this.connectionUsers = response.content || [];
+    });
+  }
+
+  findAllUsuariosFamosos() {
+    this.usuariosService.listarUsuariosMaisFamosos({
+      pageable: this.pageable
+    }).subscribe((response) => {
+      this.famousUsers = response.content || [];
+    });
+  }
 }

@@ -7,6 +7,7 @@ CREATE TABLE post (
     arquivado BOOLEAN DEFAULT FALSE,
     visibilidade VARCHAR(20) NOT NULL DEFAULT 'PUBLICO',
     autor_id BIGINT NOT NULL,
+    imagem_url VARCHAR(255),
     FOREIGN KEY (autor_id) REFERENCES usuario (id) ON DELETE CASCADE
 );
 

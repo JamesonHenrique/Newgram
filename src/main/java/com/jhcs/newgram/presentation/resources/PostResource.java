@@ -6,6 +6,7 @@ import com.jhcs.newgram.application.dtos.post.PostSummaryDTO;
 import com.jhcs.newgram.application.dtos.post.PostUpdateDTO;
 import com.jhcs.newgram.application.services.PostService;
 import com.jhcs.newgram.core.domain.entities.Usuario;
+import com.jhcs.newgram.core.domain.repositories.UsuarioRepository;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -13,6 +14,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -21,8 +23,10 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -35,9 +39,11 @@ public class PostResource {
 
     @Autowired
     private PostService postService;
+    @Autowired
+    private UsuarioRepository usuarioRepository;
 
     @PostMapping
-    @Operation(summary = "Criar novo post", description = "Cria um novo post com opção de upload de arquivos")
+    @Operation(summary = "Criar novo post", description = "Cria um novo post")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "Post criado com sucesso",
                     content = @Content(schema = @Schema(implementation = PostResponseDTO.class))),
@@ -49,14 +55,29 @@ public class PostResource {
     public ResponseEntity<PostResponseDTO> criarPost(
             @AuthenticationPrincipal Usuario usuario,
             @Parameter(description = "Dados do post a ser criado", required = true)
-            @RequestPart("post") @Valid PostCreateDTO postDTO,
-            @Parameter(description = "Arquivos a serem anexados ao post")
-            @RequestPart(value = "arquivos", required = false) List<MultipartFile> arquivos) {
+            @RequestPart("post") @Valid PostCreateDTO postDTO
+          ) {
 
-        PostResponseDTO post = postService.criarPost(postDTO, usuario.getId(), arquivos);
+        PostResponseDTO post = postService.criarPost(postDTO, usuario.getId());
         return ResponseEntity.status(HttpStatus.CREATED).body(post);
     }
 
+    @PostMapping(path = "/{postId}/imagem", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<Void> uploadImagemPost(
+            @PathVariable Long postId,
+            @RequestParam("file") MultipartFile file,
+            @AuthenticationPrincipal UserDetails userDetails) {
+
+
+        Usuario usuario = usuarioRepository.findByEmail(userDetails.getUsername())
+                .orElseThrow(() -> new EntityNotFoundException("Usuário não encontrado"));
+
+        postService.salvarImagemDoPost(postId, file, usuario.getId());
+
+        return ResponseEntity.accepted()
+                .build();
+
+    }
     @GetMapping("/usuario/{usuarioId}")
     @Operation(summary = "Listar posts de um usuário", description = "Retorna os posts publicados por um usuário específico")
     @ApiResponses(value = {

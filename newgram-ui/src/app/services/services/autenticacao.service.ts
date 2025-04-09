@@ -33,9 +33,9 @@ export class AutenticacaoService extends BaseService {
   static readonly RegistrarPath = '/auth/register';
 
   /**
-   * Registrar novo usuário.
+   * Registrar usuário.
    *
-   * Cria um novo usuário no sistema e retorna um token de autenticação
+   * Registra um novo usuário e retorna um token de acesso
    *
    * This method provides access to the full `HttpResponse`, allowing access to response headers.
    * To access only the response body, use `registrar()` instead.
@@ -47,9 +47,9 @@ export class AutenticacaoService extends BaseService {
   }
 
   /**
-   * Registrar novo usuário.
+   * Registrar usuário.
    *
-   * Cria um novo usuário no sistema e retorna um token de autenticação
+   * Registra um novo usuário e retorna um token de acesso
    *
    * This method provides access only to the response body.
    * To access the full response (for headers, for example), `registrar$Response()` instead.

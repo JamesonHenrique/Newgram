@@ -26,19 +26,28 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
     Page<Usuario> buscarUsuarios(@Param("termo") String termo, Pageable pageable);
 
     @Query("SELECT u FROM Usuario u WHERE u.id IN (SELECT s.seguido.id FROM Seguidor s WHERE s.seguidor.id = :usuarioId)")
-    Page<Usuario>  findSeguidosByUsuarioId(@Param("usuarioId") Long usuarioId, Pageable pageable);
-
+    Page<Usuario> findSeguidosByUsuarioId(@Param("usuarioId") Long usuarioId, Pageable pageable);
 
     @Query("SELECT u FROM Usuario u WHERE u.id IN (SELECT s.seguidor.id FROM Seguidor s WHERE s.seguido.id = :usuarioId)")
-    Page<Usuario>  findSeguidoresByUsuarioId(@Param("usuarioId") Long usuarioId, Pageable pageable);
+    Page<Usuario> findSeguidoresByUsuarioId(@Param("usuarioId") Long usuarioId, Pageable pageable);
 
+    @Query("SELECT u, COUNT(s) as commonFollowers FROM Usuario u " +
+            "JOIN Seguidor s ON u.id = s.seguido.id " +
+            "WHERE s.seguidor.id IN (SELECT seg.seguido.id FROM Seguidor seg WHERE seg.seguidor.id = :usuarioId) " +
+            "AND u.id <> :usuarioId " +
+            "GROUP BY u.id " +
+            "ORDER BY commonFollowers DESC")
+    Page<Object[]> findUsuariosPorAmigosEmComum(@Param("usuarioId") Long usuarioId, Pageable pageable);
 
-    @Query(value = "SELECT u.* FROM usuario u " +
-            "JOIN seguidor s ON u.id = s.seguido_id " +
-            "WHERE s.seguidor_id = :usuarioId " +
-            "ORDER BY RAND() LIMIT :limite", nativeQuery = true)
-    List<Usuario> findRandomSeguidosByUsuarioId(@Param("usuarioId") Long usuarioId, @Param("limite") int limite);
-
-    @Query("SELECT u FROM Usuario u WHERE u.id NOT IN :idsExcluidos AND u.id <> :usuarioId ORDER BY FUNCTION('RAND') LIMIT :limite")
-    List<Usuario> findSugestoesUsuarios(@Param("usuarioId") Long usuarioId, @Param("idsExcluidos") List<Long> idsExcluidos, @Param("limite") int limite);
+    @Query("SELECT u FROM Usuario u " +
+            "LEFT JOIN Seguidor s ON u.id = s.seguido.id " +
+            "WHERE u.id NOT IN (SELECT s.seguido.id FROM Seguidor s WHERE s.seguidor.id = :usuarioId) " +
+            "GROUP BY u.id " +
+            "ORDER BY COUNT(s) DESC, u.dataCriacao DESC")
+    Page<Usuario> findSugestoesUsuarios(@Param("usuarioId") Long usuarioId, Pageable pageable);
+    @Query("SELECT u FROM Usuario u " +
+            "LEFT JOIN Seguidor s ON u.id = s.seguido.id " +
+            "GROUP BY u.id " +
+            "ORDER BY COUNT(s) DESC")
+    Page<Usuario> findUsuariosMaisFamosos(Pageable pageable);
 }

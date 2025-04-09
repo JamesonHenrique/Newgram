@@ -7,6 +7,7 @@ import com.jhcs.newgram.application.dtos.post.PostSummaryDTO;
 import com.jhcs.newgram.application.dtos.post.PostUpdateDTO;
 import com.jhcs.newgram.application.dtos.usuario.UsuarioSummaryDTO;
 import com.jhcs.newgram.core.domain.entities.*;
+import com.jhcs.newgram.core.domain.enums.TipoArquivo;
 import com.jhcs.newgram.core.domain.repositories.ComentarioRepository;
 import com.jhcs.newgram.core.domain.repositories.CurtidaRepository;
 import com.jhcs.newgram.core.domain.repositories.HashtagRepository;
@@ -16,6 +17,7 @@ import com.jhcs.newgram.core.domain.repositories.UsuarioRepository;
 import com.jhcs.newgram.infrastructure.exception.BusinessException;
 import com.jhcs.newgram.infrastructure.exception.ResourceNotFoundException;
 import com.jhcs.newgram.infrastructure.exception.UnauthorizedException;
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cglib.core.Local;
 import org.springframework.data.domain.*;
@@ -61,7 +63,7 @@ public class PostService {
     private ArquivoService arquivoService;
 
     @Transactional
-    public PostResponseDTO criarPost(PostCreateDTO dto, Long usuarioId, List<MultipartFile> arquivos) {
+    public PostResponseDTO criarPost(PostCreateDTO dto, Long usuarioId) {
         Usuario autor = usuarioRepository.findById(usuarioId)
                 .orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado"));
 
@@ -84,15 +86,7 @@ public class PostService {
         }
 
         post = postRepository.save(post);
-        if (dto.getArquivos() != null && !dto.getArquivos().isEmpty()) {
-            for (MultipartFile arquivo : dto.getArquivos()) {
-                arquivoService.uploadArquivo(
-                        arquivo,
-                        Arquivo.TipoEntidadeRelacionada.POST,
-                        post.getId()
-                );
-            }
-        }
+
         return converterParaResponseDTO(post, usuarioId);
     }
 
@@ -198,7 +192,7 @@ public class PostService {
                 safePageable
         );
 
-        // Converter para DTOs
+
         return posts.map(post -> converterParaSummaryDTO(post, usuarioId));
     }
     @Transactional(readOnly = true)
@@ -396,8 +390,23 @@ public class PostService {
         salvosRepository.deleteByUsuarioIdAndPostId(usuarioId, postId);
     }
 
-    // Métodos auxiliares
+    @Transactional
+    public void salvarImagemDoPost(Long postId, MultipartFile file, Long usuarioId) {
+        Usuario usuario = usuarioRepository.findById(usuarioId)
+                .orElseThrow(() -> new EntityNotFoundException("Nenhum usuário encontrado com o ID: " + usuarioId));
 
+        Post post = postRepository.findById(postId)
+                .orElseThrow(() -> new EntityNotFoundException("Nenhum post encontrado com o ID: " + postId));
+
+        if (!post.getAutor().getId().equals(usuarioId)) {
+            throw new UnauthorizedException("Você não tem permissão para adicionar imagem a este post");
+        }
+
+        var imagemPost = arquivoService.saveFile(file, usuario.getUsuarioName(), TipoArquivo.POST);
+        post.setImagemUrl(imagemPost);
+
+        postRepository.save(post);
+    }
     private void processarHashtags(Post post, List<String> hashtags) {
         List<Hashtag> hashtagEntities = new ArrayList<>();
 
@@ -482,11 +491,7 @@ public class PostService {
         // Estatísticas
         dto.setNumeroCurtidas(curtidaRepository.countByPostId(post.getId()));
         dto.setNumeroComentarios(comentarioRepository.countByPostId(post.getId()));
-        List<ArquivoDTO> arquivos = arquivoService.buscarArquivosPorEntidade(
-                Arquivo.TipoEntidadeRelacionada.POST,
-                post.getId()
-        );
-        dto.setArquivos(arquivos);
+
         if (usuarioLogadoId != null) {
             dto.setCurtidoPeloUsuario(curtidaRepository.existsByUsuarioIdAndPostId(usuarioLogadoId, post.getId()));
             dto.setSalvoPeloUsuario(salvosRepository.existsByUsuarioIdAndPostId(usuarioLogadoId, post.getId()));
@@ -505,14 +510,11 @@ public class PostService {
         autorDTO.setNome(post.getAutor().getNome());
         autorDTO.setUsername(post.getAutor().getUsername());
         dto.setAutor(autorDTO);
-        List<ArquivoDTO> arquivos = arquivoService.buscarArquivosPorEntidade(
-                Arquivo.TipoEntidadeRelacionada.POST,
-                post.getId()
-        );
+
         dto.setLegenda(post.getLegenda());
         dto.setLocalizacao(post.getLocalizacao());
 
-        dto.setImagemPrincipal(arquivos.isEmpty() ? null : arquivos.get(0));
+
         dto.setNumeroCurtidas(curtidaRepository.countByPostId(post.getId()));
         dto.setNumeroComentarios(comentarioRepository.countByPostId(post.getId()));
 

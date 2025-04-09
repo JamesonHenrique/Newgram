@@ -14,6 +14,6 @@ public class ConversaSummaryDTO {
     private Date ultimaInteracao;
     private UsuarioSummaryDTO outroParticipante;
     private String ultimaMensagemTexto;
-    private ArquivoDTO imagemGrupo;
+
     private Long mensagensNaoLidas;
 }

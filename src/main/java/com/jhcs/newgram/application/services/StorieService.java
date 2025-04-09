@@ -65,12 +65,7 @@ public class StorieService {
 
         storie = storieRepository.save(storie);
 
-        // Fazer upload do arquivo
-        ArquivoUploadResponseDTO arquivoResponse = arquivoService.uploadArquivo(
-                dto.getMidia(),
-                Arquivo.TipoEntidadeRelacionada.STORIE,
-                storie.getId()
-        );
+
 
         // Processar marcações de usuários
         if (dto.getUsuariosMarcados() != null && !dto.getUsuariosMarcados().isEmpty()) {
@@ -112,8 +107,7 @@ public class StorieService {
             throw new UnauthorizedException("Você não tem permissão para excluir este storie");
         }
 
-        // Excluir arquivos relacionados
-        arquivoService.excluirArquivosPorEntidade(Arquivo.TipoEntidadeRelacionada.STORIE, storieId);
+
 
         // Excluir storie
         storieRepository.delete(storie);
@@ -240,15 +234,8 @@ public class StorieService {
 
         dto.setDestacado(storie.isDestacado());
 
-        // Buscar arquivo de mídia
-        List<ArquivoDTO> arquivos = arquivoService.buscarArquivosPorEntidade(
-                Arquivo.TipoEntidadeRelacionada.STORIE,
-                storie.getId()
-        );
 
-        if (!arquivos.isEmpty()) {
-            dto.setMidia(arquivos.get(0));
-        }
+
 
         // Autor
         UsuarioSummaryDTO autorDTO = new UsuarioSummaryDTO();

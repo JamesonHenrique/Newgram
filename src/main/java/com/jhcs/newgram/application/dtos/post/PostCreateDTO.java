@@ -11,12 +11,9 @@ import java.util.List;
 public class PostCreateDTO {
     @Size(max = 2200, message = "A legenda deve ter no máximo 2200 caracteres")
     private String legenda;
-
-    @NotEmpty(message = "É necessário enviar pelo menos uma imagem")
-    private List<MultipartFile> arquivos; // Alterado para List<MultipartFile>
-
     private String localizacao;
     private TipoVisibilidade visibilidade = TipoVisibilidade.PUBLICO;
     private List<String> hashtags;
     private List<Long> usuariosMarcados;
+
 }

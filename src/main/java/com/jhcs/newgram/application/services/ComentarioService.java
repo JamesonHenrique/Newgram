@@ -67,13 +67,7 @@ public class ComentarioService {
 
             comentario.setComentarioPai(comentarioPai);
         }
-        if (dto.getAnexo() != null) {
-            arquivoService.uploadArquivo(
-                    dto.getAnexo(),
-                    Arquivo.TipoEntidadeRelacionada.COMENTARIO,
-                    comentario.getId()
-            );
-        }
+
         comentario = comentarioRepository.save(comentario);
 
         // Criar notificação para o autor do post se não for o próprio usuário
@@ -219,13 +213,7 @@ public class ComentarioService {
         autorDTO.setUsername(comentario.getAutor().getUsername());
 
         dto.setAutor(autorDTO);
-        List<ArquivoDTO> arquivos = arquivoService.buscarArquivosPorEntidade(
-                Arquivo.TipoEntidadeRelacionada.COMENTARIO,
-                comentario.getId()
-        );
-        if (!arquivos.isEmpty()) {
-            dto.setAnexo(arquivos.get(0));
-        }
+
         // Estatísticas
         dto.setNumeroCurtidas(curtidaRepository.countByComentarioId(comentario.getId()));
         dto.setNumeroRespostas(comentarioRepository.countRespostasByComentarioId(comentario.getId()));

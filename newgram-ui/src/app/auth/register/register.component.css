@@ -1,16 +1,3 @@
-.h1-bold { font-size: 36px; font-weight: 700; line-height: 140%; letter-spacing: -0.03em; }
-.h2-bold { font-size: 30px; font-weight: 700; line-height: 140%; letter-spacing: -0.03em; }
-.h3-bold { font-size: 24px; font-weight: 700; line-height: 140%; letter-spacing: -0.03em; }
-.base-medium { font-size: 16px; font-weight: 500; line-height: 140%; }
-.base-semibold { font-size: 16px; font-weight: 600; line-height: 140%; letter-spacing: -0.03em; }
-.small-medium { font-size: 14px; font-weight: 500; line-height: 140%; }
-.small-semibold { font-size: 14px; font-weight: 600; line-height: 140%; letter-spacing: -0.03em; }
-.subtle-semibold { font-size: 12px; font-weight: 600; line-height: 140%; }
-
-/* Custom Utilities */
-.flex-center { display: flex; justify-content: center; align-items: center; }
-.flex-between { display: flex; justify-content: space-between; align-items: center; }
-.flex-start { display: flex; justify-content: flex-start; align-items: center; }
 
 /* Background Elements */
 .bg-gradient {
@@ -545,7 +532,7 @@
 }
 
 @media (max-width: 480px) {
- 
+
 
   .register-form-section {
     padding: 1.5rem 1rem;
@@ -854,4 +841,82 @@
   background: linear-gradient(135deg, var(--primary-custom), var(--primary-500));
   opacity: 0.1;
   z-index: -1;
+}
+.username-input {
+  padding-left: 2.5rem;
+}
+
+.password-toggle {
+  position: absolute;
+  right: 1rem;
+  top: 2.5rem;
+  color: var(--light-3);
+  cursor: pointer;
+  transition: color 0.3s ease;
+}
+
+.password-toggle:hover {
+  color: var(--light-1);
+}
+
+/* Password Strength Meter */
+.password-strength {
+  margin-top: 0.5rem;
+}
+
+.strength-meter {
+  height: 5px;
+  border-radius: 5px;
+  background-color: var(--dark-4);
+  margin-top: 0.5rem;
+  overflow: hidden;
+  position: relative;
+}
+
+.strength-meter-fill {
+  height: 100%;
+  border-radius: 5px;
+  transition: width 0.3s ease, background-color 0.3s ease;
+  width: 0;
+}
+
+.strength-text {
+  font-size: 0.75rem;
+  margin-top: 0.25rem;
+  text-align: right;
+}
+
+/* Strength Colors */
+.strength-weak { background-color: var(--red); }
+.strength-medium { background-color: var(--yellow); }
+.strength-strong { background-color: var(--green); }
+
+.text-weak { color: var(--red); }
+.text-medium { color: var(--yellow); }
+.text-strong { color: var(--green); }
+.error-message {
+  color: #ff5252;
+  font-size: 0.8rem;
+  margin-top: 5px;
+}
+
+.username-input-wrapper {
+  position: relative;
+}
+
+.username-prefix {
+  position: absolute;
+  left: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--light-3);
+  font-weight: 500;
+}
+
+.username-input {
+  padding-left: 2.5rem;
+}
+.form-textarea {
+  min-height: 100px;
+  resize: vertical;
 }

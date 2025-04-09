@@ -14,7 +14,7 @@ public class DestaqueResponseDTO {
     private Date dataCriacao;
     private Long usuarioId;
     private String usernameUsuario;
-    private ArquivoDTO capaDestaque;
+
     private Integer quantidadeStories;
     private List<StorieResponseDTO> stories;
 }

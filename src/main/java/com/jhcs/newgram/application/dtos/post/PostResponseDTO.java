@@ -11,7 +11,6 @@ import java.util.List;
 public class PostResponseDTO {
     private Long id;
     private String legenda;
-    private List<ArquivoDTO> arquivos; // Alterado para List<ArquivoDTO>
     private Date dataCriacao;
     private String localizacao;
     private TipoVisibilidade visibilidade;

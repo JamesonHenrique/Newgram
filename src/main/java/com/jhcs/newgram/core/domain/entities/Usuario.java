@@ -25,7 +25,7 @@ public class Usuario implements UserDetails, Principal {
     private String senha;
     private String bio;
     private Date dataCriacao;
-
+    private String fotoPerfil;
     @OneToMany(mappedBy = "autor", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Post> posts = new ArrayList<>();
 
@@ -63,6 +63,9 @@ public class Usuario implements UserDetails, Principal {
         return email;
     }
 
+    public String getUsuarioName() {
+        return username;
+    }
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return List.of();

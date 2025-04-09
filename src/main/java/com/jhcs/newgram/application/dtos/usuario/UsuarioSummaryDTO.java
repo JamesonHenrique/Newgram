@@ -7,8 +7,10 @@ public class UsuarioSummaryDTO {
     private Long id;
     private String nome;
     private String username;
-    private ArquivoDTO fotoPerfil;
     private boolean seguindoUsuario;
+    private Long numeroSeguidores;
+    private Long numeroSeguindo;
+    private Long numeroPosts;
+    private byte[] fotoPerfil;
 
-    // Getters e Setters
 }

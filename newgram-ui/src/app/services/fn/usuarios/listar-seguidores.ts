@@ -11,23 +11,23 @@ import { RequestBuilder } from '../../request-builder';
 import { Page } from '../../models/page';
 import { Pageable } from '../../models/pageable';
 
-export interface ListarPostsPorLegenda$Params {
+export interface ListarSeguidores$Params {
 
 /**
- * Nome da localização
+ * ID do usuário
  */
-  termo: string;
+  id: number;
 
 /**
- * Parâmetros de paginação (page=0, size=10, sort=dataCriacao,desc)
+ * Parâmetros de paginação (page=0, size=10)
  */
   pageable: Pageable;
 }
 
-export function listarPostsPorLegenda(http: HttpClient, rootUrl: string, params: ListarPostsPorLegenda$Params, context?: HttpContext): Observable<StrictHttpResponse<Page>> {
-  const rb = new RequestBuilder(rootUrl, listarPostsPorLegenda.PATH, 'get');
+export function listarSeguidores(http: HttpClient, rootUrl: string, params: ListarSeguidores$Params, context?: HttpContext): Observable<StrictHttpResponse<Page>> {
+  const rb = new RequestBuilder(rootUrl, listarSeguidores.PATH, 'get');
   if (params) {
-    rb.query('termo', params.termo, {});
+    rb.path('id', params.id, {});
     rb.query('pageable', params.pageable, {});
   }
 
@@ -41,4 +41,4 @@ export function listarPostsPorLegenda(http: HttpClient, rootUrl: string, params:
   );
 }
 
-listarPostsPorLegenda.PATH = '/posts/buscar';
+listarSeguidores.PATH = '/usuarios/{id}/seguidores';

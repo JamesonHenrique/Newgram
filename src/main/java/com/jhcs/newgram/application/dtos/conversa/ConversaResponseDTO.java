@@ -18,7 +18,7 @@ public class ConversaResponseDTO {
     private Date ultimaInteracao;
     private List<UsuarioSummaryDTO> participantes;
     private MensagemResponseDTO ultimaMensagem;
-    private ArquivoDTO imagemGrupo;
+
     private Long mensagensNaoLidas;
     private boolean participante;
 }

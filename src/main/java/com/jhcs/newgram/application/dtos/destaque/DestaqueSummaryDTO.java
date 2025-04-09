@@ -11,5 +11,5 @@ public class DestaqueSummaryDTO {
     private String nome;
     private Date dataCriacao;
     private Integer quantidadeStories;
-    private ArquivoDTO capaDestaque;
+
 }

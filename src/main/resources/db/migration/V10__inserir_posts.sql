@@ -12,17 +12,19 @@ INSERT INTO hashtag (nome) VALUES
 ('Fitness');
 
 -- Inserir posts
-INSERT INTO post (legenda, data_criacao, localizacao, arquivado, visibilidade, autor_id) VALUES
-('Mais um dia de gravação! Adoro meu trabalho! 📺', '2025-03-20 10:00:00', 'São Paulo, SP', false, 'PUBLICO', 1),
-('Dia de gravação especial no Japão! 🇯🇵', '2025-03-21 11:00:00', 'Tokyo, Japão', false, 'PUBLICO', 2),
-('Preparativos finais para o programa de domingo. Vai ser incrível!', '2025-03-22 12:00:00', 'Rio de Janeiro, RJ', false, 'PUBLICO', 3),
-('Ensaio para o show de hoje! Energia total! 🎵', '2025-03-23 13:00:00', 'Salvador, BA', false, 'PUBLICO', 4),
-('Treino matinal. Foco, força e determinação! ⚽', '2025-03-24 14:00:00', 'Paris, França', false, 'PUBLICO', 5),
-('Gravando meu novo hit! Em breve novidades 🎶', '2025-03-25 15:00:00', 'Rio de Janeiro, RJ', false, 'PUBLICO', 6),
-('Bastidores do Caldeirão! Sábado tem programa especial!', '2025-03-26 16:00:00', 'São Paulo, SP', false, 'PUBLICO', 7),
-('Momentos de descanso com a família são essenciais', '2025-03-27 17:00:00', 'Rio de Janeiro, RJ', false, 'PUBLICO', 8),
-('Show incrível ontem! Obrigado a todos que vieram! 🎸', '2025-03-28 18:00:00', 'Goiânia, GO', false, 'PUBLICO', 9),
-('Gravações intensas hoje. Amo meu trabalho! 🎬', '2025-03-29 19:00:00', 'Rio de Janeiro, RJ', false, 'PUBLICO', 10);
+INSERT INTO post (legenda, data_criacao, localizacao, arquivado, visibilidade, autor_id, imagem_url) VALUES
+('Mais um dia de gravação! Adoro meu trabalho! 📺', '2025-03-20 10:00:00', 'São Paulo, SP', false, 'PUBLICO', 1,'teste.png'),
+('Viagem incrível para o Japão! 🇯🇵', '2025-03-21 09:00:00', 'Tokyo, Japão', false, 'PUBLICO', 2, 'teste.png'),
+('Dia de gravação especial no Japão! 🇯🇵', '2025-03-21 11:00:00', 'Tokyo, Japão', false, 'PUBLICO', 3, 'teste.png'),
+('Preparativos finais para o programa de domingo. Vai ser incrível!', '2025-03-22 12:00:00', 'Rio de Janeiro, RJ', false, 'PUBLICO',4, 'teste.png'),
+('Ensaio para o show de hoje! Energia total! 🎵', '2025-03-23 13:00:00', 'Salvador, BA', false, 'PUBLICO', 5, 'teste.png'),
+('Treino matinal. Foco, força e determinação! ⚽', '2025-03-24 14:00:00', 'Paris, França', false, 'PUBLICO', 6, 'teste.png'),
+('Gravando meu novo hit! Em breve novidades 🎶', '2025-03-25 15:00:00', 'Rio de Janeiro, RJ', false, 'PUBLICO',7, 'teste.png'),
+('Bastidores do Caldeirão! Sábado tem programa especial!', '2025-03-26 16:00:00', 'São Paulo, SP', false, 'PUBLICO', 8, 'teste.png'),
+('Momentos de descanso com a família são essenciais', '2025-03-27 17:00:00', 'Rio de Janeiro, RJ', false, 'PUBLICO', 9,'teste.png'),
+('Show incrível ontem! Obrigado a todos que vieram! 🎸', '2025-03-28 18:00:00', 'Goiânia, GO', false, 'PUBLICO', 10,'teste.png'),
+('Gravações intensas hoje. Amo meu trabalho! 🎬', '2025-03-29 19:00:00', 'Rio de Janeiro, RJ', false, 'PUBLICO', 11,'teste.png');
+
 
 -- Relacionamento post-hashtag
 INSERT INTO post_hashtag (post_id, hashtag_id) VALUES

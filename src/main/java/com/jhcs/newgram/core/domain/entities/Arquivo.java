@@ -23,9 +23,9 @@ public class Arquivo {
     private String contentType;
 
     @Enumerated(EnumType.STRING)
-    private TipoEntidadeRelacionada tipoEntidade; // POST, STORIE, PERFIL, MENSAGEM, etc.
+    private TipoEntidadeRelacionada tipoEntidade;
 
-    private Long entidadeId; // ID da entidade relacionada
+    private Long entidadeId;
 
     public enum TipoEntidadeRelacionada {
         POST, STORIE, PERFIL, MENSAGEM, COMENTARIO, CONVERSA, DESTAQUE

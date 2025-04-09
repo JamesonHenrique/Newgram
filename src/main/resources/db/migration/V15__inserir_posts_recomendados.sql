@@ -18,11 +18,11 @@ INSERT INTO post (legenda, data_criacao, localizacao, arquivado, visibilidade, a
 
 -- 3. Inserir posts de autores que o usuário 1 já curtiu posts (critério 2 de recomendação)
 -- Suponha que usuário 1 já curtiu posts do usuário 4 (Ivete)
-INSERT INTO post (legenda, data_criacao, localizacao, arquivado, visibilidade, autor_id) VALUES
+INSERT INTO post (legenda, data_criacao, localizacao, arquivado, visibilidade, autor_id,imagem_url) VALUES
 ('Dia especial com amigos especiais. Momentos que ficam para sempre.',
- '2025-03-06 14:20:00', 'Salvador, BA', false, 'PUBLICO', 4), -- Ivete Sangalo
+ '2025-03-06 14:20:00', 'Salvador, BA', false, 'PUBLICO', 4,'teste.png'), -- Ivete Sangalo
 ('Reflexões sobre a vida e carreira. Gratidão por tudo!',
- '2025-03-07 11:15:00', 'Rio de Janeiro, RJ', false, 'PUBLICO', 2); -- Sabrina Sato
+ '2025-03-07 11:15:00', 'Rio de Janeiro, RJ', false, 'PUBLICO', 2,'teste.png'); -- Sabrina Sato
 
 -- 4. Vincular hashtags aos posts (para critério 1)
 INSERT INTO post_hashtag (post_id, hashtag_id)

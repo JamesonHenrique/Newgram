@@ -16,7 +16,7 @@ public class StatusUsuario {
 
     private boolean online;
     private Date ultimoAcesso;
-    private String statusPersonalizado; // Ex: "Ocupado", "Disponível", etc.
+    private String statusPersonalizado;
 
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "usuario_id")

@@ -103,20 +103,24 @@
     <div class="creator-grid grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-1 gap-3 lg:gap-4">
       <div
         class="creator-card flex flex-col items-center justify-center gap-2 bg-dark-4 rounded-lg lg:rounded-xl p-3 transition-all duration-300 hover:bg-dark-5 hover:-translate-y-1 hover:shadow-md"
-        *ngFor="let topCreator of topCreators"
+        *ngFor="let topCreator of topCreators; let i = index"
       >
+
         <img
-          [src]="topCreator.avatar"
+          [src]="getFotoPerfil(topCreator)"
           alt="Criador"
           class="w-10 h-10 lg:w-12 lg:h-12 rounded-full object-cover"
         />
+
         <h4 class="text-sm lg:text-base font-semibold truncate w-full text-center">{{ topCreator.name }}</h4>
         <p class="text-xs lg:text-sm text-gray-400 truncate w-full text-center">
           &#64;{{ topCreator.username }}
+
         </p>
         <button
           class="btn-follow mt-1 lg:mt-2 bg-primary-500 hover:bg-primary-600 text-white text-xs lg:text-sm font-medium py-1 px-3 lg:px-4 rounded-full transition-colors duration-200"
         >
+
           Seguir
         </button>
       </div>

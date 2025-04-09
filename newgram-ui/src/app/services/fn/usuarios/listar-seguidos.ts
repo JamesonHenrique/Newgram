@@ -11,17 +11,23 @@ import { RequestBuilder } from '../../request-builder';
 import { Page } from '../../models/page';
 import { Pageable } from '../../models/pageable';
 
-export interface ListarPostsRecomendados$Params {
+export interface ListarSeguidos$Params {
 
 /**
- * Parâmetros de paginação (page=0, size=10, sort=dataCriacao,desc)
+ * ID do usuário
+ */
+  id: number;
+
+/**
+ * Parâmetros de paginação (page=0, size=10)
  */
   pageable: Pageable;
 }
 
-export function listarPostsRecomendados(http: HttpClient, rootUrl: string, params: ListarPostsRecomendados$Params, context?: HttpContext): Observable<StrictHttpResponse<Page>> {
-  const rb = new RequestBuilder(rootUrl, listarPostsRecomendados.PATH, 'get');
+export function listarSeguidos(http: HttpClient, rootUrl: string, params: ListarSeguidos$Params, context?: HttpContext): Observable<StrictHttpResponse<Page>> {
+  const rb = new RequestBuilder(rootUrl, listarSeguidos.PATH, 'get');
   if (params) {
+    rb.path('id', params.id, {});
     rb.query('pageable', params.pageable, {});
   }
 
@@ -35,4 +41,4 @@ export function listarPostsRecomendados(http: HttpClient, rootUrl: string, param
   );
 }
 
-listarPostsRecomendados.PATH = '/posts/recomendados';
+listarSeguidos.PATH = '/usuarios/{id}/seguindo';

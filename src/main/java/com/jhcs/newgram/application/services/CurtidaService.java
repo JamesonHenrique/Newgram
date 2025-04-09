@@ -155,13 +155,6 @@ public class CurtidaService {
         usuarioDTO.setNome(curtida.getUsuario().getNome());
         usuarioDTO.setUsername(curtida.getUsuario().getUsername());
 
-        List<ArquivoDTO> arquivos = arquivoService.buscarArquivosPorEntidade(
-                Arquivo.TipoEntidadeRelacionada.PERFIL,
-                curtida.getUsuario().getId()
-        );
-        if (!arquivos.isEmpty()) {
-            usuarioDTO.setFotoPerfil(arquivos.get(0));
-        }
 
         dto.setUsuario(usuarioDTO);
 

@@ -249,14 +249,7 @@ public class ConversaService {
 
         mensagem = mensagemRepository.save(mensagem);
 
-        // Processar arquivo da mensagem, se existir
-        if (dto.getArquivo() != null) {
-            arquivoService.uploadArquivo(
-                    dto.getArquivo(),
-                    Arquivo.TipoEntidadeRelacionada.MENSAGEM,
-                    mensagem.getId()
-            );
-        }
+
 
         // Atualizar última interação da conversa
         conversa.setUltimaInteracao(new Date());
@@ -336,13 +329,6 @@ public class ConversaService {
                     usuarioDTO.setNome(participante.getNome());
                     usuarioDTO.setUsername(participante.getUsername());
 
-                    List<ArquivoDTO> arquivos = arquivoService.buscarArquivosPorEntidade(
-                            Arquivo.TipoEntidadeRelacionada.PERFIL,
-                            participante.getId()
-                    );
-                    if (!arquivos.isEmpty()) {
-                        usuarioDTO.setFotoPerfil(arquivos.get(0));
-                    }
 
                     return usuarioDTO;
                 })
@@ -352,13 +338,7 @@ public class ConversaService {
 
         // Buscar imagem do grupo
         if (conversa.isGrupo()) {
-            List<ArquivoDTO> arquivos = arquivoService.buscarArquivosPorEntidade(
-                    Arquivo.TipoEntidadeRelacionada.CONVERSA,
-                    conversa.getId()
-            );
-            if (!arquivos.isEmpty()) {
-                dto.setImagemGrupo(arquivos.get(0));
-            }
+
         }
 
         // Contagem de mensagens não lidas
@@ -387,14 +367,6 @@ public class ConversaService {
         if (conversa.isGrupo()) {
             dto.setNome(conversa.getNomeGrupo());
 
-            // Buscar imagem do grupo
-            List<ArquivoDTO> arquivos = arquivoService.buscarArquivosPorEntidade(
-                    Arquivo.TipoEntidadeRelacionada.CONVERSA,
-                    conversa.getId()
-            );
-            if (!arquivos.isEmpty()) {
-                dto.setImagemGrupo(arquivos.get(0));
-            }
         } else {
             // Para conversas individuais, mostrar informações do outro participante
             Usuario outroParticipante = conversa.getParticipantes().stream()
@@ -410,13 +382,7 @@ public class ConversaService {
                 outroParticipanteDTO.setNome(outroParticipante.getNome());
                 outroParticipanteDTO.setUsername(outroParticipante.getUsername());
 
-                List<ArquivoDTO> arquivos = arquivoService.buscarArquivosPorEntidade(
-                        Arquivo.TipoEntidadeRelacionada.PERFIL,
-                        outroParticipante.getId()
-                );
-                if (!arquivos.isEmpty()) {
-                    outroParticipanteDTO.setFotoPerfil(arquivos.get(0));
-                }
+
 
                 dto.setOutroParticipante(outroParticipanteDTO);
             }
@@ -470,25 +436,12 @@ public class ConversaService {
             remetenteDTO.setNome(mensagem.getRemetente().getNome());
             remetenteDTO.setUsername(mensagem.getRemetente().getUsername());
 
-            List<ArquivoDTO> arquivos = arquivoService.buscarArquivosPorEntidade(
-                    Arquivo.TipoEntidadeRelacionada.PERFIL,
-                    mensagem.getRemetente().getId()
-            );
-            if (!arquivos.isEmpty()) {
-                remetenteDTO.setFotoPerfil(arquivos.get(0));
-            }
+
+
 
             dto.setRemetente(remetenteDTO);
         }
 
-        // Arquivos anexos
-        List<ArquivoDTO> arquivos = arquivoService.buscarArquivosPorEntidade(
-                Arquivo.TipoEntidadeRelacionada.MENSAGEM,
-                mensagem.getId()
-        );
-        if (!arquivos.isEmpty()) {
-            dto.setArquivo(arquivos.get(0));
-        }
 
         return dto;
     }

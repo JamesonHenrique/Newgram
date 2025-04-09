@@ -13,4 +13,6 @@ export type{ PostUpdateDto } from './models/post-update-dto';
 export type{ SortObject } from './models/sort-object';
 export type{ TokenDto } from './models/token-dto';
 export type{ UsuarioCreateDto } from './models/usuario-create-dto';
-export type { UsuarioSummaryDto } from './models/usuario-summary-dto';
+export type{ UsuarioResponseDto } from './models/usuario-response-dto';
+export type{ UsuarioSummaryDto } from './models/usuario-summary-dto';
+export type{ UsuarioUpdateDto } from './models/usuario-update-dto';

@@ -23,35 +23,32 @@
           </p>
         </div>
 
-        <!-- Step Indicators -->
         <div class="step-indicators">
-          <div class="step-indicator active" id="indicator-1"></div>
-          <div class="step-indicator" id="indicator-2"></div>
-          <div class="step-indicator" id="indicator-3"></div>
+          <div class="step-indicator active" id="indicator-1" [ngClass]="{ active: isStepActive(1) }"></div>
+          <div class="step-indicator" id="indicator-2" [ngClass]="{ active: isStepActive(2) }"></div>
+          <div class="step-indicator" id="indicator-3" [ngClass]="{ active: isStepActive(3) }"></div>
         </div>
 
-        <div class="step-title active" id="step-title-1">
+        <div class="step-title " id="step-title-1" [ngClass]="{ active: isStepActive(1) }">
           Etapa 1: Informações Básicas
         </div>
-        <div class="step-title" id="step-title-2">Etapa 2: Segurança</div>
-        <div class="step-title" id="step-title-3">Etapa 3: Perfil</div>
+        <div class="step-title" id="step-title-2" [ngClass]="{ active: isStepActive(2) }">Etapa 2: Segurança</div>
+        <div class="step-title" id="step-title-3" [ngClass]="{ active: isStepActive(3) }">Etapa 3: Perfil</div>
 
-        <form id="registerForm" [formGroup]="authForm" (ngSubmit)="register()">
-          <div class="form-step active" id="step-1">
-            <!-- Name Field -->
+        <form id="registerForm" [formGroup]="authForm" (ngSubmit)="register()" enctype="multipart/form-data" >
+          <div class="form-step" id="step-1" [ngClass]="{ active: isStepActive(1) }">
             <div class="form-group">
               <label for="name" class="form-label">Nome completo</label>
               <input
                 type="text"
-                formControlName="name"
+                formControlName="nome"
                 id="name"
                 class="form-input"
                 placeholder="Digite seu nome completo"
               />
-              <div class="validation-message" id="nameError"></div>
+
             </div>
 
-            <!-- Email Field -->
             <div class="form-group">
               <label for="email" class="form-label">Email</label>
               <input
@@ -61,7 +58,7 @@
                 class="form-input"
                 placeholder="Digite seu email"
               />
-              <div class="validation-message" id="emailError"></div>
+
             </div>
 
             <div class="social-features">
@@ -80,96 +77,110 @@
             </div>
 
             <div class="form-actions">
-              <button type="button" class="btn btn-primary" id="nextToStep2">
+              <button type="button" class="btn btn-primary" id="nextToStep2" (click)="nextStep()">
                 Próximo
               </button>
             </div>
           </div>
-          <!-- Step 2: Password -->
-          <div class="form-step" id="step-2">
-            <!-- Password Field -->
+          <div class="form-step" id="step-2" [ngClass]="{ active: isStepActive(2) }">
             <div class="form-group">
-              <label for="password" class="form-label">Senha</label>
-              <input
-                type="password"
-                formControlName="password"
-                id="password"
-                class="form-input"
-                placeholder="Crie uma senha forte"
-              />
-              <i class="fas fa-eye password-toggle" id="passwordToggle"></i>
+              <label for="senha" class="form-label">Senha</label>
+              <div class="input-wrapper">
+                <input
+                  type="password"
+                  formControlName="senha"
+                  id="senha"
+                  class="form-input"
+                  placeholder="Crie uma senha forte"
+                />
+                <i
+                  class="fas password-toggle"
+                  [ngClass]="{'fa-eye': !showPassword, 'fa-eye-slash': showPassword}"
+                  (click)="togglePasswordVisibility('senha')"
+                ></i>
+              </div>
 
-              <!-- Password Strength Meter -->
               <div class="password-strength">
                 <div class="strength-meter">
                   <div class="strength-meter-fill" id="strengthMeter"></div>
                 </div>
-                <div class="strength-text" id="strengthText">
-                  Força da senha
-                </div>
+                <div class="strength-text" id="strengthText">Força da senha</div>
               </div>
 
-              <!-- Password Requirements -->
               <div class="password-requirements">
-                <div class="requirement" id="reqLength">
+                <div class="requirement requirement-unmet" id="reqLength">
                   <i class="fas fa-circle"></i>
                   <span>Mínimo de 8 caracteres</span>
                 </div>
-                <div class="requirement" id="reqUppercase">
+                <div class="requirement requirement-unmet" id="reqUppercase">
                   <i class="fas fa-circle"></i>
                   <span>Pelo menos uma letra maiúscula</span>
                 </div>
-                <div class="requirement" id="reqLowercase">
+                <div class="requirement requirement-unmet" id="reqLowercase">
                   <i class="fas fa-circle"></i>
                   <span>Pelo menos uma letra minúscula</span>
                 </div>
-                <div class="requirement" id="reqNumber">
+                <div class="requirement requirement-unmet" id="reqNumber">
                   <i class="fas fa-circle"></i>
                   <span>Pelo menos um número</span>
                 </div>
-                <div class="requirement" id="reqSpecial">
+                <div class="requirement requirement-unmet" id="reqSpecial">
                   <i class="fas fa-circle"></i>
                   <span>Pelo menos um caractere especial</span>
                 </div>
               </div>
+
+              <div *ngIf="authForm.get('senha')?.invalid && (authForm.get('senha')?.dirty || authForm.get('senha')?.touched)"
+                   class="error-message">
+                <div *ngIf="authForm.get('senha')?.errors?.['required']">Senha é obrigatória</div>
+              </div>
             </div>
 
-            <!-- Confirm Password Field -->
             <div class="form-group">
-              <label for="confirmPassword" class="form-label"
-                >Confirmar senha</label
-              >
-              <input
-                type="password"
-                id="confirmPassword"
-                class="form-input"
-                placeholder="Confirme sua senha"
-                formControlName="confirmPassword"
-              />
-              <i
-                class="fas fa-eye password-toggle"
-                id="confirmPasswordToggle"
-              ></i>
-              <div class="validation-message" id="confirmPasswordError"></div>
+              <label for="confirmacaoSenha" class="form-label">Confirmar senha</label>
+              <div class="input-wrapper">
+                <input
+                  type="password"
+                  id="confirmacaoSenha"
+                  class="form-input"
+                  placeholder="Confirme sua senha"
+                  formControlName="confirmacaoSenha"
+                  [ngClass]="{'error-message': authForm.get('confirmacaoSenha')?.invalid && (authForm.get('confirmacaoSenha')?.dirty || authForm.get('confirmacaoSenha')?.touched)}"
+                />
+                <i
+                  class="fas password-toggle"
+                  [ngClass]="{'fa-eye': !showConfirmPassword, 'fa-eye-slash': showConfirmPassword}"
+                  (click)="togglePasswordVisibility('confirmacaoSenha')"
+                ></i>
+              </div>
+
+              <div *ngIf="authForm.get('confirmacaoSenha')?.invalid && (authForm.get('confirmacaoSenha')?.dirty || authForm.get('confirmacaoSenha')?.touched)"
+                   class="error-message"
+                >
+                <div *ngIf="authForm.get('confirmacaoSenha')?.errors?.['required']">Confirmação de senha é obrigatória</div>
+              </div>
+
+              <div *ngIf="authForm.errors?.['passwordsNotMatch'] && authForm.get('confirmacaoSenha')?.valid"
+                   class="error-message">
+                As senhas não coincidem
+              </div>
             </div>
 
             <div class="form-actions">
-              <button type="button" class="btn btn-secondary" id="backToStep1">
+              <button type="button" class="btn btn-secondary" id="backToStep1" (click)="previousStep()">
                 Voltar
               </button>
-              <button type="button" class="btn btn-primary" id="nextToStep3">
+              <button type="button" class="btn btn-primary" id="nextToStep3" (click)="nextStep()">
                 Próximo
               </button>
             </div>
           </div>
 
-          <!-- Step 3: Profile -->
-          <div class="form-step" id="step-3">
-            <!-- Avatar Upload -->
-            <div class="avatar-upload">
-              <div class="avatar-preview" id="avatarPreview">
-                <img id="avatarImage" src="/placeholder.svg" alt="Avatar" />
-                <i class="fas fa-user" id="avatarPlaceholder"></i>
+          <div class="form-step" id="step-3" [ngClass]="{ active: isStepActive(3) }">
+            <div class="avatar-upload" >
+              <div class="avatar-preview" id="avatarPreview"  (click)="triggerFileInput()">
+                <img #avatarImage id="avatarImage" [src]="selectedFotoDePerfil" alt="Avatar" />
+                <i  #avatarPlaceholder class="fas fa-user" id="avatarPlaceholder"></i>
                 <div class="avatar-overlay">
                   <i class="fas fa-camera"></i>
                 </div>
@@ -178,10 +189,17 @@
                 <i class="fas fa-upload mr-2"></i>
                 Escolher foto de perfil
               </label>
-              <input type="file" id="avatarUpload" accept="image/*" formControlName="avatar" />
+              <input
+              #avatarUpload
+              type="file"
+              id="avatarUpload"
+              accept="image/*"
+
+              (change)="previewSelectedImage($event)"
+              style="display: none;"
+            />
             </div>
 
-            <!-- Username Field -->
             <div class="form-group">
               <label for="username" class="form-label">Nome de usuário</label>
               <div class="username-input-wrapper">
@@ -197,7 +215,6 @@
               <div class="validation-message" id="usernameError"></div>
             </div>
 
-            <!-- Bio Field -->
             <div class="form-group">
               <label for="bio" class="form-label">Bio</label>
               <textarea
@@ -210,7 +227,7 @@
             </div>
 
             <div class="form-actions">
-              <button type="button" class="btn btn-secondary" id="backToStep2">
+              <button type="button" class="btn btn-secondary" id="backToStep2" (click)="previousStep()">
                 Voltar
               </button>
               <button type="submit" class="btn btn-primary" id="registerBtn">
@@ -229,12 +246,10 @@
       </div>
     </div>
 
-    <!-- Visual Section -->
     <div class="register-visual-section">
       <div class="register-visual-overlay"></div>
       <div class="register-visual-bg"></div>
 
-      <!-- Floating Elements -->
       <div class="floating-circle floating-element"></div>
       <div class="floating-square floating-element"></div>
 
@@ -242,7 +257,6 @@
         <h2 class="h3-bold mb-4">Junte-se ao Newgram</h2>
         <p class="base-medium mb-6">Conheça novas pessoas e compartilhe seus melhores momentos</p>
 
-        <!-- Features List -->
         <div class="flex-center gap-3 flex-wrap ">
           <div class="flex-center flex-col  mr-6">
             <h3 class="h3-bold text-primary-500 ">10M+</h3>

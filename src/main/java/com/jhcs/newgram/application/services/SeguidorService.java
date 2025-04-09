@@ -158,31 +158,11 @@ public class SeguidorService {
                     dto.setUsername(seguido.getUsername());
 
 
-                    // Buscar foto de perfil
-                    List<ArquivoDTO> arquivos = arquivoService.buscarArquivosPorEntidade(
-                            Arquivo.TipoEntidadeRelacionada.PERFIL,
-                            seguido.getId()
-                    );
-                    if (!arquivos.isEmpty()) {
-                        dto.setFotoPerfil(arquivos.get(0));
-                    }
+
 
                     return dto;
                 })
                 .collect(Collectors.toList());
-    }
-    @Transactional(readOnly = true)
-    public List<Usuario> sugerirUsuariosParaSeguir(Long usuarioId, int limite) {
-        // Obter IDs de usuários já seguidos
-        List<Long> idsJaSeguidos = seguidorRepository.findBySeguidorId(usuarioId)
-                .stream()
-                .map(s -> s.getSeguido().getId())
-                .collect(Collectors.toList());
-
-        // Adicionar ID do próprio usuário à lista de exclusão
-        idsJaSeguidos.add(usuarioId);
-
-        return usuarioRepository.findSugestoesUsuarios(usuarioId, idsJaSeguidos, limite);
     }
 
     private SeguidorResponseDTO converterParaDTO(Seguidor seguidor) {

@@ -6,6 +6,7 @@ import { NgModule, ModuleWithProviders, SkipSelf, Optional } from '@angular/core
 import { HttpClient } from '@angular/common/http';
 import { ApiConfiguration, ApiConfigurationParams } from './api-configuration';
 
+import { UsuariosService } from './services/usuarios.service';
 import { PostsService } from './services/posts.service';
 import { AutenticacaoService } from './services/autenticacao.service';
 
@@ -17,6 +18,7 @@ import { AutenticacaoService } from './services/autenticacao.service';
   exports: [],
   declarations: [],
   providers: [
+    UsuariosService,
     PostsService,
     AutenticacaoService,
     ApiConfiguration

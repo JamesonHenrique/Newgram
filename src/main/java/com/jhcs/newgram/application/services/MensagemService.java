@@ -60,13 +60,6 @@ public class MensagemService {
 
         mensagem = mensagemRepository.save(mensagem);
 
-        if (dto.getArquivo() != null) {
-            arquivoService.uploadArquivo(
-                    dto.getArquivo(),
-                    Arquivo.TipoEntidadeRelacionada.MENSAGEM,
-                    mensagem.getId()
-            );
-        }
 
         conversa.setUltimaInteracao(new Date());
         conversaRepository.save(conversa);
@@ -140,24 +133,12 @@ public class MensagemService {
             remetenteDTO.setUsername(mensagem.getRemetente().getUsername());
 
 
-            List<ArquivoDTO> arquivos = arquivoService.buscarArquivosPorEntidade(
-                    Arquivo.TipoEntidadeRelacionada.PERFIL,
-                    mensagem.getRemetente().getId()
-            );
-            if (!arquivos.isEmpty()) {
-                remetenteDTO.setFotoPerfil(arquivos.get(0));
-            }
 
             dto.setRemetente(remetenteDTO);
         }
 
-        List<ArquivoDTO> arquivos = arquivoService.buscarArquivosPorEntidade(
-                Arquivo.TipoEntidadeRelacionada.MENSAGEM,
-                mensagem.getId()
-        );
-        if (!arquivos.isEmpty()) {
-            dto.setArquivo(arquivos.get(0));
-        }
+
+
 
         return dto;
     }

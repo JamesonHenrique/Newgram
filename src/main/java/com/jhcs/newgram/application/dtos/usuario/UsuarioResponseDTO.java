@@ -11,7 +11,7 @@ public class UsuarioResponseDTO {
     private String username;
     private String email;
     private String bio;
-    private ArquivoDTO fotoPerfil;
+    private String fotoPerfilUrl;
     private Date dataCadastro;
     private Long numeroSeguidores;
     private Long numeroSeguindo;

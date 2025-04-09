@@ -7,27 +7,31 @@
       <h1 class="h2-bold mb-6 text-center text-primary-500">Criar Novo Post</h1>
 
       <form id="createPostForm " [formGroup]="postForm">
-        <!-- Image Upload -->
+
         <div class="form-group">
           <label class="form-label">Foto</label>
           <div
-            id="imageUploadContainer"
+          (click)="triggerFileInput()"
+            id="image-upload-container"
             class="image-upload-container flex-center flex-col"
           >
             <input
-              type="file"
-              id="imageUpload"
-              accept="image/*"
-              class="hidden"
-              formControlName="image"
-            />
+
+            type="file"
+            id="imageUpload"
+            accept="image/*"
+            #imageUpload
+            (change)="previewSelectedImage($event)"
+            style="display: none;"
+          />
             <img
               id="imagePreview"
+              #imagePreview
               class="image-preview"
-              src=""
+              [src]="selectedFoto"
               alt="Preview da imagem"
             />
-            <div id="uploadPlaceholder" class="flex-center flex-col gap-3">
+            <div  #uploadPlaceholder  id="uploadPlaceholder" class="flex-center flex-col gap-3">
               <i class="fas fa-cloud-upload-alt text-4xl text-light-3"></i>
               <p class="base-medium text-light-3">
                 Clique para fazer upload ou arraste uma imagem

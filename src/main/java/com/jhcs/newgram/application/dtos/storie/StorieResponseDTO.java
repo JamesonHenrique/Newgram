@@ -9,7 +9,7 @@ import java.util.List;
 @Data
 public class StorieResponseDTO {
     private Long id;
-    private ArquivoDTO midia; // Adicionado
+
     private String legenda;
     private String localizacao;
     private Date dataCriacao;

@@ -3,6 +3,7 @@ package com.jhcs.newgram.presentation.resources;
 import com.jhcs.newgram.application.dtos.usuario.LoginDTO;
 import com.jhcs.newgram.application.dtos.usuario.TokenDTO;
 import com.jhcs.newgram.application.dtos.usuario.UsuarioCreateDTO;
+import com.jhcs.newgram.application.services.ArquivoService;
 import com.jhcs.newgram.application.services.AutenticacaoService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -11,34 +12,41 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.core.io.Resource;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequestMapping("/auth")
 @RequiredArgsConstructor
 @Tag(name = "Autenticação", description = "API para autenticação e registro de usuários")
 public class AutenticacaoResource {
-    private final AutenticacaoService autentificaçãoService;
+    private final AutenticacaoService autenticacaoService;
 
-    @PostMapping("/register")
-    @Operation(summary = "Registrar novo usuário", description = "Cria um novo usuário no sistema e retorna um token de autenticação")
+
+
+    @PostMapping(path = "/register")
+    @Operation(summary = "Registrar usuário", description = "Registra um novo usuário e retorna um token de acesso")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "Usuário registrado com sucesso",
                     content = @Content(schema = @Schema(implementation = TokenDTO.class))),
-            @ApiResponse(responseCode = "400", description = "Dados inválidos para registro",
-                    content = @Content),
-            @ApiResponse(responseCode = "409", description = "Email ou nome de usuário já cadastrado",
+            @ApiResponse(responseCode = "400", description = "Dados inválidos fornecidos",
                     content = @Content)
     })
     public ResponseEntity<TokenDTO> registrar(
             @Parameter(description = "Dados do usuário a ser registrado", required = true)
-            @RequestBody UsuarioCreateDTO dto) {
-        TokenDTO tokenDTO = autentificaçãoService.registrar(dto);
+            @Valid @RequestBody UsuarioCreateDTO dto) {
+
+        TokenDTO tokenDTO = autenticacaoService.registrar(dto);
         return ResponseEntity.status(HttpStatus.CREATED).body(tokenDTO);
     }
+
 
     @PostMapping("/login")
     @Operation(summary = "Autenticar usuário", description = "Autentica o usuário com email e senha e retorna um token de acesso")
@@ -53,7 +61,7 @@ public class AutenticacaoResource {
     public ResponseEntity<TokenDTO> login(
             @Parameter(description = "Credenciais de login do usuário", required = true)
             @RequestBody LoginDTO loginDTO) {
-        TokenDTO tokenDTO = autentificaçãoService.autenticar(loginDTO.getEmail(), loginDTO.getSenha());
+        TokenDTO tokenDTO = autenticacaoService.autenticar(loginDTO.getEmail(), loginDTO.getSenha());
         return ResponseEntity.ok(tokenDTO);
     }
 
@@ -68,7 +76,8 @@ public class AutenticacaoResource {
     public ResponseEntity<TokenDTO> refreshToken(
             @Parameter(description = "Refresh token para renovação", required = true)
             @RequestBody  String refreshToken) {
-        TokenDTO tokenDTO = autentificaçãoService.renovarToken(refreshToken);
+        TokenDTO tokenDTO = autenticacaoService.renovarToken(refreshToken);
         return ResponseEntity.ok(tokenDTO);
     }
+
 }

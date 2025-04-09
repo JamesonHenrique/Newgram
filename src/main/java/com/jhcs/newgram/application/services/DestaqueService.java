@@ -124,8 +124,6 @@ public class DestaqueService {
             throw new BusinessException("Você não tem permissão para excluir este destaque");
         }
 
-        // Remover a capa do destaque, se existir
-        arquivoService.excluirArquivosPorEntidade(Arquivo.TipoEntidadeRelacionada.DESTAQUE, destaqueId);
 
         destaqueRepository.delete(destaque);
     }
@@ -165,11 +163,6 @@ public class DestaqueService {
             throw new BusinessException("Você não tem permissão para editar este destaque");
         }
 
-        // Remover capa antiga, se existir
-        arquivoService.excluirArquivosPorEntidade(Arquivo.TipoEntidadeRelacionada.DESTAQUE, destaqueId);
-
-        // Salvar nova capa
-        arquivoService.uploadArquivo(arquivo, Arquivo.TipoEntidadeRelacionada.DESTAQUE, destaqueId);
 
         return buscarDestaquePorId(destaqueId, usuarioId);
     }
@@ -209,14 +202,7 @@ public class DestaqueService {
         Long quantidadeStories = destaqueRepository.countStoriesByDestaqueId(destaque.getId());
         dto.setQuantidadeStories(quantidadeStories.intValue());
 
-        // Obter capa do destaque
-        List<ArquivoDTO> arquivos = arquivoService.buscarArquivosPorEntidade(
-                Arquivo.TipoEntidadeRelacionada.DESTAQUE,
-                destaque.getId()
-        );
-        if (!arquivos.isEmpty()) {
-            dto.setCapaDestaque(arquivos.get(0));
-        }
+
 
         return dto;
     }
@@ -233,14 +219,7 @@ public class DestaqueService {
         Long quantidadeStories = destaqueRepository.countStoriesByDestaqueId(destaque.getId());
         dto.setQuantidadeStories(quantidadeStories.intValue());
 
-        // Obter capa do destaque
-        List<ArquivoDTO> arquivos = arquivoService.buscarArquivosPorEntidade(
-                Arquivo.TipoEntidadeRelacionada.DESTAQUE,
-                destaque.getId()
-        );
-        if (!arquivos.isEmpty()) {
-            dto.setCapaDestaque(arquivos.get(0));
-        }
+
 
         // Incluir os stories, se solicitado
         if (incluirStories && destaque.getStories() != null) {
@@ -267,14 +246,6 @@ public class DestaqueService {
         // Contagem de visualizações
         dto.setNumeroVisualizacoes((long) storie.getVisualizadoPor().size());
 
-        // Obter mídia do storie
-        List<ArquivoDTO> arquivos = arquivoService.buscarArquivosPorEntidade(
-                Arquivo.TipoEntidadeRelacionada.STORIE,
-                storie.getId()
-        );
-        if (!arquivos.isEmpty()) {
-            dto.setMidia(arquivos.get(0));
-        }
 
         return dto;
     }

@@ -21,6 +21,7 @@ public class Conversa {
     private boolean isGrupo;
     private String nomeGrupo;
 
+
     @ManyToMany
     @JoinTable(
             name = "conversa_participante",

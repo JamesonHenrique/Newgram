@@ -18,5 +18,5 @@ public class ComentarioResponseDTO {
     private Long numeroRespostas;
     private Boolean curtidoPeloUsuario;
     private List<ComentarioResponseDTO> respostas;
-    private ArquivoDTO anexo; // Adicionado
+
 }

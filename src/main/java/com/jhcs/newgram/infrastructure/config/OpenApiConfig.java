@@ -6,6 +6,8 @@ import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Contact;
 import io.swagger.v3.oas.models.info.Info;
 import io.swagger.v3.oas.models.info.License;
+import io.swagger.v3.oas.models.media.MediaType;
+import io.swagger.v3.oas.models.responses.ApiResponse;
 import io.swagger.v3.oas.models.security.SecurityRequirement;
 import io.swagger.v3.oas.models.security.SecurityScheme;
 import io.swagger.v3.oas.models.servers.Server;
@@ -53,6 +55,15 @@ public class OpenApiConfig {
                         .url("https://example.com/docs"))
                 .servers(getServers())
                 .tags(getApplicationTags());
+
+        Components components = new Components();
+
+
+        components.addResponses("JsonResponse", new ApiResponse()
+                .description("Resposta padrão")
+                .content(new io.swagger.v3.oas.models.media.Content()
+                        .addMediaType("application/json",
+                                new MediaType())));
 
         if (isSecurityEnabled) {
             openAPI.addSecurityItem(new SecurityRequirement().addList("bearerAuth"))

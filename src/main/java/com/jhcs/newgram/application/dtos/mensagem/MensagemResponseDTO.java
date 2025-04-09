@@ -15,7 +15,7 @@ public class MensagemResponseDTO {
     private UsuarioSummaryDTO remetente;
     private Date dataEnvio;
     private boolean visualizada;
-    private ArquivoDTO arquivo;
+
     private boolean deletada;
     private boolean entregue;
 }

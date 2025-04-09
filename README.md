@@ -1,40 +1,248 @@
-# <img src="newgram-ui/public/favicon.ico" alt="Logo" width="35" height="35"> Newgram
-
-## Índice
+# ✨ Newgram - Uma Plataforma Moderna de Compartilhamento e Conexão
 
 <div align="center">
+ <img src="newgram-ui/public/images/logo.png" height=60px alt="Logo"> 
+  <p>Conectando pessoas através de conteúdos significativos</p>
+  
+  ![GitHub stars](https://img.shields.io/github/stars/JamesonHenrique/Newgram?style=social)
+  ![GitHub last commit](https://img.shields.io/github/last-commit/JamesonHenrique/Newgram)
+  ![License](https://img.shields.io/badge/license-MIT-blue)
+</div>
 
-| Essenciais                          | Desenvolvimento             | Documentação                  |
-| -------------------------------------- | ------------------------------ | -------------------------------- |
-| [Sobre](#sobre)                     | [Tecnologias](#tecnologias) | [API](#api)                   |
-| [Funcionalidades](#funcionalidades) | [Requisitos](#requisitos)   | [Contribuição](#contribuindo) |
-| [Objetivos](#objetivos)             | [Instalação](#instalação)   | [Licença](#licença)           |
+## 🌟 Destaques do Projeto
+
+<div align="center">
+  
+| 🚀 Tecnologias Avançadas | 💡 Recursos Inovadores | 🛡️ Segurança |
+|-------------------------|-----------------------|--------------|
+| Angular 16 com Signals | Feed Inteligente | JWT Authentication |
+| Spring Boot 3.x | Recomendações Personalizadas | Spring Security |
+| Tailwind CSS | Interações em Tempo Real | Data Protection |
+| PostgreSQL | Favoritos Inteligentes | Rate Limiting |
 
 </div>
 
-## Sobre
+## 📑 Índice Rápido
+- [✨ Visão Geral](#-visão-geral)
+- [🛠️ Tecnologias](#️-tecnologias)
+- [🎯 Funcionalidades](#-funcionalidades)
+- [🚀 Começando](#-começando)
+  - [📋 Pré-requisitos](#-pré-requisitos)
+  - [⚙️ Configuração](#️-configuração)
+- [🌐 API](#-api)
+- [🤝 Como Contribuir](#-como-contribuir)
+- [📜 Licença](#-licença)
+- [📬 Contato](#-contato)
 
-Newgram é uma aplicação web de compartilhamento e descoberta de conteúdo, focada em conectar pessoas através de interesses comuns e experiências compartilhadas. A plataforma permite aos usuários explorar, favoritar e interagir com diversos tipos de conteúdo de forma intuitiva e envolvente.
+## ✨ Visão Geral
 
-### Objetivos
+O Newgram redefine a experiência de compartilhamento de conteúdo, oferecendo:
 
-- Criar uma plataforma de descoberta de conteúdo personalizada
-- Facilitar a conexão entre usuários com interesses semelhantes
-- Oferecer uma experiência de navegação intuitiva e agradável
-- Permitir interações significativas através de favoritos e exploração
-- Promover a diversidade de conteúdo
+- **Conexões autênticas** baseadas em interesses compartilhados
+- **Descoberta inteligente** com algoritmos de recomendação
+- **Performance excepcional** graças à arquitetura moderna
+- **Experiência fluida** em qualquer dispositivo
 
+### 🎯 Diagrama de Classes
 
-### Diferenciais
+```mermaid
+classDiagram
+    %% Entidades Principais
+    class Usuario {
+        +Long id
+        +String nome
+        +String username
+        +String email
+        +String senha
+        +String bio
+        +Date dataCriacao
+        +List~Post~ posts
+        +List~Usuario~ seguidores
+        +List~Usuario~ seguindo
+        +List~Salvos~ postsSalvos
+        +List~Notificacao~ notificacoes
+        +List~Mensagem~ mensagensEnviadas
+        +List~Mensagem~ mensagensRecebidas
+        +List~Conversa~ conversas
+        +StatusUsuario statusUsuario
+    }
 
-- Interface moderna e responsiva
-- Sistema de recomendação personalizado
-- Exploração de conteúdo intuitiva
-- Funcionalidade de favoritos
-- Design minimalista e elegante
-- Carregamento rápido e eficiente
+    class Post {
+        +Long id
+        +String legenda
+        +Date dataCriacao
+        +String localizacao
+        +boolean arquivado
+        +TipoVisibilidade visibilidade
+        +List~Comentario~ comentarios
+        +List~Curtida~ curtidas
+        +List~Hashtag~ hashtags
+        +List~Usuario~ marcacoes
+        +List~Salvos~ salvosPor
+    }
 
-## Tecnologias
+    class Storie {
+        +Long id
+        +Date dataCriacao
+        +Date dataExpiracao
+        +boolean destacado
+        +List~Usuario~ visualizadoPor
+        +List~Usuario~ marcacoes
+    }
+
+    class Conversa {
+        +Long id
+        +Date dataCriacao
+        +Date ultimaInteracao
+        +boolean isGrupo
+        +String nomeGrupo
+        +List~Usuario~ participantes
+        +List~Mensagem~ mensagens
+    }
+
+    %% Relacionamentos Complexos
+    Usuario "1" *-- "0..*" Post : autor
+    Usuario "1" *-- "0..*" Storie : autor
+    Usuario "1" *-- "1" StatusUsuario : possui
+    Usuario "1" *-- "0..*" Salvos : salvou
+    Usuario "1" *-- "0..*" Notificacao : recebeu
+    Usuario "1" *-- "0..*" Mensagem : enviou
+    Usuario "1" *-- "0..*" Mensagem : recebeu
+    Usuario "1" *-- "0..*" Conversa : participa
+    Usuario "1" *-- "0..*" Usuario : segue
+    Usuario "1" *-- "0..*" Usuario : seguidoPor
+
+    Post "1" *-- "0..*" Comentario : tem
+    Post "1" *-- "0..*" Curtida : recebeu
+    Post "1" *-- "0..*" Hashtag : marcadoCom
+    Post "1" *-- "0..*" Usuario : marcou
+    Post "1" *-- "0..*" Salvos : salvoEm
+
+    Conversa "1" *-- "0..*" Mensagem : contém
+    Conversa "1" *-- "1" Usuario : criadoPor
+
+    %% Classes de Suporte
+    class Comentario {
+        +Long id
+        +String texto
+        +Date dataCriacao
+        +List~Curtida~ curtidas
+    }
+
+    class Curtida {
+        +Long id
+        +Date dataCriacao
+    }
+
+    class Hashtag {
+        +Long id
+        +String nome
+    }
+
+    class Salvos {
+        +Long id
+        +Date dataSalvo
+        +String colecao
+    }
+
+    class Notificacao {
+        +Long id
+        +TipoNotificacao tipo
+        +String conteudo
+        +Date dataCriacao
+        +boolean lida
+    }
+
+    class Mensagem {
+        +Long id
+        +String conteudo
+        +boolean deletadaPeloRemetente
+        +Date dataEnvio
+        +boolean visualizada
+        +boolean entregue
+        +TipoMensagem tipo
+        +String urlMidia
+    }
+
+    class StatusUsuario {
+        +Long id
+        +boolean online
+        +Date ultimoAcesso
+        +String statusPersonalizado
+    }
+
+    class Destaque {
+        +Long id
+        +String nome
+        +Date dataCriacao
+        +List~Storie~ stories
+    }
+
+    class Arquivo {
+        +Long id
+        +String nomeOriginal
+        +String nomeArmazenado
+        +String tipo
+        +Long tamanho
+        +Date dataUpload
+        +String caminho
+        +String contentType
+        +TipoEntidadeRelacionada tipoEntidade
+        +Long entidadeId
+    }
+
+    %% Relacionamentos Adicionais
+    Comentario "1" *-- "0..*" Curtida : recebeu
+    Comentario "1" *-- "0..*" Comentario : respostas
+    Storie "1" *-- "0..*" Destaque : emDestaque
+    Arquivo "1" --o Post : anexo
+    Arquivo "1" --o Storie : anexo
+    Arquivo "1" --o Mensagem : anexo
+
+    %% Enums
+    class TipoVisibilidade {
+        <<enum>>
+        PUBLICO
+        PRIVADO
+        SOMENTE_SEGUIDORES
+    }
+
+    class TipoMensagem {
+        <<enum>>
+        TEXTO
+        IMAGEM
+        VIDEO
+        AUDIO
+        ARQUIVO
+        LOCALIZACAO
+        CONTATO
+        REACAO
+        SISTEMA
+    }
+
+    class TipoNotificacao {
+        <<enum>>
+        SEGUIDOR
+        COMENTARIO
+        CURTIDA
+        MENSAGEM
+        NOVO_SEGUIDOR
+    }
+
+    class TipoEntidadeRelacionada {
+        <<enum>>
+        POST
+        STORIE
+        PERFIL
+        MENSAGEM
+        COMENTARIO
+        CONVERSA
+        DESTAQUE
+    }
+```
+
+## 🛠️ Tecnologias
+
 
 ### Backend
 
@@ -59,49 +267,30 @@ Newgram é uma aplicação web de compartilhamento e descoberta de conteúdo, fo
 - Angular JWT
 - WebSocket para atualizações em tempo real
 
-## Funcionalidades
+## 🎯 Funcionalidades
 
-### Autenticação
+### 🔑 Autenticação Avançada
+- Fluxo OAuth2 integrado
+- Autenticação multifator
+- Gerenciamento de sessões
 
-- Registro de usuários
-- Login seguro
-- Recuperação de senha
-- Autenticação JWT
+### 🌍 Exploração de Conteúdo
+- **Feed algorítmico** - Aprende com suas interações
+- **Busca semântica** - Encontre o que realmente importa
+- **Coleções temáticas** - Conteúdo organizado por tópicos
 
-### Exploração de Conteúdo
+### ❤️ Sistema de Favoritos
+- Tags inteligentes
+- Organização visual
+- Sincronização cross-device
 
-- Feed personalizado
-- Filtros de busca avançados
-- Recomendações baseadas em interesses
-- Visualização detalhada de conteúdo
+## 🚀 Começando
 
-### Favoritos
-
-- Adicionar e remover favoritos
-- Categorização de favoritos
-- Sincronização entre dispositivos
-- Compartilhamento de favoritos
-
-### Perfil de Usuário
-
-- Personalização de perfil
-- Histórico de interações
-- Configurações de privacidade
-- Estatísticas de uso
-
-### Notificações
-
-- Notificações em tempo real
-- Alertas personalizados
-- Configurações de notificação
-
-## Requisitos
-
+### 📋 Pré-requisitos
+- Docker (recomendado)
 - Java 17+
-- Node.js 18+
-- Angular CLI
-- PostgreSQL 12+
-- Maven 3.6+
+- Node 18+
+- PostgreSQL 15+
 
 ## Instalação
 
@@ -114,7 +303,7 @@ git clone https://github.com/JamesonHenrique/Newgram.git
 cd newgram
 ```
 
-2. Configure o banco de dados PostgreSQL no arquivo `src/main/resources/application.yml`
+2. Configure o banco de dados PostgreSQL no arquivo `src/main/resources/application.properties`
 
 3. Execute o backend:
 
@@ -146,7 +335,7 @@ ng serve
 
 A aplicação estará disponível em `http://localhost:4200`
 
-## API
+## 🌐 API
 
 A documentação da API está disponível através do Swagger UI:
 
@@ -154,30 +343,39 @@ A documentação da API está disponível através do Swagger UI:
 http://localhost:8080/swagger-ui.html
 ```
 
-### Principais Endpoints
-- `/auth` - Autenticação
-- `/explorar` - Exploração de conteúdo
-- `/favoritos` - Gerenciamento de favoritos
-- `/perfis` - Perfil de usuário
+Principais endpoints:
 
-## Contribuindo
+| Método | Endpoint | Descrição |
+|--------|----------|-----------|
+| POST | `/auth/login` | Autenticação |
+| GET | `/content?tags=` | Busca filtrada |
+| PUT | `/favorites/{id}` | Gerencia favoritos |
 
-1. Faça o fork do projeto
-2. Crie sua feature branch (`git checkout -b feature/NovaFeature`)
-3. Commit suas mudanças (`git commit -m 'Adiciona nova feature'`)
-4. Push para a branch (`git push origin feature/NovaFeature`)
-5. Abra um Pull Request
+## 🤝 Como Contribuir
 
-## Licença
+Siga nosso fluxo de colaboração:
 
-Este projeto está sob a licença MIT - veja o arquivo [LICENSE](LICENSE) para detalhes.
+1. Crie uma issue descrevendo sua proposta
+2. Faça fork do projeto
+3. Crie um branch descritivo (`feat/new-auth-flow`)
+4. Envie seu PR com:
+   - Descrição clara
+   - Screenshots (se aplicável)
+   - Testes atualizados
+
+## 📜 Licença
+
+MIT License - Veja o arquivo [LICENSE](LICENSE) para detalhes.
+
+## 📬 Contato
+
+**Jameson Henrique**  
+[![LinkedIn](https://img.shields.io/badge/LinkedIn-0077B5?style=flat&logo=linkedin)](https://linkedin.com/in/JamesonHenrique)  
+[![Email](https://img.shields.io/badge/Email-D14836?style=flat&logo=gmail)](mailto:jamesonhenrique14@email.com)
 
 ---
 
 <div align="center">
-
-Se este projeto te ajudou, considere dar uma estrela!
-
-[ Voltar ao topo](#sobre)
-
+  <p>Gostou do projeto? Deixe uma ⭐ no repositório!</p>
+  <a href="#✨-newgram---uma-plataforma-moderna-de-compartilhamento-e-conexão">↑ Voltar ao topo ↑</a>
 </div>

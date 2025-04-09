@@ -217,7 +217,7 @@ listPostRecomendados() {
   });
 }
 listPostsByLegenda() {
-  this.postsService.listarPostsPorLegenda(
+  this.postsService.buscarPostsPorLegenda(
     {
       termo: this.termo,
       pageable: this.pageable

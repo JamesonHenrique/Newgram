@@ -21,6 +21,7 @@ public class Post {
     private Date dataCriacao;
     private String localizacao;
     private boolean arquivado;
+    private String imagemUrl;
 
     @Enumerated(EnumType.STRING)
     private TipoVisibilidade visibilidade;

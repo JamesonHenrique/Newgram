@@ -6,4 +6,5 @@ import lombok.Data;
 public class TokenDTO {
     private String token;
     private String refreshToken;
+    private Long userId;
 }

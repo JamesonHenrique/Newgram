@@ -1,26 +1,29 @@
 package com.jhcs.newgram.application.services;
 
 import com.jhcs.newgram.application.dtos.arquivo.ArquivoDTO;
-import com.jhcs.newgram.application.dtos.usuario.UsuarioCreateDTO;
-import com.jhcs.newgram.application.dtos.usuario.UsuarioResponseDTO;
-import com.jhcs.newgram.application.dtos.usuario.UsuarioSummaryDTO;
-import com.jhcs.newgram.application.dtos.usuario.UsuarioUpdateDTO;
+import com.jhcs.newgram.application.dtos.usuario.*;
 import com.jhcs.newgram.core.domain.entities.Arquivo;
 import com.jhcs.newgram.core.domain.entities.StatusUsuario;
 import com.jhcs.newgram.core.domain.entities.Usuario;
+import com.jhcs.newgram.core.domain.enums.TipoArquivo;
 import com.jhcs.newgram.core.domain.repositories.ArquivoRepository;
 import com.jhcs.newgram.core.domain.repositories.SeguidorRepository;
 import com.jhcs.newgram.core.domain.repositories.StatusUsuarioRepository;
 import com.jhcs.newgram.core.domain.repositories.UsuarioRepository;
+import com.jhcs.newgram.core.domain.utils.ArquivoUtils;
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.Date;
 import java.util.List;
@@ -37,7 +40,7 @@ public class UsuarioService {
     private SeguidorRepository seguidorRepository;
 
     @Autowired
-    private ArquivoRepository arquivoRepository;
+    private ArquivoService arquivoService;
 
     @Autowired
     private StatusUsuarioRepository statusUsuarioRepository;
@@ -80,7 +83,13 @@ public class UsuarioService {
 
     @Transactional(readOnly = true)
     public Page<UsuarioSummaryDTO> buscarUsuarios(String termo, Pageable pageable, Long usuarioLogadoId) {
-        return usuarioRepository.buscarUsuarios(termo, pageable)
+        Sort sort = Sort.by(Sort.Direction.DESC, "dataCriacao");
+        Pageable safePageable = PageRequest.of(
+                pageable.getPageNumber(),
+                pageable.getPageSize(),
+                sort
+        );
+        return usuarioRepository.buscarUsuarios(termo, safePageable)
                 .map(usuario -> converterParaUsuarioSummaryDTO(usuario, usuarioLogadoId));
     }
 
@@ -105,56 +114,96 @@ public class UsuarioService {
 
     @Transactional(readOnly = true)
     public Page<UsuarioSummaryDTO> buscarSeguidores(Long usuarioId, Pageable pageable, Long usuarioLogadoId) {
-        return usuarioRepository.findSeguidoresByUsuarioId(usuarioId, pageable)
+        Sort sort = Sort.by(Sort.Direction.DESC, "dataCriacao");
+        Pageable safePageable = PageRequest.of(
+                pageable.getPageNumber(),
+                pageable.getPageSize(),
+                sort
+        );
+        return usuarioRepository.findSeguidoresByUsuarioId(usuarioId, safePageable)
                 .map(usuario -> converterParaUsuarioSummaryDTO(usuario, usuarioLogadoId));
     }
 
     @Transactional(readOnly = true)
     public Page<UsuarioSummaryDTO> buscarSeguidos(Long usuarioId, Pageable pageable, Long usuarioLogadoId) {
-        return usuarioRepository.findSeguidosByUsuarioId(usuarioId, pageable)
+        Sort sort = Sort.by(Sort.Direction.DESC, "dataCriacao");
+        Pageable safePageable = PageRequest.of(
+                pageable.getPageNumber(),
+                pageable.getPageSize(),
+                sort
+        );
+        return usuarioRepository.findSeguidosByUsuarioId(usuarioId, safePageable)
                 .map(usuario -> converterParaUsuarioSummaryDTO(usuario, usuarioLogadoId));
     }
 
     @Transactional(readOnly = true)
-    public List<UsuarioSummaryDTO> buscarSugestoesUsuarios(Long usuarioId, int limite) {
-        // Obter IDs dos usuários que o usuário já segue
-        List<Usuario> seguidos = seguidorRepository.findSeguidosByUsuarioId(usuarioId, null);
-        List<Long> idsExcluidos = seguidos.stream().map(Usuario::getId).collect(Collectors.toList());
-
-        // Buscar sugestões excluindo o próprio usuário e os já seguidos
-        List<Usuario> sugestoes = usuarioRepository.findSugestoesUsuarios(usuarioId, idsExcluidos, limite);
-        return sugestoes.stream()
-                .map(usuario -> converterParaUsuarioSummaryDTO(usuario, usuarioId))
-                .collect(Collectors.toList());
+    public Page<UsuarioSummaryDTO> buscarSugestoesUsuarios(Long usuarioId, Pageable pageable) {
+        Sort sort = Sort.by(Sort.Direction.DESC, "dataCriacao");
+        Pageable safePageable = PageRequest.of(
+                pageable.getPageNumber(),
+                pageable.getPageSize(),
+                sort
+        );
+        Page<Usuario> sugestoes = usuarioRepository.findSugestoesUsuarios(usuarioId, safePageable);
+        return sugestoes.map(usuario -> converterParaUsuarioSummaryDTO(usuario, usuarioId));
     }
-
+    @Transactional(readOnly = true)
+    public Page<UsuarioSummaryDTO> buscarUsuariosMaisFamosos(Long usuarioId,Pageable pageable) {
+        Sort sort = Sort.by(Sort.Direction.DESC, "dataCriacao");
+        Pageable safePageable = PageRequest.of(
+                pageable.getPageNumber(),
+                pageable.getPageSize(),
+                sort
+        );
+        Page<Usuario> famosos = usuarioRepository.findUsuariosMaisFamosos(safePageable);
+        return famosos.map(usuario -> converterParaUsuarioSummaryDTO(usuario, usuarioId));
+    }
     private ArquivoDTO buscarFotoPerfil(Long usuarioId) {
-        List<Arquivo> arquivos = arquivoRepository.findByTipoEntidadeAndEntidadeIdAndTipoArquivo(
-                Arquivo.TipoEntidadeRelacionada.PERFIL, usuarioId, "imagem");
 
-        if (!arquivos.isEmpty()) {
-            Arquivo arquivo = arquivos.get(0);
-            ArquivoDTO dto = new ArquivoDTO();
-            dto.setId(arquivo.getId());
-            dto.setNomeOriginal(arquivo.getNomeOriginal());
-            dto.setUrl(arquivo.getCaminho());
-            dto.setContentType(arquivo.getContentType());
-            return dto;
-        }
         return null;
     }
+    @Transactional(readOnly = true)
+    public Page<UsuarioComumDTO> buscarUsuariosPorAmigosEmComum(Long usuarioId, Pageable pageable) {
+        Sort sort = Sort.by(Sort.Direction.DESC, "dataCriacao");
+        Pageable safePageable = PageRequest.of(
+                pageable.getPageNumber(),
+                pageable.getPageSize(),
+                sort
+        );
+        Page<Object[]> results = usuarioRepository.findUsuariosPorAmigosEmComum(usuarioId, safePageable);
+        return results.map(result -> {
+            Usuario usuario = (Usuario) result[0];
+            Long commonFollowers = (Long) result[1];
+            return converterParaUsuarioComumDTO(usuario, commonFollowers.intValue());
+        });
+    }
+    public void salvarFotoDePerfil(Long id, MultipartFile file) {
+        Usuario usuario = usuarioRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Nenhum usuario encontrado com o ID: " + id));
 
+        var fotoPerfil = arquivoService.saveFile(file, usuario.getUsuarioName(), TipoArquivo.FOTO_PERFIL);
+        usuario.setFotoPerfil(fotoPerfil);
+        usuarioRepository.save(usuario);
+    }
+    private UsuarioComumDTO converterParaUsuarioComumDTO(Usuario usuario, int commonFollowers) {
+        UsuarioComumDTO dto = new UsuarioComumDTO();
+        dto.setId(usuario.getId());
+        dto.setNome(usuario.getNome());
+        dto.setUsername(usuario.getUsuarioName());
+        dto.setCommonFollowers(commonFollowers);
+        return dto;
+    }
     private UsuarioResponseDTO converterParaUsuarioResponseDTO(Usuario usuario, ArquivoDTO fotoPerfil) {
         UsuarioResponseDTO dto = new UsuarioResponseDTO();
         dto.setId(usuario.getId());
         dto.setNome(usuario.getNome());
-        dto.setUsername(usuario.getUsername());
+        dto.setUsername(usuario.getUsuarioName());
         dto.setEmail(usuario.getEmail());
         dto.setBio(usuario.getBio());
-        dto.setFotoPerfil(fotoPerfil);
+
         dto.setDataCadastro(usuario.getDataCriacao());
 
-        // Obter contagens
+
         dto.setNumeroSeguidores(seguidorRepository.countSeguidoresByUsuarioId(usuario.getId()));
         dto.setNumeroSeguindo(seguidorRepository.countSeguidosByUsuarioId(usuario.getId()));
         dto.setNumeroPosts((long) usuario.getPosts().size());
@@ -166,20 +215,22 @@ public class UsuarioService {
         UsuarioSummaryDTO dto = new UsuarioSummaryDTO();
         dto.setId(usuario.getId());
         dto.setNome(usuario.getNome());
-        dto.setUsername(usuario.getUsername());
+        dto.setUsername(usuario.getUsuarioName());
+        dto.setNumeroSeguidores(seguidorRepository.countSeguidoresByUsuarioId(usuario.getId()));
+        dto.setNumeroSeguindo(seguidorRepository.countSeguidosByUsuarioId(usuario.getId()));
+        dto.setNumeroPosts((long) usuario.getPosts().size());
 
-
-        // Verificar se o usuário logado segue este usuário
+        dto.setFotoPerfil(ArquivoUtils.lerArquivoDoLocal(usuario.getFotoPerfil()));
         boolean seguindoUsuario = false;
         if (usuarioLogadoId != null) {
             seguindoUsuario = seguidorRepository.existsBySeguidorIdAndSeguidoId(usuarioLogadoId, usuario.getId());
         }
         dto.setSeguindoUsuario(seguindoUsuario);
 
-        // Buscar foto de perfil
-        ArquivoDTO fotoPerfil = buscarFotoPerfil(usuario.getId());
-        dto.setFotoPerfil(fotoPerfil);
+
 
         return dto;
     }
+
+
 }

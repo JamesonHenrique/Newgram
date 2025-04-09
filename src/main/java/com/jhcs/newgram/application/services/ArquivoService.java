@@ -1,193 +1,133 @@
 package com.jhcs.newgram.application.services;
 
-
-
-import com.jhcs.newgram.application.dtos.arquivo.ArquivoDTO;
-import com.jhcs.newgram.application.dtos.arquivo.ArquivoUploadResponseDTO;
-import com.jhcs.newgram.core.domain.entities.Arquivo;
-import com.jhcs.newgram.core.domain.repositories.ArquivoRepository;
-import com.jhcs.newgram.infrastructure.exception.BusinessException;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.jhcs.newgram.core.domain.enums.TipoArquivo;
+import com.jhcs.newgram.infrastructure.exception.ArquivoException;
+import jakarta.annotation.Nonnull;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.UrlResource;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Date;
+import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
+
+import static java.io.File.separator;
 
 @Service
-public class
-ArquivoService {
+@RequiredArgsConstructor
+@Slf4j
+public class ArquivoService {
 
-    @Value("${app.upload.dir}")
-    private String uploadDir;
+    @Value("${file.upload-dir}")
+    private String fileUploadPath;
 
-    @Value("${app.base.url}")
-    private String baseUrl;
+    @Value("${file.max-size:5242880}")
+    private long maxFileSize;
 
-    @Autowired
-    private ArquivoRepository arquivoRepository;
+    private static final List<String> EXTENSOES_PERMITIDAS = Arrays.asList("jpg", "jpeg", "png", "gif");
 
-    @Transactional
-    public ArquivoUploadResponseDTO uploadArquivo(MultipartFile file, Arquivo.TipoEntidadeRelacionada tipoEntidade, Long entidadeId) {
-        validarArquivo(file);
 
+
+    public String saveFile(
+            @Nonnull MultipartFile sourceFile,
+            @Nonnull String nomeUsuario,
+            @Nonnull TipoArquivo tipoArquivo
+    ) {
+        validarArquivo(sourceFile);
+        final String fileUploadSubPath = "usuarios" + separator + nomeUsuario + separator + tipoArquivo.getPasta();
+        return uploadFile(sourceFile, fileUploadSubPath);
+    }
+
+    public Resource carregarArquivo(String caminhoCompleto) {
         try {
-            String nomeOriginal = file.getOriginalFilename();
-            String extensao = obterExtensao(nomeOriginal);
-            String nomeArmazenado = UUID.randomUUID().toString() + "." + extensao;
+            Path arquivoPath = Paths.get(caminhoCompleto);
+            Resource resource = new UrlResource(arquivoPath.toUri());
 
-            String contentType = file.getContentType();
-            String tipo = determinarTipoArquivo(contentType);
-
-            // Criar diretório se não existir
-            Path diretorioPath = Paths.get(uploadDir, tipo);
-            if (!Files.exists(diretorioPath)) {
-                Files.createDirectories(diretorioPath);
+            if (resource.exists() && resource.isReadable()) {
+                return resource;
+            } else {
+                throw new ArquivoException("Não foi possível ler o arquivo: " + caminhoCompleto);
             }
-
-            // Caminho completo do arquivo
-            Path caminhoCompleto = diretorioPath.resolve(nomeArmazenado);
-
-            // Salvar arquivo no sistema de arquivos
-            Files.copy(file.getInputStream(), caminhoCompleto);
-
-            // Criar entidade Arquivo
-            Arquivo arquivo = new Arquivo();
-            arquivo.setNomeOriginal(nomeOriginal);
-            arquivo.setNomeArmazenado(nomeArmazenado);
-            arquivo.setTipo(tipo);
-            arquivo.setTamanho(file.getSize());
-            arquivo.setDataUpload(new Date());
-            arquivo.setCaminho(tipo + "/" + nomeArmazenado);
-            arquivo.setContentType(contentType);
-            arquivo.setTipoEntidade(tipoEntidade);
-            arquivo.setEntidadeId(entidadeId);
-
-            arquivo = arquivoRepository.save(arquivo);
-
-            // Montar resposta
-            ArquivoUploadResponseDTO response = new ArquivoUploadResponseDTO();
-            response.setId(arquivo.getId());
-            response.setUrl(baseUrl + "/arquivos/" + arquivo.getCaminho());
-            response.setTipo(arquivo.getTipo());
-            response.setContentType(arquivo.getContentType());
-
-            return response;
-
-        } catch (IOException e) {
-            throw new BusinessException("Erro ao fazer upload do arquivo: " + e.getMessage());
+        } catch (MalformedURLException e) {
+            throw new ArquivoException("Erro ao carregar o arquivo: " + e.getMessage());
         }
     }
 
-    @Transactional(readOnly = true)
-    public List<ArquivoDTO> buscarArquivosPorEntidade(Arquivo.TipoEntidadeRelacionada tipoEntidade, Long entidadeId) {
-        List<Arquivo> arquivos = arquivoRepository.findByTipoEntidadeAndEntidadeId(tipoEntidade, entidadeId);
-        return arquivos.stream().map(this::converterParaDTO).collect(Collectors.toList());
-    }
-
-    @Transactional
-    public void excluirArquivo(Long arquivoId) {
-        Arquivo arquivo = arquivoRepository.findById(arquivoId)
-                .orElseThrow(() -> new BusinessException("Arquivo não encontrado"));
-
-        // Excluir arquivo físico
-        Path path = Paths.get(uploadDir, arquivo.getCaminho());
+    public boolean excluirArquivo(String caminhoCompleto) {
         try {
-            Files.deleteIfExists(path);
+            Path arquivoPath = Paths.get(caminhoCompleto);
+            return Files.deleteIfExists(arquivoPath);
         } catch (IOException e) {
-            throw new BusinessException("Erro ao excluir arquivo físico: " + e.getMessage());
+            log.error("Erro ao excluir o arquivo: {}", caminhoCompleto, e);
+            throw new ArquivoException("Não foi possível excluir o arquivo: " + e.getMessage());
         }
-
-        // Excluir registro no banco
-        arquivoRepository.delete(arquivo);
     }
 
-    @Transactional
-    public void excluirArquivosPorEntidade(Arquivo.TipoEntidadeRelacionada tipoEntidade, Long entidadeId) {
-        List<Arquivo> arquivos = arquivoRepository.findByTipoEntidadeAndEntidadeId(tipoEntidade, entidadeId);
+    private String uploadFile(
+            @Nonnull MultipartFile sourceFile,
+            @Nonnull String fileUploadSubPath
+    ) {
+        final String finalUploadPath = fileUploadPath + "/" + fileUploadSubPath.replace("\\", "/");
+        File targetFolder = new File(finalUploadPath);
 
-        // Excluir arquivos físicos
-        for (Arquivo arquivo : arquivos) {
-            Path path = Paths.get(uploadDir, arquivo.getCaminho());
-            try {
-                Files.deleteIfExists(path);
-            } catch (IOException e) {
-                throw new BusinessException("Erro ao excluir arquivo físico: " + e.getMessage());
+        if (!targetFolder.exists()) {
+            boolean folderCreated = targetFolder.mkdirs();
+            if (!folderCreated) {
+                log.error("Falha ao criar a pasta de destino: {}", targetFolder);
+                throw new ArquivoException("Não foi possível criar o diretório para upload");
             }
         }
 
-        // Excluir registros no banco
-        arquivoRepository.deleteByTipoEntidadeAndEntidadeId(tipoEntidade, entidadeId);
-    }
+        final String fileExtension = getFileExtension(sourceFile.getOriginalFilename());
+        String nomeArquivo = System.currentTimeMillis() + "." + fileExtension;
+        String targetFilePath = finalUploadPath + "/" + nomeArquivo;
+        Path targetPath = Paths.get(targetFilePath);
 
-    // Métodos auxiliares
+        try {
+            Files.write(targetPath, sourceFile.getBytes());
+            log.info("Arquivo salvo com sucesso em: {}", targetFilePath);
 
-    private void validarArquivo(MultipartFile file) {
-        if (file.isEmpty()) {
-            throw new BusinessException("Arquivo vazio");
-        }
-
-        String contentType = file.getContentType();
-        if (contentType == null) {
-            throw new BusinessException("Tipo de arquivo não identificado");
-        }
-
-        // Validar tipos permitidos (imagens e vídeos)
-        if (!contentType.startsWith("image/") && !contentType.startsWith("video/")) {
-            throw new BusinessException("Tipo de arquivo não permitido. Apenas imagens e vídeos são aceitos.");
-        }
-
-        // Validar tamanho máximo (10MB para vídeos, 5MB para imagens)
-        long tamanhoMaximoVideo = 10 * 1024 * 1024; // 10MB
-        long tamanhoMaximoImagem = 5 * 1024 * 1024; // 5MB
-
-        if (contentType.startsWith("video/") && file.getSize() > tamanhoMaximoVideo) {
-            throw new BusinessException("Tamanho do vídeo excede o limite máximo de 10MB");
-        }
-
-        if (contentType.startsWith("image/") && file.getSize() > tamanhoMaximoImagem) {
-            throw new BusinessException("Tamanho da imagem excede o limite máximo de 5MB");
+            return fileUploadSubPath + "/" + nomeArquivo;
+        } catch (IOException e) {
+            log.error("Erro ao salvar o arquivo", e);
+            throw new ArquivoException("Falha ao salvar o arquivo: " + e.getMessage());
         }
     }
 
-    private String determinarTipoArquivo(String contentType) {
-        if (contentType.startsWith("image/")) {
-            return "imagem";
-        } else if (contentType.startsWith("video/")) {
-            return "video";
-        } else {
-            return "outro";
+    private void validarArquivo(MultipartFile arquivo) {
+        if (arquivo.isEmpty()) {
+            throw new ArquivoException("Arquivo vazio");
+        }
+
+        if (arquivo.getSize() > maxFileSize) {
+            throw new ArquivoException("Tamanho do arquivo excede o limite permitido de " + (maxFileSize / 1024 / 1024) + "MB");
+        }
+
+        String extensao = getFileExtension(arquivo.getOriginalFilename());
+        if (!EXTENSOES_PERMITIDAS.contains(extensao.toLowerCase())) {
+            throw new ArquivoException("Tipo de arquivo não permitido. Extensões aceitas: " + String.join(", ", EXTENSOES_PERMITIDAS));
         }
     }
 
-    private String obterExtensao(String nomeArquivo) {
-        if (nomeArquivo == null) {
+    private String getFileExtension(String fileName) {
+        if (fileName == null || fileName.isEmpty()) {
             return "";
         }
-        int indexPonto = nomeArquivo.lastIndexOf(".");
-        if (indexPonto == -1) {
+        int lastDotIndex = fileName.lastIndexOf(".");
+        if (lastDotIndex == -1) {
             return "";
         }
-        return nomeArquivo.substring(indexPonto + 1);
-    }
-
-    private ArquivoDTO converterParaDTO(Arquivo arquivo) {
-        ArquivoDTO dto = new ArquivoDTO();
-        dto.setId(arquivo.getId());
-        dto.setNomeOriginal(arquivo.getNomeOriginal());
-        dto.setTipo(arquivo.getTipo());
-        dto.setTamanho(arquivo.getTamanho());
-        dto.setUrl(baseUrl + "/arquivos/" + arquivo.getCaminho());
-        dto.setContentType(arquivo.getContentType());
-        return dto;
+        return fileName.substring(lastDotIndex + 1).toLowerCase();
     }
 }
