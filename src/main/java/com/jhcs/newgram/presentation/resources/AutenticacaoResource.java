@@ -31,22 +31,15 @@ public class AutenticacaoResource {
 
 
 
-    @PostMapping(path = "/register")
-    @Operation(summary = "Registrar usuário", description = "Registra um novo usuário e retorna um token de acesso")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "201", description = "Usuário registrado com sucesso",
-                    content = @Content(schema = @Schema(implementation = TokenDTO.class))),
-            @ApiResponse(responseCode = "400", description = "Dados inválidos fornecidos",
-                    content = @Content)
-    })
+    @PostMapping(path = "/register", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @Operation(summary = "Registrar usuário", description = "Registra um novo usuário com foto de perfil")
     public ResponseEntity<TokenDTO> registrar(
             @Parameter(description = "Dados do usuário a ser registrado", required = true)
-            @Valid @RequestBody UsuarioCreateDTO dto) {
+            @Valid @ModelAttribute UsuarioCreateDTO dto) {
 
         TokenDTO tokenDTO = autenticacaoService.registrar(dto);
         return ResponseEntity.status(HttpStatus.CREATED).body(tokenDTO);
     }
-
 
     @PostMapping("/login")
     @Operation(summary = "Autenticar usuário", description = "Autentica o usuário com email e senha e retorna um token de acesso")

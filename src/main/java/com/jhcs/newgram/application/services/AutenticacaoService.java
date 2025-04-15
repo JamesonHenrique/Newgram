@@ -39,7 +39,7 @@ public class AutenticacaoService {
     private final StatusUsuarioRepository statusUsuarioRepository;
     private final SeguidorRepository seguidorRepository;
     private final ArquivoService arquivoService;
-
+    private final UsuarioService usuarioService;
     @Transactional
     public TokenDTO registrar(UsuarioCreateDTO dto) {
         if (!dto.getSenha().equals(dto.getConfirmacaoSenha())) {
@@ -63,6 +63,10 @@ public class AutenticacaoService {
         usuario.setDataCriacao(new Date());
 
         usuarioRepository.save(usuario);
+        if (dto.getFotoPerfil() != null && !dto.getFotoPerfil().isEmpty()) {
+            usuarioService.salvarFotoDePerfil(usuario.getId(), dto.getFotoPerfil());
+        }
+
         StatusUsuario statusUsuario = new StatusUsuario();
         statusUsuario.setUsuario(usuario);
         statusUsuario.setOnline(false);
@@ -72,10 +76,8 @@ public class AutenticacaoService {
 
         var token = jwtService.generateToken(usuario);
         var refreshToken = jwtService.generateRefreshToken(usuario);
-        TokenDTO tokenDTO = criarTokenDTO(token, refreshToken);
-        tokenDTO.setUserId(usuario.getId());
 
-        return tokenDTO;
+        return criarTokenDTO(token, refreshToken);
     }
 
     public TokenDTO autenticar(String email, String senha) {

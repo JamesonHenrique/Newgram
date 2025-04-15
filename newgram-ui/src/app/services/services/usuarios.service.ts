@@ -33,6 +33,7 @@ import { Page } from '../models/page';
 import { salvarFotoDePerfil } from '../fn/usuarios/salvar-foto-de-perfil';
 import { SalvarFotoDePerfil$Params } from '../fn/usuarios/salvar-foto-de-perfil';
 import { UsuarioResponseDto } from '../models/usuario-response-dto';
+import { UsuarioSummaryDto } from '../models';
 
 
 /**
@@ -57,7 +58,7 @@ export class UsuariosService extends BaseService {
    *
    * This method doesn't expect any request body.
    */
-  buscarUsuarioPorId$Response(params: BuscarUsuarioPorId$Params, context?: HttpContext): Observable<StrictHttpResponse<UsuarioResponseDto>> {
+  buscarUsuarioPorId$Response(params: BuscarUsuarioPorId$Params, context?: HttpContext): Observable<StrictHttpResponse<UsuarioSummaryDto>> {
     return buscarUsuarioPorId(this.http, this.rootUrl, params, context);
   }
 
@@ -71,9 +72,9 @@ export class UsuariosService extends BaseService {
    *
    * This method doesn't expect any request body.
    */
-  buscarUsuarioPorId(params: BuscarUsuarioPorId$Params, context?: HttpContext): Observable<UsuarioResponseDto> {
+  buscarUsuarioPorId(params: BuscarUsuarioPorId$Params, context?: HttpContext): Observable<UsuarioSummaryDto> {
     return this.buscarUsuarioPorId$Response(params, context).pipe(
-      map((r: StrictHttpResponse<UsuarioResponseDto>): UsuarioResponseDto => r.body)
+      map((r: StrictHttpResponse<UsuarioSummaryDto>): UsuarioSummaryDto => r.body)
     );
   }
 

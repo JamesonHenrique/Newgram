@@ -62,7 +62,6 @@
         </form>
       </div>
 
-      <!-- Collection Tabs -->
       <div
         class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 animate-slideUp"
         style="animation-delay: 0.1s"
@@ -111,13 +110,12 @@
         </button>
       </div>
 
-      <!-- Filter Options -->
       <div
         class="filter-options flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 animate-slideUp"
         style="animation-delay: 0.2s"
       >
         <div class="text-sm font-medium mb-2 sm:mb-0">
-          <span id="savedCount">12</span> posts salvos
+          <span id="savedCount">{{ savedPosts.length }}</span> posts salvos
         </div>
 
         <div class="flex gap-2 sm:gap-4 w-full sm:w-auto">
@@ -161,7 +159,6 @@
         </div>
       </div>
 
-      <!-- Grid View (Default) -->
       <div
         id="gridView"
         class="post-grid animate-slideUp"
@@ -208,9 +205,6 @@
       [postSelected]="postSelected"
       [modalId]="'modal-1'"
     ></app-post-details>
-      <!-- More list items would follow the same pattern -->
-
-      <!-- Empty State (Hidden by default) -->
       <div *ngIf="!savedPosts.length" id="emptyState" class="empty-state hidden animate-fadeIn">
         <i class="far fa-bookmark empty-state-icon"></i>
         <h3 class="h3-bold mb-2">Nenhum post salvo</h3>

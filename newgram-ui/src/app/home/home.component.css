@@ -183,9 +183,7 @@
     flex-direction: column;
 
   }
-  .feed-container {
 
-  }
   .top-creators {
     width: 100%;
     height: auto;
@@ -324,9 +322,7 @@
   color: var(--light-1);
   background-color: var(--dark-4);
 }
-.text-principal {
-  color: #8d8bb4;
-}
+
 .story-border {
   padding: 2px;
   border-radius: 50%;

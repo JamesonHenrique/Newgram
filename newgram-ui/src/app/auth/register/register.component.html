@@ -44,8 +44,15 @@
                 formControlName="nome"
                 id="name"
                 class="form-input"
+                [class.invalid]="hasError('nome', 'required') || hasError('nome', 'minlength')"
                 placeholder="Digite seu nome completo"
               />
+              <div *ngIf="hasError('nome', 'required')" class="error-message">
+                Nome é obrigatório
+              </div>
+              <div *ngIf="hasError('nome', 'minlength')" class="error-message">
+                Nome deve ter pelo menos 3 caracteres
+              </div>
 
             </div>
 
@@ -56,8 +63,15 @@
                 formControlName="email"
                 id="email"
                 class="form-input"
+                [class.invalid]="hasError('email', 'required') || hasError('email', 'email')"
                 placeholder="Digite seu email"
               />
+              <div *ngIf="hasError('email', 'required')" class="error-message">
+                Email é obrigatório
+              </div>
+              <div *ngIf="hasError('email', 'email')" class="error-message">
+                Por favor, insira um email válido
+              </div>
 
             </div>
 
@@ -77,7 +91,7 @@
             </div>
 
             <div class="form-actions">
-              <button type="button" class="btn btn-primary" id="nextToStep2" (click)="nextStep()">
+              <button type="button" class="btn btn-primary" (click)="nextStep()" [disabled]="authForm.get('nome')?.invalid || authForm.get('email')?.invalid">
                 Próximo
               </button>
             </div>
@@ -91,8 +105,12 @@
                   formControlName="senha"
                   id="senha"
                   class="form-input"
-                  placeholder="Crie uma senha forte"
-                />
+                  [class.invalid]="hasError('senha', 'required') || hasError('senha', 'noUpperCase') ||
+                  hasError('senha', 'noLowerCase') || hasError('senha', 'noNumber') ||
+                  hasError('senha', 'noSpecialChar') || hasError('senha', 'minlength')"
+  placeholder="Crie uma senha forte"
+  (input)="authForm.get('senha')?.updateValueAndValidity()"
+/>
                 <i
                   class="fas password-toggle"
                   [ngClass]="{'fa-eye': !showPassword, 'fa-eye-slash': showPassword}"
@@ -154,15 +172,16 @@
                 ></i>
               </div>
 
-              <div *ngIf="authForm.get('confirmacaoSenha')?.invalid && (authForm.get('confirmacaoSenha')?.dirty || authForm.get('confirmacaoSenha')?.touched)"
-                   class="error-message"
-                >
-                <div *ngIf="authForm.get('confirmacaoSenha')?.errors?.['required']">Confirmação de senha é obrigatória</div>
-              </div>
-
-              <div *ngIf="authForm.errors?.['passwordsNotMatch'] && authForm.get('confirmacaoSenha')?.valid"
-                   class="error-message">
-                As senhas não coincidem
+              <div class="error-message">
+                <div *ngIf="authForm.get('confirmacaoSenha')?.errors?.['required'] &&
+                           (authForm.get('confirmacaoSenha')?.dirty || authForm.get('confirmacaoSenha')?.touched)">
+                  Confirmação de senha é obrigatória
+                </div>
+                <div *ngIf="authForm.errors?.['passwordMismatch'] &&
+                           authForm.get('confirmacaoSenha')?.valid &&
+                           (authForm.get('confirmacaoSenha')?.dirty || authForm.get('confirmacaoSenha')?.touched)">
+                  As senhas não coincidem
+                </div>
               </div>
             </div>
 
@@ -170,9 +189,10 @@
               <button type="button" class="btn btn-secondary" id="backToStep1" (click)="previousStep()">
                 Voltar
               </button>
-              <button type="button" class="btn btn-primary" id="nextToStep3" (click)="nextStep()">
-                Próximo
-              </button>
+              <button type="button" class="btn btn-primary" (click)="nextStep()"
+              [disabled]="authForm.get('senha')?.invalid || authForm.get('confirmacaoSenha')?.invalid || authForm.errors?.['passwordsNotMatch']">
+        Próximo
+      </button>
             </div>
           </div>
 
@@ -208,11 +228,17 @@
                   type="text"
                   id="username"
                   class="form-input username-input"
+                  [class.invalid]="hasError('username', 'required') || hasError('username', 'pattern')"
                   placeholder="escolha um nome de usuário"
                   formControlName="username"
                 />
               </div>
-              <div class="validation-message" id="usernameError"></div>
+              <div *ngIf="hasError('username', 'required')" class="error-message">
+                Nome de usuário é obrigatório
+              </div>
+              <div *ngIf="hasError('username', 'pattern')" class="error-message">
+                Use apenas letras, números e underscores
+              </div>
             </div>
 
             <div class="form-group">
@@ -223,20 +249,23 @@
                 placeholder="Conte um pouco sobre você..."
                 formControlName="bio"
               ></textarea>
-              <div class="char-counter" id="bioCounter">0/150 caracteres</div>
+              <div class="char-counter">
+                {{ authForm.get('bio')?.value?.length || 0 }}/150 caracteres
+              </div>
             </div>
 
             <div class="form-actions">
               <button type="button" class="btn btn-secondary" id="backToStep2" (click)="previousStep()">
                 Voltar
               </button>
-              <button type="submit" class="btn btn-primary" id="registerBtn">
-                Criar conta
+              <button type="submit" class="btn btn-primary" [disabled]="authForm.invalid ">
+                <span>Criar conta</span>
+
               </button>
             </div>
           </div>
 
-          <!-- Login Link -->
+
           <div class="form-footer">
             <p class="small-medium text-light-3">
               Já tem uma conta? <a routerLink="/login" class="text-primary-500">Entrar</a>

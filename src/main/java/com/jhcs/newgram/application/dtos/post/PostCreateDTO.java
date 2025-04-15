@@ -14,6 +14,6 @@ public class PostCreateDTO {
     private String localizacao;
     private TipoVisibilidade visibilidade = TipoVisibilidade.PUBLICO;
     private List<String> hashtags;
-    private List<Long> usuariosMarcados;
+
 
 }

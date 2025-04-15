@@ -5,8 +5,9 @@ import { PostDetailsComponent } from '../post-details/post-details.component';
 import { DomSanitizer, Title } from '@angular/platform-browser';
 import { FormatNumberPipe } from '../format-number.pipe';
 import { PostsService, UsuariosService } from '../services/services';
-import { Pageable } from '../services/models';
+import { Pageable, UsuarioSummaryDto } from '../services/models';
 import { DateFormatPipe } from '../services/pipes/date-format-pipe';
+import { TokenService } from '../services/token/token.service';
 
 @Component({
   selector: 'app-home',
@@ -24,6 +25,7 @@ export class HomeComponent {
     private title: Title,
     private postsService: PostsService,
     private usuariosService: UsuariosService,
+    private tokenService: TokenService,
     private sanitizer: DomSanitizer,
     private changeDetector: ChangeDetectorRef
   ) {}
@@ -157,10 +159,11 @@ export class HomeComponent {
     sort: ['string'],
   };
   index: number = 0;
+  usuarioLogado: UsuarioSummaryDto = {} as UsuarioSummaryDto;
   private __fotoPerfil: string | undefined;
-  getFotoPerfil(topCreator: any): string {
-    if (topCreator?.fotoPerfil && topCreator.fotoPerfil.trim() !== '') {
-      return 'data:image/jpg;base64,' + topCreator.fotoPerfil;
+  getFotoPerfil(user: any): string {
+    if (user?.fotoPerfil && user.fotoPerfil.trim() !== '') {
+      return 'data:image/jpg;base64,' + user.fotoPerfil;
     }
     return '/icons/profile-placeholder.svg';
   }
@@ -168,6 +171,13 @@ export class HomeComponent {
 
 
 
+  findUsuarioLogado() {
+    this.usuariosService
+      .buscarUsuarioPorId({ id: this.tokenService.userId })
+      .subscribe((res) => {
+        this.usuarioLogado = res;
+      });
+  }
   findAllTopCriadores() {
     this.usuariosService
       .listarUsuariosMaisFamosos({
@@ -175,7 +185,6 @@ export class HomeComponent {
       })
       .subscribe((response) => {
         this.topCreators = response.content || [];
-
       });
   }
 

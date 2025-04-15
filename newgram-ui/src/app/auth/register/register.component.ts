@@ -17,6 +17,7 @@ import { passwordValidator } from './validator/password.validator';
 import { confirmPasswordValidator } from './validator/confirm-password.validator';
 import { AutenticacaoService, UsuariosService } from '../../services/services';
 import { catchError, of, switchMap } from 'rxjs';
+import { UsuarioCreateDto } from '../../services/models';
 
 @Component({
   selector: 'app-register',
@@ -31,7 +32,6 @@ export class RegisterComponent {
   @ViewChild('avatarImage') avatarImage!: ElementRef<HTMLImageElement>;
   @ViewChild('avatarPlaceholder') avatarPlaceholder!: ElementRef<HTMLElement>;
   selectedFotoDePerfil: any;
-  selectedFoto: string | undefined;
   passwordStrength = 0;
   strengthText = '';
   strengthClass = '';
@@ -39,23 +39,21 @@ export class RegisterComponent {
   constructor(
     private title: Title,
     private router: Router,
-    private tokenService: TokenService,
     private authService: AutenticacaoService,
-
     private fb: FormBuilder,
-    private usuarioService: UsuariosService
+
   ) {
     this.title.setTitle('Register');
   }
   ngOnInit(): void {
     this.authForm = this.fb.group(
       {
-        nome: ['', Validators.required],
+        nome: ['', [Validators.required, Validators.minLength(3)]],
         email: ['', Validators.required],
         senha: ['', [Validators.required, passwordValidator()]],
         confirmacaoSenha: ['', [Validators.required]],
-        username: ['', Validators.required],
-        bio: ['', Validators.required],
+        username: ['', [Validators.required, Validators.pattern(/^[a-zA-Z0-9_]+$/)]],
+        bio: ['', [Validators.maxLength(150), Validators.required]],
       },
       { validators: confirmPasswordValidator('senha') }
     );
@@ -70,31 +68,14 @@ export class RegisterComponent {
       return;
     }
 
-    const authRequest = { ...this.authForm.value };
+    const authRequest: UsuarioCreateDto = {
+      ...this.authForm.value,
+      fotoPerfil: this.selectedFotoDePerfil || undefined,
+    };
 
     this.authService
       .registrar({ body: authRequest })
-      .pipe(
-        switchMap((response: any) => {
-          this.tokenService.token = response.token;
 
-          if (this.selectedFotoDePerfil) {
-            return this.usuarioService
-              .salvarFotoDePerfil({
-                id: response.userId,
-                body: { file: this.selectedFotoDePerfil },
-              })
-              .pipe(
-                catchError((error) => {
-                  console.error('Erro ao enviar foto:', error);
-
-                  return of(null);
-                })
-              );
-          }
-          return of(null);
-        })
-      )
       .subscribe({
         next: () => {
           this.router.navigate(['/login']);
@@ -117,10 +98,20 @@ export class RegisterComponent {
       });
     }
   }
+  calculatePasswordStrength(password: string): number {
+    if (!password) return 0;
 
+    let strength = 0;
+    if (password.length >= 8) strength += 20;
+    if (/[A-Z]/.test(password)) strength += 20;
+    if (/[a-z]/.test(password)) strength += 20;
+    if (/[0-9]/.test(password)) strength += 20;
+    if (/[!@#$%^&*(),.?":{}|<>]/.test(password)) strength += 20;
+
+    return strength;
+  }
   updatePasswordRequirements(password: string): void {
     if (!password) {
-      // Reset all requirements to unmet
       document.querySelectorAll('.requirement').forEach((req) => {
         req.classList.remove('requirement-met');
         req.classList.add('requirement-unmet');
@@ -141,7 +132,6 @@ export class RegisterComponent {
       special: /[!@#$%^&*(),.?":{}|<>]/.test(password),
     };
 
-    // Update each requirement
     this.updateRequirement('reqLength', requirements.length);
     this.updateRequirement('reqUppercase', requirements.uppercase);
     this.updateRequirement('reqLowercase', requirements.lowercase);
@@ -177,14 +167,12 @@ export class RegisterComponent {
       return;
     }
 
-    // Check requirements
     const hasLength = password.length >= 8;
     const hasUppercase = /[A-Z]/.test(password);
     const hasLowercase = /[a-z]/.test(password);
     const hasNumber = /[0-9]/.test(password);
     const hasSpecial = /[!@#$%^&*(),.?":{}|<>]/.test(password);
 
-    // Calculate strength
     let strength = 0;
     if (hasLength) strength += 20;
     if (hasUppercase) strength += 20;
@@ -192,10 +180,8 @@ export class RegisterComponent {
     if (hasNumber) strength += 20;
     if (hasSpecial) strength += 20;
 
-    // Update strength meter
     strengthMeter.style.width = `${strength}%`;
 
-    // Update strength text and classes
     if (strength < 40) {
       strengthMeter.className = 'strength-meter-fill strength-weak';
       strengthText.textContent = 'Fraca';
@@ -279,5 +265,9 @@ export class RegisterComponent {
 
   isStepActive(step: number): boolean {
     return this.currentStep === step;
+  }
+  hasError(controlName: string, errorType: string): boolean {
+    const control = this.authForm.get(controlName);
+    return control ? control.hasError(errorType) && (control.dirty || control.touched) : false;
   }
 }

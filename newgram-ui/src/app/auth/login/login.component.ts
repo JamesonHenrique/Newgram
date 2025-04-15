@@ -1,51 +1,75 @@
-import { Component } from '@angular/core';
 import { Title } from '@angular/platform-browser';
+import { Component, OnInit } from '@angular/core';
+import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
-import {
-  FormBuilder,
-  FormGroup,
-  FormsModule,
-  ReactiveFormsModule,
-  Validators,
-} from '@angular/forms';
-
-import { ToastrService } from 'ngx-toastr';
-import { TokenService } from '../../services/token/token.service';
 import { AutenticacaoService } from '../../services/services';
+import { CommonModule } from '@angular/common';
+import { TokenService } from '../../services/token/token.service';
+
 
 @Component({
   selector: 'app-login',
-  imports: [RouterLink, FormsModule, ReactiveFormsModule],
   templateUrl: './login.component.html',
-  styleUrl: './login.component.css',
+  styleUrls: ['./login.component.css'],
+  imports: [RouterLink, FormsModule, ReactiveFormsModule, CommonModule],
 })
-export class LoginComponent {
+export class LoginComponent implements OnInit {
   authForm!: FormGroup;
-  errorMsg: Array<string> = [];
+  isLoading = false;
+  errorMessage: string | null = null;
+  showPassword = false;
 
   constructor(
-    private title: Title,
-    private router: Router,
+    private fb: FormBuilder,
     private authService: AutenticacaoService,
+    private router: Router,
+    private title: Title,
     private tokenService: TokenService,
-    private toastr: ToastrService,
-    private fb: FormBuilder
   ) {
     this.title.setTitle('Login');
   }
 
   ngOnInit(): void {
+    this.initForm();
+    this.checkRememberedUser();
+  }
+
+  private initForm(): void {
     this.authForm = this.fb.group({
       email: ['', [Validators.required, Validators.email]],
-      senha: ['', Validators.required],
+      senha: ['', [Validators.required]],
+      rememberMe: [false]
     });
   }
 
+  private checkRememberedUser(): void {
+    const rememberedEmail = localStorage.getItem('rememberedEmail');
+    if (rememberedEmail) {
+      this.authForm.patchValue({
+        email: rememberedEmail,
+        rememberMe: true
+      });
+    }
+  }
+
+  togglePasswordVisibility(field: 'senha'): void {
+    if (field === 'senha') {
+      this.showPassword = !this.showPassword;
+      const input = document.getElementById('senha') as HTMLInputElement;
+      if (input) {
+        input.type = this.showPassword ? 'text' : 'password';
+      }
+    }
+  }
+
+
+
+
   login() {
-    this.errorMsg = [];
+
 
     if (this.authForm.invalid) {
-   
+
       return;
     }
 
@@ -61,27 +85,40 @@ export class LoginComponent {
         this.router.navigate(['dashboard']);
       },
       error: (error) => {
-        if (error.status === 401) {
-          this.errorMsg.push(
-            'Credenciais inválidas. Verifique seu e-mail e senha.'
-          );
-        } else if (error.error && error.error.validationErrors) {
-          this.errorMsg = error.error.validationErrors;
-        } else {
-          this.errorMsg.push(
-            'Ocorreu um erro inesperado. Tente novamente mais tarde.'
-          );
-        }
-
-        this.errorMsg.forEach((msg) => {
-          this.toastr.error(msg, 'Erro ao tentar logar');
-        });
+        this.handleLoginError(error);
       },
     });
 
   }
 
-  onSubmit() {
-    this.login();
+  private handleLoginError(error: any): void {
+    if (error.status === 401) {
+      this.errorMessage = 'Email ou senha incorretos. Por favor, tente novamente.';
+    } else if (error.status === 0) {
+      this.errorMessage = 'Não foi possível conectar ao servidor. Verifique sua conexão com a internet.';
+    } else {
+      this.errorMessage = 'Ocorreu um erro inesperado. Por favor, tente novamente mais tarde.';
+    }
+  }
+
+  private markFormGroupTouched(formGroup: FormGroup): void {
+    Object.values(formGroup.controls).forEach(control => {
+      control.markAsTouched();
+      if (control instanceof FormGroup) {
+        this.markFormGroupTouched(control);
+      }
+    });
+  }
+
+  get email() {
+    return this.authForm.get('email');
+  }
+
+  get senha() {
+    return this.authForm.get('senha');
+  }
+
+  get rememberMe() {
+    return this.authForm.get('rememberMe');
   }
 }

@@ -17,6 +17,6 @@ public class ComentarioResponseDTO {
     private Long numeroCurtidas;
     private Long numeroRespostas;
     private Boolean curtidoPeloUsuario;
-    private List<ComentarioResponseDTO> respostas;
+
 
 }

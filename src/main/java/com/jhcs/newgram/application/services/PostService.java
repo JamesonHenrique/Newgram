@@ -14,6 +14,7 @@ import com.jhcs.newgram.core.domain.repositories.HashtagRepository;
 import com.jhcs.newgram.core.domain.repositories.PostRepository;
 import com.jhcs.newgram.core.domain.repositories.SalvosRepository;
 import com.jhcs.newgram.core.domain.repositories.UsuarioRepository;
+import com.jhcs.newgram.core.domain.utils.ArquivoUtils;
 import com.jhcs.newgram.infrastructure.exception.BusinessException;
 import com.jhcs.newgram.infrastructure.exception.ResourceNotFoundException;
 import com.jhcs.newgram.infrastructure.exception.UnauthorizedException;
@@ -81,9 +82,7 @@ public class PostService {
             processarHashtagsDaLegenda(post, dto.getLegenda());
         }
 
-        if (dto.getUsuariosMarcados() != null && !dto.getUsuariosMarcados().isEmpty()) {
-            processarMarcacoesUsuarios(post, dto.getUsuariosMarcados());
-        }
+
 
         post = postRepository.save(post);
 
@@ -111,7 +110,6 @@ public class PostService {
             post.setVisibilidade(dto.getVisibilidade());
         }
 
-        // Atualizar hashtags
         if (dto.getHashtags() != null) {
             post.getHashtags().clear();
             processarHashtags(post, dto.getHashtags());
@@ -145,7 +143,7 @@ public class PostService {
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new ResourceNotFoundException("Post não encontrado"));
 
-        // Verificar se o usuário é o autor do post
+
         if (!post.getAutor().getId().equals(usuarioId)) {
             throw new UnauthorizedException("Você não tem permissão para arquivar este post");
         }
@@ -503,20 +501,18 @@ public class PostService {
     private PostSummaryDTO converterParaSummaryDTO(Post post, Long usuarioLogadoId) {
         PostSummaryDTO dto = new PostSummaryDTO();
         dto.setId(post.getId());
+        dto.setImagem(ArquivoUtils.lerArquivoDoLocal(post.getImagemUrl()));
         dto.setDataCriacao(post.getDataCriacao());
-
         UsuarioSummaryDTO autorDTO = new UsuarioSummaryDTO();
         autorDTO.setId(post.getAutor().getId());
         autorDTO.setNome(post.getAutor().getNome());
         autorDTO.setUsername(post.getAutor().getUsername());
         dto.setAutor(autorDTO);
-
         dto.setLegenda(post.getLegenda());
         dto.setLocalizacao(post.getLocalizacao());
-
-
         dto.setNumeroCurtidas(curtidaRepository.countByPostId(post.getId()));
         dto.setNumeroComentarios(comentarioRepository.countByPostId(post.getId()));
+
 
         return dto;
     }

@@ -13,4 +13,5 @@ export interface UsuarioCreateDto {
   nome?: string;
   senha?: string;
   username?: string;
+  fotoPerfil?: File; 
 }

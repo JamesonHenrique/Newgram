@@ -12,23 +12,45 @@ import { TokenDto } from '../../models/token-dto';
 import { UsuarioCreateDto } from '../../models/usuario-create-dto';
 
 export interface Registrar$Params {
-      body: UsuarioCreateDto
+  body: UsuarioCreateDto;
 }
 
-export function registrar(http: HttpClient, rootUrl: string, params: Registrar$Params, context?: HttpContext): Observable<StrictHttpResponse<TokenDto>> {
+export function registrar(
+  http: HttpClient,
+  rootUrl: string,
+  params: Registrar$Params,
+  context?: HttpContext
+): Observable<StrictHttpResponse<TokenDto>> {
   const rb = new RequestBuilder(rootUrl, registrar.PATH, 'post');
   if (params) {
-    rb.body(params.body, 'application/json');
+    const formData = new FormData();
+    formData.append('nome', params.body.nome ?? '');
+    formData.append('username', params.body.username ?? '');
+    formData.append('email', params.body.email ?? '');
+    formData.append('senha', params.body.senha ?? '');
+    formData.append('confirmacaoSenha', params.body.confirmacaoSenha ?? '');
+
+    if (params.body.bio) {
+      formData.append('bio', params.body.bio);
+    }
+
+    if (params.body.fotoPerfil) {
+      formData.append('fotoPerfil', params.body.fotoPerfil);
+    }
+
+    rb.body(formData);
   }
 
-  return http.request(
-    rb.build({ responseType: 'json', accept: '*/*', context })
-  ).pipe(
-    filter((r: any): r is HttpResponse<any> => r instanceof HttpResponse),
-    map((r: HttpResponse<any>) => {
-      return r as StrictHttpResponse<TokenDto>;
-    })
-  );
+  return http
+    .request(
+      rb.build({ responseType: 'json', accept: 'application/json', context })
+    )
+    .pipe(
+      filter((r: any): r is HttpResponse<any> => r instanceof HttpResponse),
+      map((r: HttpResponse<any>) => {
+        return r as StrictHttpResponse<TokenDto>;
+      })
+    );
 }
 
 registrar.PATH = '/auth/register';

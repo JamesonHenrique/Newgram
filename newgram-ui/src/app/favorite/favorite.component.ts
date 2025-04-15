@@ -19,7 +19,7 @@ export class FavoriteComponent {
     pageable: Pageable = {
       page: 0,
       size: 10,
-      sort: ['string'],
+      sort: [''],
     };
   savedPostss = [
     {

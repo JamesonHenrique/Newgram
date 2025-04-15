@@ -7,10 +7,8 @@
  * Dados do post a ser criado
  */
 export interface PostCreateDto {
-  arquivos?: Array<Blob>;
   hashtags?: Array<string>;
   legenda?: string;
   localizacao?: string;
-  usuariosMarcados?: Array<number>;
   visibilidade?: 'PUBLICO' | 'PRIVADO' | 'SOMENTE_SEGUIDORES';
 }

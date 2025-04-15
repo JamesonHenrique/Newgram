@@ -50,7 +50,7 @@ public class UsuarioService {
 
 
     @Transactional(readOnly = true)
-    public UsuarioResponseDTO buscarUsuarioPorId(Long id, Long usuarioLogadoId) {
+    public UsuarioSummaryDTO buscarUsuarioPorId(Long id, Long usuarioLogadoId) {
         Usuario usuario = usuarioRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
 
@@ -58,9 +58,7 @@ public class UsuarioService {
         if (usuarioLogadoId != null) {
             seguindoUsuario = seguidorRepository.existsBySeguidorIdAndSeguidoId(usuarioLogadoId, id);
         }
-
-        ArquivoDTO fotoPerfil = buscarFotoPerfil(id);
-        UsuarioResponseDTO dto = converterParaUsuarioResponseDTO(usuario, fotoPerfil);
+        UsuarioSummaryDTO dto = converterParaUsuarioSummaryDTO(usuario, usuarioLogadoId);
         dto.setSeguindoUsuario(seguindoUsuario);
         return dto;
     }

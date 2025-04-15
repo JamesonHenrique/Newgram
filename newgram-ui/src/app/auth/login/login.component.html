@@ -1,4 +1,3 @@
-<!-- Background Elements -->
 <div
   class="min-h-screen flex items-center justify-center p-4 relative overflow-hidden"
 >
@@ -8,7 +7,6 @@
   <div class="floating-shape shape-2"></div>
 
   <div class="login-container animate-fadeIn">
-    <!-- Login Form Section -->
     <div class="login-form-section">
       <div class="login-form-container">
         <a
@@ -20,9 +18,16 @@
         <div class="login-form-header">
           <p class="base-medium text-light-3 mt-2">Bem-vindo de volta!</p>
         </div>
-
+        <div
+          *ngIf="errorMessage"
+          class="mb-6 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg text-red-600 dark:text-red-300"
+        >
+          <div class="flex items-center gap-2">
+            <i class="fas fa-exclamation-circle"></i>
+            <span>{{ errorMessage }}</span>
+          </div>
+        </div>
         <form id="loginForm" [formGroup]="authForm" (ngSubmit)="login()">
-          <!-- Username Field -->
           <div class="form-group">
             <label for="email" class="form-label">Email</label>
             <i class="fas fa-user input-icon"></i>
@@ -32,26 +37,56 @@
               formControlName="email"
               class="form-input input-with-icon"
               placeholder="Digite seu email"
+              [class.invalid]="
+                email?.invalid && (email?.dirty || email?.touched)
+              "
             />
-            <div class="validation-message" id="emailError"></div>
+            <div
+              *ngIf="email?.invalid && (email?.dirty || email?.touched)"
+              class="validation-message text-red-500 text-sm mt-1"
+            >
+              <span *ngIf="email?.errors?.['required']"
+                >Email é obrigatório</span
+              >
+              <span *ngIf="email?.errors?.['email']"
+                >Por favor, insira um email válido</span
+              >
+            </div>
           </div>
-
-          <!-- Password Field -->
           <div class="form-group">
             <label for="password" class="form-label">Senha</label>
             <i class="fas fa-lock input-icon"></i>
             <input
               type="password"
-              id="password"
+              id="senha"
               formControlName="senha"
               class="form-input input-with-icon"
               placeholder="Digite sua senha"
+              [class.invalid]="
+                senha?.invalid && (senha?.dirty || senha?.touched)
+              "
             />
-            <i class="fas fa-eye password-toggle" id="passwordToggle"></i>
-            <div class="validation-message" id="passwordError"></div>
+            <i
+              class="fas password-toggle"
+              [ngClass]="{
+                'fa-eye': !showPassword,
+                'fa-eye-slash': showPassword
+              }"
+              (click)="togglePasswordVisibility('senha')"
+            ></i>
+            <div
+              *ngIf="senha?.invalid && (senha?.dirty || senha?.touched)"
+              class="validation-message text-red-500 text-sm mt-1"
+            >
+              <span *ngIf="senha?.errors?.['required']"
+                >Senha é obrigatória</span
+              >
+              <span *ngIf="senha?.errors?.['minlength']"
+                >Senha deve ter pelo menos 8 caracteres</span
+              >
+            </div>
           </div>
 
-          <!-- Form Options -->
           <div class="form-options">
             <div class="remember-me">
               <input
@@ -65,10 +100,9 @@
             <a href="#" class="forgot-password">Esqueceu a senha?</a>
           </div>
 
-          <!-- Login Button -->
-          <button type="submit" class="login-btn" id="loginBtn">Entrar</button>
-
-          <!-- Social Login -->
+          <button type="submit" class="btn btn-primary"  [disabled]="authForm.get('email')?.invalid || authForm.get('senha')?.invalid">
+            Entrar
+          </button>
           <div class="divider">
             <span>ou continue com</span>
           </div>
@@ -84,27 +118,27 @@
             </button>
           </div>
 
-          <!-- Signup Link -->
           <div class="signup-link">
             <p class="small-medium text-light-3">
-              Não tem uma conta? <a routerLink="/register" class="text-primary-500">Registre-se</a>
+              Não tem uma conta?
+              <a routerLink="/register" class="text-primary-500">Registre-se</a>
             </p>
           </div>
         </form>
       </div>
     </div>
 
-    <!-- Visual Section -->
     <div class="login-visual-section">
       <div class="login-visual-overlay"></div>
       <div class="login-visual-bg"></div>
 
-      <!-- Floating Elements -->
       <div class="floating-circle floating-element"></div>
       <div class="floating-square floating-element"></div>
 
       <div class="login-visual-content">
-        <h2 class="h3-bold mb-4 text-primary-500">Volte a fazer suas postagens</h2>
+        <h2 class="h3-bold mb-4 text-primary-500">
+          Volte a fazer suas postagens
+        </h2>
         <p class="base-medium mb-6">
           Compartilhe seus momentos especiais com pessoas de todo o mundo.
         </p>
@@ -128,7 +162,6 @@
             <p class="small-medium">Descubra conteúdo que você ama</p>
           </div>
         </div>
-
       </div>
     </div>
   </div>

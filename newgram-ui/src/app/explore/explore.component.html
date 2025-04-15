@@ -431,7 +431,6 @@
           class="post-grid animate-slideUp"
           style="animation-delay: 0.6s"
         >
-          <!-- Post 1 -->
           <div class="post-card" *ngFor="let celebrity of celebrityPosts">
             <img
               src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRV61NGGfrNzInHErojPbfVKVdx_KvNiT_bmg&s"
@@ -482,7 +481,6 @@
         </h3>
       </div>
       <div id="listView" class="post-list hidden">
-        <!-- List Item 1 -->
         <label [for]="'modal-1'" class="cursor-pointer">
           <div
             class="post-list-item"
@@ -505,7 +503,7 @@
                     />
                     <p class="small-medium">{{ followedPeople.autor.nome }}</p>
                   </div>
-                  <span class="subtle-semibold text-light-3">6h</span>
+                  <span class="subtle-semibold text-light-3">{{ followedPeople.dataCriacao | dateFormat }}</span>
                 </div>
                 <h4 class="base-semibold mb-1">
                   {{ followedPeople.legenda }}
@@ -536,7 +534,6 @@
         </label>
       </div>
     </div>
-    <!-- Load More Button -->
     <button class="load-more-btn animate-slideUp" style="animation-delay: 0.7s">
       Carregar Mais
     </button>

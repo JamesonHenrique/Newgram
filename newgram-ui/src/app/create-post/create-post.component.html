@@ -6,24 +6,22 @@
     <div class="create-post-container">
       <h1 class="h2-bold mb-6 text-center text-primary-500">Criar Novo Post</h1>
 
-      <form id="createPostForm " [formGroup]="postForm">
-
+      <form id="createPostForm " [formGroup]="postForm" (ngSubmit)="onSubmit()">
         <div class="form-group">
           <label class="form-label">Foto</label>
           <div
-          (click)="triggerFileInput()"
+            (click)="triggerFileInput()"
             id="image-upload-container"
             class="image-upload-container flex-center flex-col"
           >
             <input
-
-            type="file"
-            id="imageUpload"
-            accept="image/*"
-            #imageUpload
-            (change)="previewSelectedImage($event)"
-            style="display: none;"
-          />
+              type="file"
+              id="imageUpload"
+              accept="image/*"
+              #imageUpload
+              (change)="previewSelectedImage($event)"
+              style="display: none"
+            />
             <img
               id="imagePreview"
               #imagePreview
@@ -31,7 +29,11 @@
               [src]="selectedFoto"
               alt="Preview da imagem"
             />
-            <div  #uploadPlaceholder  id="uploadPlaceholder" class="flex-center flex-col gap-3">
+            <div
+              #uploadPlaceholder
+              id="uploadPlaceholder"
+              class="flex-center flex-col gap-3"
+            >
               <i class="fas fa-cloud-upload-alt text-4xl text-light-3"></i>
               <p class="base-medium text-light-3">
                 Clique para fazer upload ou arraste uma imagem
@@ -50,7 +52,7 @@
             id="caption"
             class="form-input form-textarea custom-scrollbar"
             placeholder="Escreva uma legenda para seu post..."
-            formControlName="caption"
+            formControlName="legenda"
           ></textarea>
         </div>
 
@@ -62,22 +64,20 @@
               <i class="fas fa-map-marker-alt icon-custom mr-2"></i>
               <input
                 type="text"
-                id="location"
+                id="localizacao"
                 class="form-input"
                 placeholder="Adicione uma localização"
-                formControlName="location"
+                formControlName="localizacao"
               />
             </div>
             <div
               id="locationSuggestions"
               class="location-suggestions custom-scrollbar"
-            >
-              <!-- Location suggestions will be added here dynamically -->
-            </div>
+            ></div>
           </div>
         </div>
 
-        <!-- Tags -->
+
         <div class="form-group">
           <label for="tagInput" class="form-label">Tags</label>
           <div class="tag-input-container">
@@ -88,31 +88,33 @@
                 id="tagInput"
                 class="form-input"
                 placeholder="Adicione tags (pressione Enter para adicionar)"
-                formControlName="tags"
+                formControlName="hashtags"
               />
             </div>
-            <div id="tagSuggestions" class="tag-suggestions custom-scrollbar">
-              <!-- Tag suggestions will be added here dynamically -->
-            </div>
+            <div
+              id="tagSuggestions"
+              class="tag-suggestions custom-scrollbar"
+            ></div>
           </div>
-          <div id="tagsContainer" class="tags-container">
-            <!-- Tags will be added here dynamically -->
-          </div>
+          <div
+            id="tagsContainer"
+            class="tags-container flex flex-wrap mt-2"
+          ></div>
         </div>
 
-        <!-- Popular Tags Suggestions -->
         <div class="form-group">
           <label class="form-label">Tags Populares</label>
           <div class="flex flex-wrap gap-2 mt-2">
             <span
               *ngFor="let popularTag of popularTags"
+              (click)="addPopularTag(popularTag.name)"
               class="tag px-3 py-1 bg-dark-3 rounded-full text-sm hover:bg-primary-custom transition cursor-pointer tag-suggestion"
-              >{{ popularTag.name }}</span
             >
+              #{{ popularTag.name }}
+            </span>
           </div>
         </div>
 
-        <!-- Form Actions -->
         <div class="form-actions">
           <a href="index.html" class="btn btn-secondary">Cancelar</a>
           <button type="submit" class="btn btn-primary">

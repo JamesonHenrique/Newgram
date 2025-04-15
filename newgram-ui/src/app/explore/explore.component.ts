@@ -24,7 +24,7 @@ export class ExploreComponent {
   selectedPostType: string = '';
   pageable: Pageable = {
     page: 0,
-    size: 10,
+    size: 3,
     sort: ['string'],
   };
   celebrityPosts: any[] = [];

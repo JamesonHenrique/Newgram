@@ -54,7 +54,7 @@
           <span class="small-medium text-light-3">
             {{ postSelected.numeroComentarios | formatNumber }} comentários
           </span>
-          
+
         </div>
       </div>
     </div>
@@ -79,7 +79,7 @@
     <div class="post-detail-comments">
       <h3 class="base-semibold mb-4">Comentários</h3>
 
-      <!-- Comment 1 -->
+
       <div class="comment">
         <img
           [src]="postSelected.image"
@@ -97,7 +97,7 @@
         </div>
       </div>
 
-      <!-- Comment 2 -->
+
       <div class="comment">
         <img
           [src]="postSelected.image"
@@ -115,30 +115,16 @@
         </div>
       </div>
 
-      <!-- Comment 3 -->
-      <div class="comment">
-        <img
-          [src]="postSelected.image"
-          alt="Avatar do Usuário"
-          class="w-10 h-10 rounded-full object-cover border border-primary-custom"
-        />
-        <div>
-          <div class="flex gap-2 items-center">
-            <h4 class="base-semibold">Camila Souza</h4>
-            <span class="small-medium text-light-3">2 dias atrás</span>
-          </div>
-          <p class="base-medium">
-            Qual câmera você usou para tirar essa foto? Ficou perfeita!
-          </p>
-        </div>
-      </div>
+
+
     </div>
 
     <div class="comment-input">
+
       <img
-        [src]="postSelected.image"
+        [src]="getFotoPerfil()"
         alt="Seu Avatar"
-        class="w-10 h-10 rounded-full object-cover border border-primary-custom"
+        class="w-12 h-12 rounded-full object-cover  "
       />
       <input
         type="text"

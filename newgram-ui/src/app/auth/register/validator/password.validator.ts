@@ -24,5 +24,5 @@ export function passwordValidator(): ValidatorFn {
         hasSpecial
       }} : null;
     };
-  
+
 }

@@ -6,26 +6,25 @@
 @tailwind utilities;
 
 :root {
-  --primary-500: #877EFF;
-  --primary-600: #5D5FEF;
+  --primary-500: #877eff;
+  --primary-600: #5d5fef;
   --primary-700: #8b5cf6;
   --primary-800: #7c3aed;
-  --primary-custom: #49437E;
-  --secondary-500: #FFB620;
-  --off-white: #D0DFFF;
+  --primary-custom: #49437e;
+  --secondary-500: #ffb620;
+  --off-white: #d0dfff;
   --dark-1: #000000;
-  --dark-2: #09090A;
+  --dark-2: #09090a;
   --dark-3: #101012;
-  --dark-4: #1F1F22;
-  --light-1: #FFFFFF;
-  --light-2: #EFEFEF;
-  --light-3: #7878A3;
-  --light-4: #5C5C7B;
-  --red: #FF5A5A;
-  --green: #4CAF50;
-  --yellow: #FFC107;
+  --dark-4: #1f1f22;
+  --light-1: #ffffff;
+  --light-2: #efefef;
+  --light-3: #7878a3;
+  --light-4: #5c5c7b;
+  --red: #ff5a5a;
+  --green: #4caf50;
+  --yellow: #ffc107;
 }
-
 
 * {
   box-sizing: border-box;
@@ -39,7 +38,7 @@ body {
   background-color: var(--dark-1);
   color: white;
   min-height: 100vh;
-  font-family: 'Inter', sans-serif;
+  font-family: "Inter", sans-serif;
 }
 .h1-bold {
   font-size: 36px;
@@ -87,7 +86,6 @@ body {
   line-height: 140%;
 }
 
-/* Custom Utilities */
 .flex-center {
   display: flex;
   justify-content: center;
@@ -97,14 +95,13 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: center;
-}/* Para todos os navegadores que suportam scrollbar-color (Firefox) */
+}
 .custom-scrollbar {
   scrollbar-width: thin;
   scrollbar-color: var(--primary-custom) var(--dark-2);
   overflow: auto;
 }
 
-/* Para navegadores WebKit (Chrome, Safari, Edge) */
 .custom-scrollbar::-webkit-scrollbar {
   width: 5px;
   height: 5px;
@@ -126,12 +123,10 @@ body {
   background: var(--primary-500);
 }
 
-/* Melhorias para mobile/touch devices */
 .custom-scrollbar {
   -webkit-overflow-scrolling: touch;
   overscroll-behavior: contain;
 }
-
 
 .flex-start {
   display: flex;
@@ -142,12 +137,10 @@ body {
   width: 5px;
   height: 5px;
   border-radius: 4px;
-
 }
 .custom-scrollbar::-webkit-scrollbar-track {
   background: var(--dark-2);
   border-radius: 4px;
-
 }
 .custom-scrollbar::-webkit-scrollbar-thumb {
   background: var(--primary-custom);
@@ -174,4 +167,28 @@ body {
 .toast-purple .toast-message {
   font-size: 14px;
   opacity: 0.9;
+}
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.2s ease-out forwards;
+}
+
+.tag-transition {
+  transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.avatar {
+  @apply w-[70px] h-[70px] rounded-full object-cover;
+}
+.text-principal {
+  color: #8d8bb4;
 }

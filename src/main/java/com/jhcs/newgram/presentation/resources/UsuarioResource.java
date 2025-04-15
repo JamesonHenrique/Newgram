@@ -51,12 +51,12 @@ public class UsuarioResource {
             @ApiResponse(responseCode = "404", description = "Usuário não encontrado",
                     content = @Content)
     })
-    public ResponseEntity<UsuarioResponseDTO> buscarUsuarioPorId(
+    public ResponseEntity<UsuarioSummaryDTO> buscarUsuarioPorId(
             @Parameter(description = "ID do usuário", required = true)
             @PathVariable Long id,
             @AuthenticationPrincipal Usuario usuarioLogado) {
 
-        UsuarioResponseDTO usuario = usuarioService.buscarUsuarioPorId(id, usuarioLogado.getId());
+        UsuarioSummaryDTO usuario = usuarioService.buscarUsuarioPorId(id, usuarioLogado.getId());
         return ResponseEntity.ok(usuario);
     }
 
@@ -217,14 +217,5 @@ public class UsuarioResource {
     }
 
 
-    @PostMapping(value = "/foto-de-perfil/{id}", consumes = "multipart/form-data")
-    public ResponseEntity<Long> salvarFotoDePerfil(
-            @PathVariable Long id,
-            @Parameter(description = "Imagem da foto de perfil") @RequestPart("file") MultipartFile arquivo
-    ) {
-        usuarioService.salvarFotoDePerfil(id, arquivo);
-        return ResponseEntity.accepted()
-                .build();
-    }
 
 }

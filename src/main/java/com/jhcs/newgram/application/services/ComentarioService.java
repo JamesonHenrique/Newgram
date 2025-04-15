@@ -55,7 +55,6 @@ public class ComentarioService {
         comentario.setPost(post);
         comentario.setDataCriacao(new Date());
 
-        // Se for uma resposta a outro comentário
         if (dto.getComentarioPaiId() != null) {
             Comentario comentarioPai = comentarioRepository.findById(dto.getComentarioPaiId())
                     .orElseThrow(() -> new ResourceNotFoundException("Comentário pai não encontrado"));
@@ -88,7 +87,6 @@ public class ComentarioService {
         Comentario comentario = comentarioRepository.findById(comentarioId)
                 .orElseThrow(() -> new ResourceNotFoundException("Comentário não encontrado"));
 
-        // Verificar se o usuário é o autor do comentário
         if (!comentario.getAutor().getId().equals(usuarioId)) {
             throw new UnauthorizedException("Você não tem permissão para editar este comentário");
         }
@@ -239,7 +237,6 @@ public class ComentarioService {
             respostasDTO.add(converterParaResponseDTO(respostas.get(i), usuarioLogadoId));
         }
 
-        dto.setRespostas(respostasDTO);
         return dto;
     }
 }

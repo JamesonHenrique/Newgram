@@ -55,6 +55,9 @@ import { removerPostSalvo } from '../fn/posts/remover-post-salvo';
 import { RemoverPostSalvo$Params } from '../fn/posts/remover-post-salvo';
 import { salvarPost } from '../fn/posts/salvar-post';
 import { SalvarPost$Params } from '../fn/posts/salvar-post';
+import { salvarFotoDoPost } from '../fn/posts/salvar-foto-do-post';
+import { SalvarFotoDoPost$Params } from '../fn/posts/salvar-foto-do-post';
+
 
 
 /**
@@ -725,7 +728,17 @@ export class PostsService extends BaseService {
       map((r: StrictHttpResponse<void>): void => r.body)
     );
   }
+  static readonly SalvarFotoDoPostPath = '/posts/{id}/imagem';
 
+  salvarFotoDoPost$Response(params:SalvarFotoDoPost$Params , context?: HttpContext): Observable<StrictHttpResponse<number>> {
+    return salvarFotoDoPost(this.http, this.rootUrl, params, context);
+  }
+
+  salvarFotoDoPost(params: SalvarFotoDoPost$Params, context?: HttpContext): Observable<number> {
+    return this.salvarFotoDoPost$Response(params, context).pipe(
+      map((r: StrictHttpResponse<number>): number => r.body)
+    );
+  }
   /** Path part for operation `descurtirPost()` */
   static readonly DescurtirPostPath = '/posts/{id}/descurtir';
 
@@ -758,5 +771,6 @@ export class PostsService extends BaseService {
       map((r: StrictHttpResponse<PostResponseDto>): PostResponseDto => r.body)
     );
   }
+
 
 }

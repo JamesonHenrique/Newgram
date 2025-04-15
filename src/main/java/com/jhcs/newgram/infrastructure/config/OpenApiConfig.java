@@ -7,6 +7,7 @@ import io.swagger.v3.oas.models.info.Contact;
 import io.swagger.v3.oas.models.info.Info;
 import io.swagger.v3.oas.models.info.License;
 import io.swagger.v3.oas.models.media.MediaType;
+import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.responses.ApiResponse;
 import io.swagger.v3.oas.models.security.SecurityRequirement;
 import io.swagger.v3.oas.models.security.SecurityScheme;
@@ -16,7 +17,10 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.env.Environment;
+import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -38,6 +42,11 @@ public class OpenApiConfig {
         boolean isSecurityEnabled = !Arrays.asList(environment.getActiveProfiles()).contains("basic");
 
         OpenAPI openAPI = new OpenAPI()
+                .components(new Components()
+                        .addSchemas("MultipartFile", new Schema<MultipartFile>()
+                                .type("string")
+                                .format("binary")))
+
                 .info(new Info()
                         .title(applicationName + " API")
                         .version("1.0.0")
@@ -58,12 +67,6 @@ public class OpenApiConfig {
 
         Components components = new Components();
 
-
-        components.addResponses("JsonResponse", new ApiResponse()
-                .description("Resposta padrão")
-                .content(new io.swagger.v3.oas.models.media.Content()
-                        .addMediaType("application/json",
-                                new MediaType())));
 
         if (isSecurityEnabled) {
             openAPI.addSecurityItem(new SecurityRequirement().addList("bearerAuth"))

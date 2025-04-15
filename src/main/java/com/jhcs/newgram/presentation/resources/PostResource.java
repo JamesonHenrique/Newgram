@@ -55,7 +55,7 @@ public class PostResource {
     public ResponseEntity<PostResponseDTO> criarPost(
             @AuthenticationPrincipal Usuario usuario,
             @Parameter(description = "Dados do post a ser criado", required = true)
-            @RequestPart("post") @Valid PostCreateDTO postDTO
+            @RequestBody @Valid PostCreateDTO postDTO
           ) {
 
         PostResponseDTO post = postService.criarPost(postDTO, usuario.getId());
@@ -67,8 +67,6 @@ public class PostResource {
             @PathVariable Long postId,
             @RequestParam("file") MultipartFile file,
             @AuthenticationPrincipal UserDetails userDetails) {
-
-
         Usuario usuario = usuarioRepository.findByEmail(userDetails.getUsername())
                 .orElseThrow(() -> new EntityNotFoundException("Usuário não encontrado"));
 
