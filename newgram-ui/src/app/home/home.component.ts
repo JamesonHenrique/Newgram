@@ -5,10 +5,11 @@ import { PostDetailsComponent } from '../post-details/post-details.component';
 import { DomSanitizer, Title } from '@angular/platform-browser';
 import { FormatNumberPipe } from '../format-number.pipe';
 import { PostsService, UsuariosService } from '../services/services';
-import { Pageable, UsuarioSummaryDto } from '../services/models';
+import { Pageable } from '../services/models';
 import { DateFormatPipe } from '../services/pipes/date-format-pipe';
 import { TokenService } from '../services/token/token.service';
-
+import { Observable, Subject, forkJoin, of } from 'rxjs';
+import { takeUntil, catchError, finalize, tap, map } from 'rxjs/operators';
 @Component({
   selector: 'app-home',
   imports: [
@@ -21,105 +22,27 @@ import { TokenService } from '../services/token/token.service';
   styleUrl: './home.component.css',
 })
 export class HomeComponent {
-  constructor(
-    private title: Title,
-    private postsService: PostsService,
-    private usuariosService: UsuariosService,
-    private tokenService: TokenService,
-    private sanitizer: DomSanitizer,
-    private changeDetector: ChangeDetectorRef
-  ) {}
-  ngOnInit(): void {
-    this.title.setTitle('Feed');
-    this.listFeed();
-    this.findAllTopCriadores();
-  }
-  postSelected: any = [];
-  selectedIndex: any = [];
+  private destroy$ = new Subject<void>();
+  private loading = false;
 
-  topics = [
-    'fotografia',
-    'esportes',
-    'tecnologia',
-    'musica',
-    'beleza',
-    'moda',
-    ' gastronomia',
-    'beleza',
-    'moda',
-    'gastronomia',
-    'beleza',
-    'moda',
-    'gastronomia',
-  ];
+  posts: any[] = [];
+  topCreators: any[] = [];
+  usuarioLogado: any | null = null;
 
-  postss = [
-    {
-      id: 1,
-      avatar:
-        'https://www.cnnbrasil.com.br/wp-content/uploads/sites/12/2025/01/santos-neymar_ce226e-e1738361128243.jpg?w=1200&h=1200&crop=1',
-      author: 'Neymar Jr',
-      time: '2 horas atrás',
-      location: 'Riyadh, Saudi Arabia',
-      text: 'Preparando para o próximo jogo no Santos! ⚽🔥 #neymar #santos #futebol',
-      image:
-        'https://www.365scores.com/pt-br/news/magazine/wp-content/uploads/2025/02/Neymar-Santos-scaled.jpg',
-      tags: ['neymar', 'santos', 'futebol', 'treino'],
-      likes: 125000,
-      comments: 8700,
-      isLiked: false,
-      isAnimating: false,
-      isFavorite: false,
-    },
-    {
-      id: 2,
-      avatar:
-        'https://i.pinimg.com/originals/94/29/3d/94293dc5f07cb0b2825e8a7d16e164ed.jpg',
-      author: 'Cristiano Ronaldo',
-      time: '5 horas atrás',
-      location: 'Al Nassr, Saudi Arabia',
-      text: 'Vitória importante hoje! Obrigado a todos os torcedores pelo apoio. 💪🏼 #cr7 #alnassr #champions',
-      image:
-        'https://fly.metroimg.com/upload/q_85,w_700/https://uploads.metroimg.com/wp-content/uploads/2024/08/26113635/cristiano-ronaldo-futebol-futuro-aposentadoria.jpg',
-      tags: ['cr7', 'alnassr', 'champions', 'vitoria'],
-      likes: 3200000,
-      comments: 125000,
-      isLiked: false,
-      isAnimating: false,
-      isFavorite: false,
-    },
-  ];
-  topCreatorss = [
-    {
-      id: 1,
-      avatar:
-        'https://s2-oglobo.glbimg.com/LaW6NoqTlik3XAzENbU6WZrVLaI=/0x0:651x562/924x0/smart/filters:strip_icc()/i.s3.glbimg.com/v1/AUTH_da025474c0c44edd99332dddb09cabe8/internal_photos/bs/2024/V/x/z1C221T4i0bNRAYNDNAA/whatsapp-image-2024-09-26-at-17.13.21.jpeg',
-      name: 'Whindersson Nunes',
-      username: 'whindersson',
-    },
-    {
-      id: 2,
-      avatar:
-        'https://upload.wikimedia.org/wikipedia/commons/thumb/f/fb/Maisa_Silva_at_Lady_Night_in_2019.jpg/800px-Maisa_Silva_at_Lady_Night_in_2019.jpg',
-      name: 'Maisa Silva',
-      username: 'maisa',
-    },
-    {
-      id: 3,
-      avatar:
-        'https://i.pinimg.com/736x/08/7c/8d/087c8dfd2b4a0908d976fdc43bdf749f.jpg',
-      name: 'Vinicius junior',
-      username: 'vini',
-    },
-    {
-      id: 4,
-      avatar:
-        'https://s2-oglobo.glbimg.com/SwdOjRFjeW2iIePq5vL_ErKE370=/0x0:1080x1080/888x0/smart/filters:strip_icc()/i.s3.glbimg.com/v1/AUTH_da025474c0c44edd99332dddb09cabe8/internal_photos/bs/2023/o/q/ISbpHERsimB6DNvacj2g/snapinsta.app-369080977-18382653874036131-1419709696409653797-n-1080.jpg',
-      name: 'Renato Cariani',
-      username: 'renatocariani',
-    },
-  ];
+  postSelected: any | null = null;
+  showDetail = false;
 
+  pageable: Pageable = {
+    page: 0,
+    size: 10,
+    sort: ['']
+  };
+
+  pageableCreators: Pageable = {
+    page: 0,
+    size: 4,
+    sort: ['']
+  };
   otherUsers = [
     {
       id: 1,
@@ -144,73 +67,161 @@ export class HomeComponent {
       username: 'julio',
     },
   ];
-  topCreators: any[] = [];
-  posts: any[] = [];
-  selectedPost: any = null;
-  showDetail = false;
-  pageable: Pageable = {
-    page: 0,
-    size: 10,
-    sort: ['string'],
-  };
-  pageableCreators: Pageable = {
-    page: 0,
-    size: 4,
-    sort: ['string'],
-  };
-  index: number = 0;
-  usuarioLogado: UsuarioSummaryDto = {} as UsuarioSummaryDto;
-  private __fotoPerfil: string | undefined;
-  getFotoPerfil(user: any): string {
-    if (user?.fotoPerfil && user.fotoPerfil.trim() !== '') {
+  topics = [
+    'fotografia', 'esportes', 'tecnologia', 'musica',
+    'beleza', 'moda', 'gastronomia'
+  ].filter((item, index, self) => self.indexOf(item) === index); // Remove duplicatas
+
+  constructor(
+    private title: Title,
+    private postsService: PostsService,
+    private usuariosService: UsuariosService,
+    private tokenService: TokenService,
+    private sanitizer: DomSanitizer,
+    private changeDetector: ChangeDetectorRef
+  ) {}
+
+  ngOnInit(): void {
+    this.title.setTitle('Feed');
+    this.loadInitialData();
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
+  private loadInitialData(): void {
+    this.loading = true;
+
+    forkJoin([
+      this.listFeed(),
+      this.findAllTopCriadores(),
+      this.findUsuarioLogado()
+    ]).pipe(
+      takeUntil(this.destroy$),
+      finalize(() => this.loading = false)
+    ).subscribe();
+  }
+
+  getFotoPerfil(user: any | null): string {
+    if (user?.fotoPerfil?.trim()) {
       return 'data:image/jpg;base64,' + user.fotoPerfil;
     }
     return '/icons/profile-placeholder.svg';
   }
 
-
-
-
-  findUsuarioLogado() {
-    this.usuariosService
-      .buscarUsuarioPorId({ id: this.tokenService.userId })
-      .subscribe((res) => {
-        this.usuarioLogado = res;
-      });
+  getImagemPost(imagemBase64: string | null | undefined): string {
+    if (imagemBase64?.trim()) {
+      return 'data:image/jpg;base64,' + imagemBase64;
+    }
+    return '/icons/post-placeholder.svg';
   }
-  findAllTopCriadores() {
-    this.usuariosService
-      .listarUsuariosMaisFamosos({
-        pageable: this.pageableCreators,
+
+  private findUsuarioLogado(): Observable<void> {
+    if (!this.tokenService.userId) return of(undefined);
+
+    return this.usuariosService.buscarUsuarioPorId({ id: this.tokenService.userId }).pipe(
+      tap(res => this.usuarioLogado = res),
+      map(() => undefined),
+      catchError(error => {
+        console.error('Erro ao buscar usuário logado:', error);
+        return of(undefined);
       })
-      .subscribe((response) => {
-        this.topCreators = response.content || [];
-      });
+    );
   }
 
-  openPostDetails(post: any, event: Event) {
+  private findAllTopCriadores(): Observable<void> {
+    return this.usuariosService.listarUsuariosMaisFamosos({ pageable: this.pageableCreators }).pipe(
+      tap(response => this.topCreators = response.content || []),
+      map(() => undefined),
+      catchError(error => {
+        console.error('Erro ao buscar top criadores:', error);
+        return of(undefined);
+      })
+    );
+  }
+
+  private listFeed(): Observable<void> {
+    return this.postsService.listarFeed({ pageable: this.pageable }).pipe(
+      tap(response => {
+        this.posts = (response.content || []).map((post: any) => ({
+          ...post,
+          isLiked: post.curtidoPeloUsuario,
+          isFavorite: post.salvoPeloUsuario,
+          isAnimating: false,
+          isFavAnimating: false
+        }));
+      }),
+      map(() => undefined),
+      catchError(error => {
+        console.error('Erro ao carregar feed:', error);
+        return of(undefined);
+      })
+    );
+  }
+
+  openPostDetails(post: any, event: MouseEvent): void {
+    event.preventDefault();
     this.postSelected = post;
+    this.showDetail = true;
   }
-  toggleLike(post: any, event: Event) {
+
+  toggleLike(post: any, event: Event): void {
     event.stopPropagation();
+    if (post.isAnimating) return;
+
     post.isAnimating = true;
-    setTimeout(() => {
-      post.isAnimating = false;
-      post.isLiked = !post.isLiked;
-      post.likes += post.isLiked ? 1 : -1;
-    }, 300);
+    const wasLiked = post.isLiked;
+
+    post.isLiked = !wasLiked;
+    post.numeroCurtidas += wasLiked ? -1 : 1;
+
+    const likeAction$ = wasLiked
+      ? this.postsService.descurtirPost({ id: post.id })
+      : this.postsService.curtirPost({ id: post.id });
+
+    likeAction$.pipe(
+      takeUntil(this.destroy$),
+      finalize(() => post.isAnimating = false)
+    ).subscribe({
+      error: () => {
+        post.isLiked = wasLiked;
+        post.numeroCurtidas += wasLiked ? 1 : -1;
+      }
+    });
   }
-  toggleFavorite(post: any, event: Event) {
+
+  toggleFavorite(post: any, event: Event): void {
     event.stopPropagation();
-    post.isFavorite = !post.isFavorite;
+    if (post.isFavAnimating) return;
+
+    post.isFavAnimating = true;
+    const wasFavorite = post.isFavorite;
+
+    post.isFavorite = !wasFavorite;
+    post.numeroFavoritos += wasFavorite ? -1 : 1;
+
+    const favAction$ = wasFavorite
+      ? this.postsService.removerPostSalvo({ id: post.id })
+      : this.postsService.salvarPost({ id: post.id });
+
+    favAction$.pipe(
+      takeUntil(this.destroy$),
+      finalize(() => post.isFavAnimating = false)
+    ).subscribe({
+      error: () => {
+        post.isFavorite = wasFavorite;
+        post.numeroFavoritos += wasFavorite ? 1 : -1;
+      }
+    });
   }
-  listFeed() {
-    this.postsService
-      .listarFeed({
-        pageable: this.pageable,
-      })
-      .subscribe((response) => {
-        this.posts = response.content || [];
-      });
+
+  trackByPostId(index: number, post: any): number {
+    return post.id;
+  }
+
+  trackByCreatorId(index: number, creator: any): number {
+    return creator.id || 0;
   }
 }

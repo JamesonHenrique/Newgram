@@ -5,6 +5,9 @@ import { FormatNumberPipe } from '../format-number.pipe';
 import { UsuariosService } from '../services/services';
 import { Pageable } from '../services/models';
 import { FormsModule } from '@angular/forms';
+import { Subject, Observable, of } from 'rxjs';
+import { debounceTime, distinctUntilChanged, switchMap, map, catchError, takeUntil, tap } from 'rxjs/operators';
+import { ActivatedRoute, Router } from '@angular/router';
 
 @Component({
   selector: 'app-search-profile',
@@ -13,185 +16,226 @@ import { FormsModule } from '@angular/forms';
   styleUrl: './search-profile.component.css',
 })
 export class SearchProfileComponent {
-  constructor(private title:Title, private usuariosService: UsuariosService) {
+  private destroy$ = new Subject<void>();
+
+  searchProfiles = '';
+  famousUsers: any = [];
+  connectionUsers: any = [];
+  randomUsers: any = [];
+  filteredRandomUsers: any = [];
+  cachedUsers:any = [];
+  pageable: Pageable = {
+    page: 0,
+    size: 4,
+    sort: ['']
+  };
+
+  numberOfElements = 0;
+  totalPages = 0;
+  totalElements = 0;
+
+  searchSubject = new Subject<string>();
+
+  constructor(
+    private title: Title,
+    private usuariosService: UsuariosService,
+    private router: Router
+  ) {
     this.title.setTitle('Buscar pessoas');
   }
-  searchProfiles = ' '
-  connectionUserss = [
-    {
-      id: 1,
-      name: 'Whindersson Nunes',
-      username: 'whindersson',
-      mutual: 12,
-      avatar:
-        'https://s2-oglobo.glbimg.com/LaW6NoqTlik3XAzENbU6WZrVLaI=/0x0:651x562/924x0/smart/filters:strip_icc()/i.s3.glbimg.com/v1/AUTH_da025474c0c44edd99332dddb09cabe8/internal_photos/bs/2024/V/x/z1C221T4i0bNRAYNDNAA/whatsapp-image-2024-09-26-at-17.13.21.jpeg',
-    },
-    {
-      id: 2,
-      name: 'Maicon Kuster',
-      username: 'maiconkuster',
-      mutual: 8,
-      avatar:
-        'https://akamai.sscdn.co/uploadfile/letras/fotos/4/1/1/e/411e64de8de9630bf087468c3f17d08e.jpg',
-    },
-    {
-      id: 3,
-      name: 'Gabriel Barbosa',
-      username: 'gabigol',
-      mutual: 5,
-      avatar:
-        'https://encrypted-tbn0.gstatic.com/licensed-image?q=tbn:ANd9GcSUno0Sgdu4h9mmT59UkXXSGWQP_NKELMhq2EKXagpC21jo-0-lGCcgFKZ-kLfrA9k81G1eTt8FycMtLOE',
-    },
-    {
-      id: 4,
-      name: 'Luísa Sonza',
-      username: 'luisasonza',
-      mutual: 7,
-      avatar:
-        'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT8EYqnKM8fN7DI9IBdXM8M2xy8UvUU8w3QwA&s',
-    },
-    {
-      id: 5,
-      name: 'Luccas Neto',
-      username: 'luccasneto',
-      mutual: 3,
-      avatar:
-        'https://yt3.googleusercontent.com/ytc/AIdro_lG6cShOWXOgqhg4GscLlZavM40kxUr86RQLJpePMjJufY=s900-c-k-c0x00ffffff-no-rj',
-    },
-  ];
-  randomUserss = [
-    {
-      id: 1,
-      name: 'Ivete Sangalo',
-      username: 'ivetesangalo',
-      avatar:
-        'https://cdn-images.dzcdn.net/images/artist/fb27c1806a4b63a9633da56f57ca5fd0/1900x1900-000000-80-0-0.jpg',
-      posts: 1243,
-      following: 289,
-      followers: 28700000,
-      bio: 'Cantora, empresária e rainha do Axé. 🎤✨ #VivaViver',
-    },
-    {
-      id: 2,
-      name: 'Xamã',
-      username: 'xamaoficial',
-      avatar:
-        'https://novabrasilfm.com.br/app/uploads/2024/10/xama-768x691.webp',
-      posts: 532,
-      following: 156,
-      followers: 12400000,
-      bio: 'Rapper e compositor. 🎶 "Malvadão" é meu cartão de visitas. 🏆',
-    },
-    {
-      id: 3,
-      name: 'Gkay',
-      username: 'gessicakayane',
-      avatar:
-        'https://s2-gshow.glbimg.com/r4_diUBCNZklNxL8AqrdiHT6rzU=/0x0:1080x1349/984x0/smart/filters:strip_icc()/i.s3.glbimg.com/v1/AUTH_e84042ef78cb4708aeebdf1c68c6cbd6/internal_photos/bs/2022/6/d/321ZIATlmX9fgHTKDF0w/gkay.jpg',
-      posts: 2876,
-      following: 842,
-      followers: 35200000,
-      bio: 'Humorista, digital influencer e dona do #GKayFam. 💖',
-    },
-    {
-      id: 4,
-      name: 'Lázaro Ramos',
-      username: 'lazaroramos',
-      avatar:
-        'https://upload.wikimedia.org/wikipedia/commons/thumb/8/8d/L%C3%A1zaro_Ramos_01.jpg/640px-L%C3%A1zaro_Ramos_01.jpg',
-      posts: 876,
-      following: 124,
-      followers: 7800000,
-      bio: 'Ator, diretor e escritor. Pai da Lis e do João. 📚🎭',
-    },
-    {
-      id: 5,
-      name: 'Tais Araújo',
-      username: 'taisdeverdade',
-      avatar:
-        'https://br.web.img3.acsta.net/c_310_420/pictures/19/09/18/21/50/3636346.jpg',
-      posts: 2105,
-      following: 431,
-      followers: 15600000,
-      bio: 'Atriz, apresentadora.',
-    },
 
-  ];
-  suggestionsUsers = [
-    {
-      id: 1,
-      name: 'Matueê',
-      username: 'matue',
-      avatar:
-        'https://s2-g1.glbimg.com/edM1HJtDGbHdDXZvhIJfUGiyWrA=/0x0:1080x1350/924x0/smart/filters:strip_icc()/i.s3.glbimg.com/v1/AUTH_59edd422c0c84a879bd37670ae4f538a/internal_photos/bs/2020/9/G/qfvEJ5Qdiq18A4BKQGJQ/matue4.jpg',
-    },
-    {
-      id: 2,
-      name: 'Renato Aragão',
-      username: 'renatoaragao',
-      avatar:
-        'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSkHNQUx6HLZ2in83UGLhV4YghCHQelpwVyDQ&s',
-    },
-    {
-      id: 3,
-      name: 'Gregório Duvivier',
-      username: 'gregoriocomg',
-      avatar:
-        'https://upload.wikimedia.org/wikipedia/commons/thumb/9/93/Greg%C3%B3rio_Duvivier_2016.JPG/1200px-Greg%C3%B3rio_Duvivier_2016.JPG',
-    },
-    {
-      id: 4,
-      name: 'Sophia Abrahão',
-      username: 'sophiaabrahao',
-      avatar:
-        'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQb1vBtz836m5epTj1IhiHRF9GW1NngzoUFHQ&s',
-    },
-    {
-      id: 5,
-      name: 'Emicida',
-      username: 'emicida',
-      avatar:
-        'https://upload.wikimedia.org/wikipedia/commons/thumb/1/16/Emicida_Festival_Sensacional_2020_%28cropped%29.jpg/800px-Emicida_Festival_Sensacional_2020_%28cropped%29.jpg',
-    },
-  ];
-  famousUsers: any[] = [];
-  connectionUsers: any[] = [];
-  randomUsers: any[] = [];
-    pageable: Pageable = {
-      page: 0,
-      size: 10,
-      sort: ['string'],
-    };
-    ngOnInit(): void {
-      //Called after the constructor, initializing input properties, and the first call to ngOnChanges.
-      //Add 'implements OnInit' to the class.
-      this.findAllConnectionUsers();
+  ngOnInit(): void {
+    this.initSearchObservable();
+    this.loadInitialData();
+  }
 
-      this.findAllUsuariosFamosos();
-      this.findAllUsuarios();
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
 
-    }
-  findAllUsuarios(){
+  get pesquisando(): boolean {
+    return this.searchProfiles.trim() !== '';
+  }
+
+  private initSearchObservable(): void {
+    this.searchSubject.pipe(
+      debounceTime(300),
+      distinctUntilChanged(),
+      switchMap((term: string) => this.handleSearch(term)),
+      takeUntil(this.destroy$)
+    ).subscribe();
+  }
+
+  private loadInitialData(): void {
+    this.loadInitialCache();
+    this.findAllConnectionUsers();
+    this.findAllUsuariosFamosos();
+    this.findAllUsuarios();
+  }
+
+  private loadInitialCache(): void {
     this.usuariosService.buscarUsuarios({
-      termo: this.searchProfiles,
-      pageable: this.pageable
-    }).subscribe((response) => {
-      this.randomUsers = response.content || [];
+      termo: '',
+      pageable: { page: 0, size: 100, sort: [''] }
+    }).pipe(
+      takeUntil(this.destroy$)
+    ).subscribe({
+      next: (response) => this.cachedUsers = response.content || [],
+      error: (err) => console.error('Erro ao carregar cache:', err)
     });
   }
-  findAllConnectionUsers() {
+
+  onSearchInput(event: Event): void {
+    const term = (event.target as HTMLInputElement).value;
+    this.searchSubject.next(term);
+  }
+
+  private handleSearch(term: string): Observable<void> {
+    this.searchProfiles = term;
+
+    // Primeiro mostra resultados do cache
+    const cachedResults = this.searchInCache(term);
+    this.updateDisplayedUsers(cachedResults);
+
+    // Depois busca no servidor e atualiza
+    return this.buscarTodosUsuariosPorTermo(term).pipe(
+      tap((serverResults) => {
+        if (term === this.searchProfiles) {
+          this.updateDisplayedUsers(serverResults);
+          this.updateCache(serverResults);
+        }
+      }),
+      map(() => undefined), // Convertemos para Observable<void>
+      catchError(() => of(undefined))
+    );
+  }
+
+  private searchInCache(term: string){
+    if (!term.trim()) return this.cachedUsers;
+
+    const lowerTerm = term.toLowerCase();
+    return this.cachedUsers.filter((user: any)  =>
+      user.nome.toLowerCase().includes(lowerTerm) ||
+      user.username.toLowerCase().includes(lowerTerm)
+    );
+  }
+
+  private updateDisplayedUsers(users:any): void {
+    this.randomUsers = users;
+    this.filteredRandomUsers = this.paginateUsers(users);
+    this.totalElements = users.length;
+    this.numberOfElements = this.filteredRandomUsers.length;
+    this.totalPages = Math.ceil(users.length / (this.pageable.size || 1));
+  }
+
+  private updateCache(newUsers: any): void {
+    newUsers.forEach((newUser: any) => {
+      if (!this.cachedUsers.some((u: any) => u.id === newUser.id)) {
+        this.cachedUsers.push(newUser);
+      }
+    });
+  }
+
+  findAllUsuarios(): void {
+    if (this.pesquisando) {
+      this.buscarTodosUsuariosPorTermo(this.searchProfiles.trim()).pipe(
+        takeUntil(this.destroy$)
+      ).subscribe({
+        next: (users) => this.updateDisplayedUsers(users),
+        error: (err) => console.error('Erro ao buscar usuários:', err)
+      });
+    } else {
+      this.usuariosService.buscarUsuarios({
+        termo: '',
+        pageable: this.pageable
+      }).pipe(
+        takeUntil(this.destroy$)
+      ).subscribe({
+        next: (response) => {
+          this.randomUsers = response.content || [];
+          this.numberOfElements = response.numberOfElements || 0;
+          this.totalPages = response.totalPages || 0;
+          this.totalElements = response.totalElements || 0;
+        },
+        error: (err) => console.error('Erro ao buscar usuários:', err)
+      });
+    }
+  }
+
+  private buscarTodosUsuariosPorTermo(termo: string) {
+    return this.usuariosService.buscarUsuarios({
+      termo,
+      pageable: { page: 0, size: 1000, sort: [''] }
+    }).pipe(
+      map(response => response.content || []),
+      catchError(() => of([]))
+    );
+  }
+
+  findAllConnectionUsers(): void {
     this.usuariosService.listarUsuariosPorAmigosEmComum({
       pageable: this.pageable
-    }).subscribe((response) => {
-      this.connectionUsers = response.content || [];
+    }).pipe(
+      takeUntil(this.destroy$)
+    ).subscribe({
+      next: (response) => this.connectionUsers = response.content || [],
+      error: (err) => console.error('Erro ao buscar conexões:', err)
     });
   }
 
-  findAllUsuariosFamosos() {
+  findAllUsuariosFamosos(): void {
     this.usuariosService.listarUsuariosMaisFamosos({
       pageable: this.pageable
-    }).subscribe((response) => {
-      this.famousUsers = response.content || [];
+    }).pipe(
+      takeUntil(this.destroy$)
+    ).subscribe({
+      next: (response) => this.famousUsers = response.content || [],
+      error: (err) => console.error('Erro ao buscar usuários famosos:', err)
     });
+  }
+
+  isUltimaPagina(): boolean {
+    return (this.pageable.page || 0) >= this.totalPages - 1;
+  }
+
+  avancarPagina(): void {
+    if (this.isUltimaPagina() || this.numberOfElements === 0) {
+      this.pageable.page = 0;
+    } else {
+      this.pageable.page = (this.pageable.page || 0) + 1;
+    }
+  }
+
+  verPerfil(username: string): void {
+    this.router.navigate(['/perfil', username]);
+  }
+
+  carregarMais(tipoDeUsuario: string): void {
+    this.avancarPagina();
+
+    switch (tipoDeUsuario) {
+      case 'connection':
+        this.findAllConnectionUsers();
+        break;
+      case 'random':
+        this.findAllUsuarios();
+        break;
+      case 'famous':
+        this.findAllUsuariosFamosos();
+        break;
+    }
+  }
+
+  private paginateUsers(users: any) {
+    const start = (this.pageable.page || 0) * (this.pageable.size || 1);
+    const end = start + (this.pageable.size || 1);
+    return users.slice(start, end);
+  }
+  getFotoPerfil(user: any | null): string {
+    if (user?.fotoPerfil?.trim()) {
+      return 'data:image/jpg;base64,' + user.fotoPerfil;
+    }
+    return '/icons/profile-placeholder.svg';
   }
 }

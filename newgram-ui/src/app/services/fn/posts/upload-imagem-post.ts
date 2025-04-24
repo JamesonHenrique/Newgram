@@ -10,7 +10,7 @@ import { RequestBuilder } from '../../request-builder';
 
 export interface  SalvarFotoDoPost$Params {
   id: number;
-  body?: FormData; 
+  body?: FormData;
 }
 
 export function salvarFotoDoPost(

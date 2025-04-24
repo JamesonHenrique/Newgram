@@ -2,11 +2,13 @@ package com.jhcs.newgram.application.dtos.notificacao;
 
 import com.jhcs.newgram.core.domain.enums.TipoNotificacao;
 import lombok.Data;
+import io.swagger.v3.oas.annotations.media.Schema;
 
 import java.util.Date;
 
 @Data
-public class NotificacaoResponseDTO {
+@Schema(description = "DTO para resposta de uma notificação")
+public class  NotificacaoResponseDTO {
     private Long id;
     private TipoNotificacao tipo;
     private String conteudo;

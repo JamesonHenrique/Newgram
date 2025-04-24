@@ -7,11 +7,39 @@
  * Dados do usuário a ser registrado
  */
 export interface UsuarioCreateDto {
+
+  /**
+   * Biografia do usuário
+   */
   bio?: string;
+
+  /**
+   * Confirmação da senha
+   */
   confirmacaoSenha?: string;
+
+  /**
+   * E-mail do usuário
+   */
   email?: string;
+
+  /**
+   * Foto de perfil do usuário
+   */
+  fotoPerfil?: Blob;
+
+  /**
+   * Nome completo do usuário
+   */
   nome?: string;
+
+  /**
+   * Senha do usuário
+   */
   senha?: string;
+
+  /**
+   * Nome de usuário único
+   */
   username?: string;
-  fotoPerfil?: File; 
 }

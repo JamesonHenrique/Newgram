@@ -1,5 +1,5 @@
 package com.jhcs.newgram.application.dtos.usuario;
-import com.jhcs.newgram.application.dtos.arquivo.ArquivoDTO;
+
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -28,6 +28,4 @@ public class UsuarioCreateDTO {
 
     @Schema(description = "Foto de perfil do usuário", type = "string", format = "binary")
     private MultipartFile fotoPerfil;
-
-
 }

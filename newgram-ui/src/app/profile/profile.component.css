@@ -747,10 +747,6 @@
     font-size: 0.75rem;
     padding: 0.4rem 0.75rem;
   }
-}
-
-/* Ajustes para telas muito pequenas */
-@media (max-width: 360px) {
   .profile-avatar {
     width: 80px;
     height: 80px;
@@ -789,3 +785,4 @@
     font-size: 1.25rem;
   }
 }
+

@@ -8,6 +8,7 @@ import { ApiConfiguration, ApiConfigurationParams } from './api-configuration';
 
 import { UsuariosService } from './services/usuarios.service';
 import { PostsService } from './services/posts.service';
+import { ComentariosService } from './services/comentarios.service';
 import { AutenticacaoService } from './services/autenticacao.service';
 
 /**
@@ -20,6 +21,7 @@ import { AutenticacaoService } from './services/autenticacao.service';
   providers: [
     UsuariosService,
     PostsService,
+    ComentariosService,
     AutenticacaoService,
     ApiConfiguration
   ],

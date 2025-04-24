@@ -6,14 +6,22 @@ import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.Size;
 import org.springframework.web.multipart.MultipartFile;
 import java.util.List;
+import io.swagger.v3.oas.annotations.media.Schema;
 
 @Data
+@Schema(description = "DTO para criação de um post")
 public class PostCreateDTO {
+
+    @Schema(description = "Legenda do post (máximo de 2200 caracteres)")
     @Size(max = 2200, message = "A legenda deve ter no máximo 2200 caracteres")
     private String legenda;
+
+    @Schema(description = "Localização associada ao post")
     private String localizacao;
+
+    @Schema(description = "Visibilidade do post (padrão: público)")
     private TipoVisibilidade visibilidade = TipoVisibilidade.PUBLICO;
+
+    @Schema(description = "Lista de hashtags associadas ao post")
     private List<String> hashtags;
-
-
 }

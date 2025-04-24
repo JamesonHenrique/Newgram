@@ -62,7 +62,10 @@ public class PostService {
 
     @Autowired
     private ArquivoService arquivoService;
-
+    @Autowired
+    private SalvosService salvosService;
+    @Autowired
+    private CurtidaService curtidaService;
     @Transactional
     public PostResponseDTO criarPost(PostCreateDTO dto, Long usuarioId) {
         Usuario autor = usuarioRepository.findById(usuarioId)
@@ -409,12 +412,10 @@ public class PostService {
         List<Hashtag> hashtagEntities = new ArrayList<>();
 
         for (String tagNome : hashtags) {
-            // Remover # do início se presente
             if (tagNome.startsWith("#")) {
                 tagNome = tagNome.substring(1);
             }
 
-            // Buscar hashtag existente ou criar nova
             String finalTagNome = tagNome;
             Hashtag hashtag = hashtagRepository.findByNome(tagNome)
                     .orElseGet(() -> {
@@ -486,7 +487,6 @@ public class PostService {
                 .collect(Collectors.toList());
         dto.setUsuariosMarcados(usuariosMarcados);
 
-        // Estatísticas
         dto.setNumeroCurtidas(curtidaRepository.countByPostId(post.getId()));
         dto.setNumeroComentarios(comentarioRepository.countByPostId(post.getId()));
 
@@ -512,7 +512,16 @@ public class PostService {
         dto.setLocalizacao(post.getLocalizacao());
         dto.setNumeroCurtidas(curtidaRepository.countByPostId(post.getId()));
         dto.setNumeroComentarios(comentarioRepository.countByPostId(post.getId()));
+        if (usuarioLogadoId != null) {
+            boolean curtidoPeloUsuario = curtidaService.verificarCurtidaPost(post.getId(), usuarioLogadoId);
+            dto.setCurtidoPeloUsuario(curtidoPeloUsuario);
 
+            boolean salvoPeloUsuario = salvosService.verificarPostSalvo(usuarioLogadoId, post.getId());
+            dto.setSalvoPeloUsuario(salvoPeloUsuario);
+        } else {
+            dto.setCurtidoPeloUsuario(false);
+            dto.setSalvoPeloUsuario(false);
+        }
 
         return dto;
     }

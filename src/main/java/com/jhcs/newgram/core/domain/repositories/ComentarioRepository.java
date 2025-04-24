@@ -21,7 +21,7 @@ public interface ComentarioRepository extends JpaRepository<Comentario, Long> {
     Long countByPostId(@Param("postId") Long postId);
 
     @Query("SELECT c FROM Comentario c WHERE c.post.id = :postId AND c.comentarioPai IS NULL ORDER BY c.dataCriacao DESC")
-    List<Comentario> findComentariosPrincipaisByPostId(@Param("postId") Long postId, Pageable pageable);
+    Page<Comentario> findComentariosPrincipaisByPostId(@Param("postId") Long postId, Pageable pageable);
 
     @Query("SELECT c FROM Comentario c WHERE c.autor.id = :usuarioId ORDER BY c.dataCriacao DESC")
     Page<Comentario> findByAutorId(@Param("usuarioId") Long usuarioId, Pageable pageable);

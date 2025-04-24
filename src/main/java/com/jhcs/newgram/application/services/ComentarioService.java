@@ -10,12 +10,15 @@ import com.jhcs.newgram.core.domain.repositories.ComentarioRepository;
 import com.jhcs.newgram.core.domain.repositories.CurtidaRepository;
 import com.jhcs.newgram.core.domain.repositories.PostRepository;
 import com.jhcs.newgram.core.domain.repositories.UsuarioRepository;
+import com.jhcs.newgram.core.domain.utils.ArquivoUtils;
 import com.jhcs.newgram.infrastructure.exception.BusinessException;
 import com.jhcs.newgram.infrastructure.exception.ResourceNotFoundException;
 import com.jhcs.newgram.infrastructure.exception.UnauthorizedException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -59,7 +62,6 @@ public class ComentarioService {
             Comentario comentarioPai = comentarioRepository.findById(dto.getComentarioPaiId())
                     .orElseThrow(() -> new ResourceNotFoundException("Comentário pai não encontrado"));
 
-            // Verificar se o comentário pai pertence ao mesmo post
             if (!comentarioPai.getPost().getId().equals(post.getId())) {
                 throw new BusinessException("O comentário pai não pertence ao post informado");
             }
@@ -102,7 +104,6 @@ public class ComentarioService {
         Comentario comentario = comentarioRepository.findById(comentarioId)
                 .orElseThrow(() -> new ResourceNotFoundException("Comentário não encontrado"));
 
-        // Verificar se o usuário é o autor do comentário ou do post
         if (!comentario.getAutor().getId().equals(usuarioId) &&
                 !comentario.getPost().getAutor().getId().equals(usuarioId)) {
             throw new UnauthorizedException("Você não tem permissão para excluir este comentário");
@@ -112,21 +113,25 @@ public class ComentarioService {
     }
 
     @Transactional(readOnly = true)
+
     public Page<ComentarioResponseDTO> listarComentariosPorPost(Long postId, Pageable pageable, Long usuarioId) {
-        // Verificar se o post existe
+        Sort sort = Sort.by(Sort.Direction.DESC, "dataCriacao");
+        Pageable safePageable = PageRequest.of(
+                pageable.getPageNumber(),
+                pageable.getPageSize(),
+                sort
+        );
         if (!postRepository.existsById(postId)) {
             throw new ResourceNotFoundException("Post não encontrado");
         }
 
-        // Buscar apenas comentários principais (não respostas)
-        Page<Comentario> comentarios = (Page<Comentario>) comentarioRepository.findComentariosPrincipaisByPostId(postId, pageable);
+        Page<Comentario> comentarios = comentarioRepository.findComentariosPrincipaisByPostId(postId, safePageable);
 
         return comentarios.map(comentario -> converterParaResponseDTO(comentario, usuarioId));
     }
 
     @Transactional(readOnly = true)
     public List<ComentarioResponseDTO> listarRespostasPorComentario(Long comentarioId, Long usuarioId) {
-        // Verificar se o comentário existe
         if (!comentarioRepository.existsById(comentarioId)) {
             throw new ResourceNotFoundException("Comentário não encontrado");
         }
@@ -181,7 +186,6 @@ public class ComentarioService {
 
     @Transactional(readOnly = true)
     public Page<ComentarioResponseDTO> listarComentariosPorUsuario(Long usuarioId, Pageable pageable, Long usuarioLogadoId) {
-        // Verificar se o usuário existe
         if (!usuarioRepository.existsById(usuarioId)) {
             throw new ResourceNotFoundException("Usuário não encontrado");
         }
@@ -191,7 +195,6 @@ public class ComentarioService {
         return comentarios.map(comentario -> converterParaResponseDTO(comentario, usuarioLogadoId));
     }
 
-    // Métodos auxiliares
 
     private ComentarioResponseDTO converterParaResponseDTO(Comentario comentario, Long usuarioLogadoId) {
         ComentarioResponseDTO dto = new ComentarioResponseDTO();
@@ -204,19 +207,17 @@ public class ComentarioService {
             dto.setComentarioPaiId(comentario.getComentarioPai().getId());
         }
 
-        // Autor
         UsuarioSummaryDTO autorDTO = new UsuarioSummaryDTO();
         autorDTO.setId(comentario.getAutor().getId());
         autorDTO.setNome(comentario.getAutor().getNome());
         autorDTO.setUsername(comentario.getAutor().getUsername());
+        autorDTO.setFotoPerfil(ArquivoUtils.lerArquivoDoLocal(comentario.getAutor().getFotoPerfil()));
 
         dto.setAutor(autorDTO);
 
-        // Estatísticas
         dto.setNumeroCurtidas(curtidaRepository.countByComentarioId(comentario.getId()));
         dto.setNumeroRespostas(comentarioRepository.countRespostasByComentarioId(comentario.getId()));
 
-        // Verificar se o usuário curtiu o comentário
         if (usuarioLogadoId != null) {
             dto.setCurtidoPeloUsuario(curtidaRepository.existsByUsuarioIdAndComentarioId(usuarioLogadoId, comentario.getId()));
         }
@@ -227,11 +228,9 @@ public class ComentarioService {
     private ComentarioResponseDTO converterParaResponseDTOComRespostas(Comentario comentario, Long usuarioLogadoId) {
         ComentarioResponseDTO dto = converterParaResponseDTO(comentario, usuarioLogadoId);
 
-        // Adicionar respostas (limitadas às primeiras 3, por exemplo)
         List<Comentario> respostas = comentarioRepository.findByComentarioPaiIdOrderByDataCriacaoAsc(comentario.getId());
         List<ComentarioResponseDTO> respostasDTO = new ArrayList<>();
 
-        // Limitar a quantidade de respostas iniciais para não sobrecarregar
         int limite = Math.min(respostas.size(), 3);
         for (int i = 0; i < limite; i++) {
             respostasDTO.add(converterParaResponseDTO(respostas.get(i), usuarioLogadoId));

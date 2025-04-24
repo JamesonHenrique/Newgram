@@ -16,47 +16,14 @@
         placeholder="Pesquisar pessoas por nome ou @username"
         id="searchInput"
         [(ngModel)]="searchProfiles"
+        (ngModelChange)="searchSubject.next($event)"
         (keyup)="findAllUsuarios()"
       />
     </div>
 
-    <div
-      class="filter-tabs flex gap-2 sm:gap-3 md:gap-4 overflow-x-auto pb-2 mb-4 md:mb-6 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100 animate-slideUp"
-      style="animation-delay: 0.1s"
-    >
-      <div
-        class="filter-tab active whitespace-nowrap px-3 py-1.5 text-xs sm:text-sm rounded-full bg-primary-500 text-white cursor-pointer transition-colors duration-200"
-        data-filter="all"
-      >
-        Todos
-      </div>
-      <div
-        class="filter-tab whitespace-nowrap px-3 py-1.5 text-xs sm:text-sm rounded-full bg-gray-200 hover:bg-gray-300 cursor-pointer transition-colors duration-200"
-        data-filter="popular"
-      >
-        Mais Populares
-      </div>
-      <div
-        class="filter-tab whitespace-nowrap px-3 py-1.5 text-xs sm:text-sm rounded-full bg-gray-200 hover:bg-gray-300 cursor-pointer transition-colors duration-200"
-        data-filter="recent"
-      >
-        Recentes
-      </div>
-      <div
-        class="filter-tab whitespace-nowrap px-3 py-1.5 text-xs sm:text-sm rounded-full bg-gray-200 hover:bg-gray-300 cursor-pointer transition-colors duration-200"
-        data-filter="following"
-      >
-        Seguindo
-      </div>
-      <div
-        class="filter-tab whitespace-nowrap px-3 py-1.5 text-xs sm:text-sm rounded-full bg-gray-200 hover:bg-gray-300 cursor-pointer transition-colors duration-200"
-        data-filter="followers"
-      >
-        Seguidores
-      </div>
-    </div>
 
-    <section
+
+    <section *ngIf="!searchProfiles"
       class="suggestions-section px-4 sm:px-6 lg:px-8 animate-slideUp"
       style="animation-delay: 0.2s"
     >
@@ -70,9 +37,9 @@
             Sugestões para você
           </h3>
           <a
-            href="#"
+            (click)="carregarMais('famous')"
             class="font-medium text-gray-400 hover:text-gray-100 transition text-xs sm:text-sm"
-            >Ver Todos</a
+            >Ver Mais</a
           >
         </div>
         <div
@@ -80,10 +47,10 @@
         >
 
           <div *ngFor="let suggestionUser of famousUsers"
-            class="suggestion-card flex flex-col items-center min-w-[120px] sm:min-w-[140px] md:min-w-[160px] p-3 bg-gray-800 rounded-lg"
+            class="suggestion-card flex flex-col items-center min-w-[120px] sm:min-w-[140px] md:min-w-[160px] p-3 bg-gray-800 rounded-lg" (click)="verPerfil(suggestionUser.username)"
           >
             <img
-            src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRV61NGGfrNzInHErojPbfVKVdx_KvNiT_bmg&s"
+            [src]="getFotoPerfil(suggestionUser)"
 
               alt="Avatar"
               class="suggestion-avatar w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 rounded-full object-cover mb-2"
@@ -110,7 +77,7 @@
     </section>
 
 
-    <section
+    <section *ngIf="!searchProfiles"
       class="connections-section animate-slideUp"
       style="animation-delay: 0.3s"
     >
@@ -122,9 +89,9 @@
       <div
         class="connections-list grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 md:gap-4"
       >
-        <div class="connection-card" *ngFor="let connection of connectionUsers">
+        <div class="connection-card" *ngFor="let connection of connectionUsers" (click)="verPerfil(connection.username)">
           <img
-          src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRV61NGGfrNzInHErojPbfVKVdx_KvNiT_bmg&s"
+          [src]="getFotoPerfil(connection)"
 
             alt="Avatar"
             class="connection-avatar"
@@ -145,7 +112,7 @@
           class="base-semibold mb-4 text-light-2 animate-slideUp"
           style="animation-delay: 0.4s"
         >
-          Descubra pessoas
+          Descubra pessoas{{pesquisando ? 'de acordo com sua pesquisa: ' + searchProfiles : ''}}
         </h3>
 
         <div
@@ -153,9 +120,9 @@
           style="animation-delay: 0.5s"
           id="peopleGrid"
         >
-          <div class="person-card" *ngFor="let person of randomUsers">
+          <div class="person-card" *ngFor="let person of randomUsers" (click)="verPerfil(person.username)">
             <img
-            src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRV61NGGfrNzInHErojPbfVKVdx_KvNiT_bmg&s"
+            [src]="getFotoPerfil(person)"
 
               alt="Avatar"
               class="person-avatar"
@@ -200,8 +167,10 @@
     </div>
 
     <button
+
       class="load-more-btn animate-slideUp"
       style="animation-delay: 0.6s"
+      (click)="carregarMais('random')"
       id="loadMoreBtn"
     >
       Carregar Mais

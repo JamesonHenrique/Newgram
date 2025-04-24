@@ -1,5 +1,4 @@
 <div class="">
-  <!-- Main Content Area -->
   <div class="content-area">
     <div class="max-w-7xl mx-auto">
       <h1
@@ -8,7 +7,6 @@
         Salvos
       </h1>
 
-      <!-- Collection Creator -->
       <div
         id="collectionCreator"
         class="collection-creator mb-6 bg-gray-800 rounded-lg p-4"
@@ -115,7 +113,7 @@
         style="animation-delay: 0.2s"
       >
         <div class="text-sm font-medium mb-2 sm:mb-0">
-          <span id="savedCount">{{ savedPosts.length }}</span> posts salvos
+          <span id="savedCount">{{ postsTotais }}</span> posts salvos
         </div>
 
         <div class="flex gap-2 sm:gap-4 w-full sm:w-auto">
@@ -154,8 +152,6 @@
               </div>
             </div>
           </div>
-
-
         </div>
       </div>
 
@@ -164,48 +160,60 @@
         class="post-grid animate-slideUp"
         style="animation-delay: 0.3s"
       >
-
-        <div class="post-card" *ngFor="let post of savedPosts; let i = index" (click)="openModal(post, i)">
+        <div
+          class="post-card"
+          *ngFor="let post of savedPosts; let i = index"
+          (click)="openModal(post, i)"
+        >
           <label [for]="'modal-1'" class="cursor-pointer">
-          <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRV61NGGfrNzInHErojPbfVKVdx_KvNiT_bmg&s"
-          alt="Post" class="post-card-img" />
-
-
-          <div class="absolute bottom-3 left-3 z-10">
             <img
-
-            src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRV61NGGfrNzInHErojPbfVKVdx_KvNiT_bmg&s"
-              alt="Avatar"
-              class="w-8 h-8 rounded-full object-cover shadow-md hover:scale-110 hover:border-primary-500 transition-all duration-300"
+              [src]="getImagemPost(post.imagem)"
+              alt="Post"
+              class="post-card-img"
             />
-          </div>
 
-          <div class="post-actions flex gap-2">
-            <div class="relative group">
-              <button
-                class="post-action-btn p-2 rounded-full hover:bg-gray-700 transition-colors"
-              >
-                <i class="fas fa-bookmark hover:text-red-500"></i>
-              </button>
+            <div class="absolute bottom-3 left-3 z-10">
+              <img
+                [src]="getFotoPerfil(post.usuario)"
+                alt="Avatar"
+                class="w-8 h-8 rounded-full object-cover shadow-md hover:scale-110 hover:border-primary-500 transition-all duration-300"
+              />
             </div>
 
-            <div class="relative group">
-              <button
-                class="post-action-btn p-2 rounded-full hover:bg-gray-700 transition-colors"
-              >
-                <i class="fas fa-folder-plus hover:text-primary-500"></i>
-              </button>
+            <div class="post-actions flex gap-2">
+              <div class="relative group">
+                <button
+                  class="post-action-btn p-2 rounded-full hover:bg-gray-700 transition-colors"
+                >
+                  <i class="fas fa-bookmark hover:text-red-500"></i>
+                </button>
+              </div>
+
+              <div class="relative group">
+                <button
+                  class="post-action-btn p-2 rounded-full hover:bg-gray-700 transition-colors"
+                >
+                  <i class="fas fa-folder-plus hover:text-primary-500"></i>
+                </button>
+              </div>
             </div>
-          </div>
-        </label>
+          </label>
         </div>
-
       </div>
       <app-post-details
-      [postSelected]="postSelected"
-      [modalId]="'modal-1'"
-    ></app-post-details>
-      <div *ngIf="!savedPosts.length" id="emptyState" class="empty-state hidden animate-fadeIn">
+        [postSelected]="postSelected"
+        (postSelectedChange)="postSelected = $event"
+      ></app-post-details>
+      <app-pagination
+        [currentPage]="pageable.page || 0"
+        [totalPages]="paginaTotal || 0"
+        (pageChange)="onPageChange($event)"
+      ></app-pagination>
+      <div
+        *ngIf="!savedPosts.length"
+        id="emptyState"
+        class="empty-state hidden animate-fadeIn"
+      >
         <i class="far fa-bookmark empty-state-icon"></i>
         <h3 class="h3-bold mb-2">Nenhum post salvo</h3>
         <p class="base-medium text-light-3 mb-6">

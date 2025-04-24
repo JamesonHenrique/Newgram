@@ -55,9 +55,7 @@ import { removerPostSalvo } from '../fn/posts/remover-post-salvo';
 import { RemoverPostSalvo$Params } from '../fn/posts/remover-post-salvo';
 import { salvarPost } from '../fn/posts/salvar-post';
 import { SalvarPost$Params } from '../fn/posts/salvar-post';
-import { salvarFotoDoPost } from '../fn/posts/salvar-foto-do-post';
-import { SalvarFotoDoPost$Params } from '../fn/posts/salvar-foto-do-post';
-
+import { salvarFotoDoPost, SalvarFotoDoPost$Params } from '../fn/posts/upload-imagem-post';
 
 
 /**
@@ -174,30 +172,49 @@ export class PostsService extends BaseService {
   /**
    * Criar novo post.
    *
-   * Cria um novo post com opção de upload de arquivos
+   * Cria um novo post
    *
    * This method provides access to the full `HttpResponse`, allowing access to response headers.
    * To access only the response body, use `criarPost()` instead.
    *
    * This method sends `application/json` and handles request body of type `application/json`.
    */
-  criarPost$Response(params?: CriarPost$Params, context?: HttpContext): Observable<StrictHttpResponse<PostResponseDto>> {
+  criarPost$Response(params: CriarPost$Params, context?: HttpContext): Observable<StrictHttpResponse<PostResponseDto>> {
     return criarPost(this.http, this.rootUrl, params, context);
   }
 
   /**
    * Criar novo post.
    *
-   * Cria um novo post com opção de upload de arquivos
+   * Cria um novo post
    *
    * This method provides access only to the response body.
    * To access the full response (for headers, for example), `criarPost$Response()` instead.
    *
    * This method sends `application/json` and handles request body of type `application/json`.
    */
-  criarPost(params?: CriarPost$Params, context?: HttpContext): Observable<PostResponseDto> {
+  criarPost(params: CriarPost$Params, context?: HttpContext): Observable<PostResponseDto> {
     return this.criarPost$Response(params, context).pipe(
       map((r: StrictHttpResponse<PostResponseDto>): PostResponseDto => r.body)
+    );
+  }
+
+  /** Path part for operation `uploadImagemPost()` */
+  static readonly UploadImagemPostPath = '/posts/{postId}/imagem';
+
+  /**
+   * This method provides access to the full `HttpResponse`, allowing access to response headers.
+   * To access only the response body, use `uploadImagemPost()` instead.
+   *
+   * This method sends `multipart/form-data` and handles request body of type `multipart/form-data`.
+   */
+  salvarFotoDoPost$Response(params:SalvarFotoDoPost$Params , context?: HttpContext): Observable<StrictHttpResponse<number>> {
+    return salvarFotoDoPost(this.http, this.rootUrl, params, context);
+  }
+
+  salvarFotoDoPost(params: SalvarFotoDoPost$Params, context?: HttpContext): Observable<number> {
+    return this.salvarFotoDoPost$Response(params, context).pipe(
+      map((r: StrictHttpResponse<number>): number => r.body)
     );
   }
 
@@ -728,17 +745,7 @@ export class PostsService extends BaseService {
       map((r: StrictHttpResponse<void>): void => r.body)
     );
   }
-  static readonly SalvarFotoDoPostPath = '/posts/{id}/imagem';
 
-  salvarFotoDoPost$Response(params:SalvarFotoDoPost$Params , context?: HttpContext): Observable<StrictHttpResponse<number>> {
-    return salvarFotoDoPost(this.http, this.rootUrl, params, context);
-  }
-
-  salvarFotoDoPost(params: SalvarFotoDoPost$Params, context?: HttpContext): Observable<number> {
-    return this.salvarFotoDoPost$Response(params, context).pipe(
-      map((r: StrictHttpResponse<number>): number => r.body)
-    );
-  }
   /** Path part for operation `descurtirPost()` */
   static readonly DescurtirPostPath = '/posts/{id}/descurtir';
 
@@ -771,6 +778,5 @@ export class PostsService extends BaseService {
       map((r: StrictHttpResponse<PostResponseDto>): PostResponseDto => r.body)
     );
   }
-
 
 }

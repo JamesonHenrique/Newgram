@@ -12,28 +12,23 @@ import { PostCreateDto } from '../../models/post-create-dto';
 import { PostResponseDto } from '../../models/post-response-dto';
 
 export interface CriarPost$Params {
-  body?: PostCreateDto;
+      body: PostCreateDto
 }
 
-export function criarPost(
-  http: HttpClient,
-  rootUrl: string,
-  params?: CriarPost$Params,
-  context?: HttpContext
-): Observable<StrictHttpResponse<PostResponseDto>> {
+export function criarPost(http: HttpClient, rootUrl: string, params: CriarPost$Params, context?: HttpContext): Observable<StrictHttpResponse<PostResponseDto>> {
   const rb = new RequestBuilder(rootUrl, criarPost.PATH, 'post');
   if (params) {
     rb.body(params.body, 'application/json');
   }
-  rb.header('Authorization', 'Bearer ' + localStorage.getItem('token')); 
-  return http
-    .request(rb.build({ responseType: 'json', accept: '*/*', context }))
-    .pipe(
-      filter((r: any): r is HttpResponse<any> => r instanceof HttpResponse),
-      map((r: HttpResponse<any>) => {
-        return r as StrictHttpResponse<PostResponseDto>;
-      })
-    );
+
+  return http.request(
+    rb.build({ responseType: 'json', accept: '*/*', context })
+  ).pipe(
+    filter((r: any): r is HttpResponse<any> => r instanceof HttpResponse),
+    map((r: HttpResponse<any>) => {
+      return r as StrictHttpResponse<PostResponseDto>;
+    })
+  );
 }
 
 criarPost.PATH = '/posts';

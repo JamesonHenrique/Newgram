@@ -21,7 +21,7 @@ export const appConfig: ApplicationConfig = {
       positionClass: 'toast-bottom-right',
       preventDuplicates: true,
 
-      toastClass: 'toast-purple', // Classe CSS personalizada
+      toastClass: 'toast-purple', 
       iconClasses: {
         error: 'toast-error',
         info: 'toast-info',

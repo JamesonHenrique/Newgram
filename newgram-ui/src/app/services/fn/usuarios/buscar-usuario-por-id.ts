@@ -9,7 +9,6 @@ import { StrictHttpResponse } from '../../strict-http-response';
 import { RequestBuilder } from '../../request-builder';
 
 import { UsuarioResponseDto } from '../../models/usuario-response-dto';
-import { UsuarioSummaryDto } from '../../models';
 
 export interface BuscarUsuarioPorId$Params {
 
@@ -19,7 +18,7 @@ export interface BuscarUsuarioPorId$Params {
   id: number;
 }
 
-export function buscarUsuarioPorId(http: HttpClient, rootUrl: string, params: BuscarUsuarioPorId$Params, context?: HttpContext): Observable<StrictHttpResponse<UsuarioSummaryDto>> {
+export function buscarUsuarioPorId(http: HttpClient, rootUrl: string, params: BuscarUsuarioPorId$Params, context?: HttpContext): Observable<StrictHttpResponse<UsuarioResponseDto>> {
   const rb = new RequestBuilder(rootUrl, buscarUsuarioPorId.PATH, 'get');
   if (params) {
     rb.path('id', params.id, {});
@@ -30,7 +29,7 @@ export function buscarUsuarioPorId(http: HttpClient, rootUrl: string, params: Bu
   ).pipe(
     filter((r: any): r is HttpResponse<any> => r instanceof HttpResponse),
     map((r: HttpResponse<any>) => {
-      return r as StrictHttpResponse<UsuarioSummaryDto>;
+      return r as StrictHttpResponse<UsuarioResponseDto>;
     })
   );
 }

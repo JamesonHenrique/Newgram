@@ -37,8 +37,6 @@ public class ArquivoService {
 
     private static final List<String> EXTENSOES_PERMITIDAS = Arrays.asList("jpg", "jpeg", "png", "gif");
 
-
-
     public String saveFile(
             @Nonnull MultipartFile sourceFile,
             @Nonnull String nomeUsuario,
@@ -48,32 +46,6 @@ public class ArquivoService {
         final String fileUploadSubPath = "usuarios" + separator + nomeUsuario + separator + tipoArquivo.getPasta();
         return uploadFile(sourceFile, fileUploadSubPath);
     }
-
-    public Resource carregarArquivo(String caminhoCompleto) {
-        try {
-            Path arquivoPath = Paths.get(caminhoCompleto);
-            Resource resource = new UrlResource(arquivoPath.toUri());
-
-            if (resource.exists() && resource.isReadable()) {
-                return resource;
-            } else {
-                throw new ArquivoException("Não foi possível ler o arquivo: " + caminhoCompleto);
-            }
-        } catch (MalformedURLException e) {
-            throw new ArquivoException("Erro ao carregar o arquivo: " + e.getMessage());
-        }
-    }
-
-    public boolean excluirArquivo(String caminhoCompleto) {
-        try {
-            Path arquivoPath = Paths.get(caminhoCompleto);
-            return Files.deleteIfExists(arquivoPath);
-        } catch (IOException e) {
-            log.error("Erro ao excluir o arquivo: {}", caminhoCompleto, e);
-            throw new ArquivoException("Não foi possível excluir o arquivo: " + e.getMessage());
-        }
-    }
-
     private String uploadFile(
             @Nonnull MultipartFile sourceFile,
             @Nonnull String fileUploadSubPath

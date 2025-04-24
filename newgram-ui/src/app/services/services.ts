@@ -4,4 +4,5 @@
 
 export { UsuariosService } from './services/usuarios.service';
 export { PostsService } from './services/posts.service';
+export { ComentariosService } from './services/comentarios.service';
 export { AutenticacaoService } from './services/autenticacao.service';

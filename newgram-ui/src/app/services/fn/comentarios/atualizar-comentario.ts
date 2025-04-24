@@ -8,38 +8,37 @@ import { filter, map } from 'rxjs/operators';
 import { StrictHttpResponse } from '../../strict-http-response';
 import { RequestBuilder } from '../../request-builder';
 
-export interface  SalvarFotoDePerfil$Params {
+import { ComentarioResponseDto } from '../../models/comentario-response-dto';
+import { ComentarioUpdateDto } from '../../models/comentario-update-dto';
+
+export interface AtualizarComentario$Params {
+  /**
+   * ID do comentário a ser atualizado
+   */
   id: number;
-  body?: {
-    /**
-     * Imagem da foto de perfil
-     */
-    file: Blob;
-  };
+  body: ComentarioUpdateDto;
 }
 
-export function salvarFotoDePerfil(
+export function atualizarComentario(
   http: HttpClient,
   rootUrl: string,
-  params: SalvarFotoDePerfil$Params,
+  params: AtualizarComentario$Params,
   context?: HttpContext
-): Observable<StrictHttpResponse<number>> {
-  const rb = new RequestBuilder(rootUrl, salvarFotoDePerfil.PATH, 'post');
+): Observable<StrictHttpResponse<ComentarioResponseDto>> {
+  const rb = new RequestBuilder(rootUrl, atualizarComentario.PATH, 'put');
   if (params) {
     rb.path('id', params.id, {});
-    rb.body(params.body, 'multipart/form-data');
+    rb.body(params.body, 'application/json');
   }
-  rb.header('Authorization', 'Bearer ' + localStorage.getItem('token')); 
+
   return http
     .request(rb.build({ responseType: 'json', accept: '*/*', context }))
     .pipe(
       filter((r: any): r is HttpResponse<any> => r instanceof HttpResponse),
       map((r: HttpResponse<any>) => {
-        return (r as HttpResponse<any>).clone({
-          body: parseFloat(String((r as HttpResponse<any>).body)),
-        }) as StrictHttpResponse<number>;
+        return r as StrictHttpResponse<ComentarioResponseDto>;
       })
     );
 }
 
-salvarFotoDePerfil.PATH = '/usuarios/foto-de-perfil/{id}';
+atualizarComentario.PATH = '/comentarios/{id}';

@@ -4,89 +4,137 @@ import { Title } from '@angular/platform-browser';
 import { PostsService } from '../services/services';
 import { Pageable } from '../services/models';
 import { PostDetailsComponent } from '../post-details/post-details.component';
-
+import { PaginationComponent } from "../pagination/pagination.component";
+import { of, Subject } from 'rxjs';
+import { takeUntil, catchError, finalize } from 'rxjs/operators';
 @Component({
   selector: 'app-favorite',
-  imports: [CommonModule, PostDetailsComponent],
+  imports: [CommonModule, PostDetailsComponent, PaginationComponent],
   templateUrl: './favorite.component.html',
-  styleUrl: './favorite.component.css'
+  styleUrl: './favorite.component.css',
 })
 export class FavoriteComponent {
-  constructor(private title: Title, private postsService: PostsService) {
+  private destroy$ = new Subject<void>();
+  private loading = false;
+
+  savedPosts: any[] = [];
+  postSelected: any | null = null;
+  selectedIndex: number | null = null;
+
+  pageable: Pageable = {
+    page: 0,
+    size: 4,
+    sort: ['']
+  };
+
+  postsTotais = 0;
+  paginaTotal = 0;
+
+  constructor(
+    private title: Title,
+    private postsService: PostsService
+  ) {
     this.title.setTitle('Favoritos');
   }
-  savedPosts: any[] = [];
-    pageable: Pageable = {
-      page: 0,
-      size: 10,
-      sort: [''],
-    };
-  savedPostss = [
-    {
-      id: 1,
-      author: 'Whindersson Nunes',
-      username: '@whindersson',
-      avatar: 'https://s2-oglobo.glbimg.com/LaW6NoqTlik3XAzENbU6WZrVLaI=/0x0:651x562/924x0/smart/filters:strip_icc()/i.s3.glbimg.com/v1/AUTH_da025474c0c44edd99332dddb09cabe8/internal_photos/bs/2024/V/x/z1C221T4i0bNRAYNDNAA/whatsapp-image-2024-09-26-at-17.13.21.jpeg',
-      image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ2gIwo0mtbJnUYwJ9dqsWivE7MuBklwV8FVeII-lQrEfcfAnQk0nt10pN3RxbCrzWXnMM&usqp=CAU',
-      text: 'Treino pesado hoje! Quem mais tá na luta? 💪 #Fitness',
-      location: 'São Paulo',
-      tags: ['Humor', 'Esportes', 'VidaSaudável'],
-      likes: 1250000,
-      comments: 32400,
-      shares: 87200,
-      time: '2h'
-    },
-    {
-      id: 2,
-      author: 'Paulo Muzy',
-      username: '@paulomuzy',
-      avatar: 'https://www.dialethoseventos.com.br/assets-custom/img/palestrantes/paulo-muzy-12072023-164852.jpg',
-      image: 'https://i.ytimg.com/vi/6r1mxVMfY1o/maxresdefault.jpg',
-      text: 'Dica de nutrição pós-treino que mudou meus resultados!',
-      location: 'São Rio de Janeiro',
-      tags: ['Fitness', 'Nutrição', 'Saúde'],
-      likes: 890000,
-      comments: 15400,
-      shares: 32100,
-      time: '5h'
-    },
-    {
-      id: 3,
-      author: 'Gustavo Lima',
-      username: '@gusttavo_lima',
-      avatar: 'https://www.cnnbrasil.com.br/wp-content/uploads/sites/12/2024/09/imagem-29-1.jpg?w=1200&h=1200&crop=1',
-      image: 'https://uploads.maisgoias.com.br/2024/05/168ce51f-que-calor-7.jpg',
-      text: 'Turnê "Buteco do Gusttavo" esgotada em 3 cidades! Obrigado, fãs! 🎶',
-      location: 'Pernambuco',
-      tags: ['Sertanejo', 'Show', 'Música'],
-      likes: 2100000,
-      comments: 45000,
-      shares: 92000,
-      time: '4h'
-    }
-  ];
-  postSelected: any;
-  selectedIndex: any;
+
   ngOnInit(): void {
     this.listSavedPosts();
   }
-  openModal(post: any, index: number) {
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
+  get isLoading(): boolean {
+    return this.loading;
+  }
+
+  carregarMais(): void {
+    if (this.isLastPage()) return;
+
+    this.pageable.page = (this.pageable.page || 0) + 1;
+    this.listSavedPosts();
+  }
+
+  onPageChange(newPage: number): void {
+    if (newPage >= 0 && newPage < this.paginaTotal) {
+      this.pageable.page = newPage;
+      this.listSavedPosts();
+    }
+  }
+
+  isLastPage(): boolean {
+    return (this.pageable.page || 0) >= this.paginaTotal - 1;
+  }
+
+  getImagemPost(imagemBase64: string | null | undefined): string {
+    return imagemBase64?.trim()
+      ? `data:image/jpg;base64,${imagemBase64}`
+      : '/icons/post-placeholder.svg';
+  }
+
+  getFotoPerfil(user: any): string {
+    return user?.fotoPerfil?.trim()
+      ? `data:image/jpg;base64,${user.fotoPerfil}`
+      : '/icons/profile-placeholder.svg';
+  }
+
+  openModal(post: any, index: number): void {
     this.postSelected = post;
     this.selectedIndex = index;
-
-
   }
-  openPostDetails(post: any, event: Event) {
+
+  openPostDetails(post: any, event: Event): void {
+    event.preventDefault();
     this.postSelected = post;
   }
 
-  listSavedPosts() {
-    this.postsService.listarPostsSalvos(
-      {
-        pageable: this.pageable
-      }
-    ).subscribe((response) => {
-      this.savedPosts = response.content || [];
-    });
+  private listSavedPosts(): void {
+    this.loading = true;
+
+    this.postsService.listarPostsSalvos({ pageable: this.pageable })
+      .pipe(
+        takeUntil(this.destroy$),
+        catchError(error => {
+          console.error('Erro ao carregar posts salvos:', error);
+          return of({
+            content: [],
+            totalElements: 0,
+            totalPages: 0
+          } );
+        }),
+        finalize(() => this.loading = false)
+      )
+      .subscribe({
+        next: (response: any) => {
+          this.savedPosts = response.content || [];
+          this.postsTotais = response.totalElements || 0;
+          this.paginaTotal = response.totalPages || 0;
+        }
+      });
+  }
+
+  removeFromFavorites(post: any, index: number): void {
+    if (!post.id) return;
+
+    this.postsService.removerPostSalvo({ id: post.id })
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: () => {
+          this.savedPosts = this.savedPosts.filter(p => p.id !== post.id);
+          this.postsTotais -= 1;
+
+          if (this.savedPosts.length === 0 && (this.pageable.page || 0) > 0) {
+            this.pageable.page = (this.pageable.page || 0) - 1;
+            this.listSavedPosts();
+          }
+        },
+        error: (err) => console.error('Erro ao remover favorito:', err)
+      });
+  }
+
+  trackByPostId(index: number, post: any): number {
+    return post.id;
   }
 }

@@ -18,5 +18,7 @@ public class PostSummaryDTO {
     private String legenda;
     private Long numeroCurtidas;
     private Long numeroComentarios;
+    private boolean salvoPeloUsuario;
+    private boolean curtidoPeloUsuario;
     private byte[] imagem;
 }

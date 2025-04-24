@@ -1,0 +1,47 @@
+<div class="post-detail-comments">
+  <h3 class="base-semibold mb-4">Comentários</h3>
+
+  <div *ngFor="let comentario of comentariosSelected" class="comment">
+    <img
+      [src]="getFotoPerfil(comentario)"
+      alt="Avatar do Usuário"
+      class="w-10 h-10 rounded-full object-cover border border-primary-custom"
+    />
+    <div>
+      <div class="flex gap-2 items-center">
+        <h4 class="base-semibold">{{ comentario.autor.nome }}</h4>
+        <span class="small-medium text-light-3">{{
+          comentario.dataCriacao | dateFormat
+        }}</span>
+      </div>
+      <p class="base-medium">
+        {{ comentario.texto }}
+      </p>
+    </div>
+  </div>
+
+  <div
+    *ngIf="comentariosSelected.length === 0"
+    class="text-light-3 small-medium"
+  >
+    Nenhum comentário ainda. Seja o primeiro a comentar!
+  </div>
+</div>
+
+<div class="comment-input">
+  <img
+    [src]="getFotoPerfil()"
+    alt="Seu Avatar"
+    class="w-12 h-12 rounded-full object-cover"
+  />
+  <input
+    type="text"
+    [(ngModel)]="comentarioTexto"
+    placeholder="Adicione um comentário..."
+    class="comment-input-field"
+    (keyup.enter)="enviarComentario()"
+  />
+  <button class="btn-icon" (click)="enviarComentario()">
+    <i class="fas fa-paper-plane icon-custom"></i>
+  </button>
+</div>

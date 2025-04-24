@@ -35,12 +35,12 @@ export class AutenticacaoService extends BaseService {
   /**
    * Registrar usuário.
    *
-   * Registra um novo usuário e retorna um token de acesso
+   * Registra um novo usuário com foto de perfil
    *
    * This method provides access to the full `HttpResponse`, allowing access to response headers.
    * To access only the response body, use `registrar()` instead.
    *
-   * This method sends `application/json` and handles request body of type `application/json`.
+   * This method sends `multipart/form-data` and handles request body of type `multipart/form-data`.
    */
   registrar$Response(params: Registrar$Params, context?: HttpContext): Observable<StrictHttpResponse<TokenDto>> {
     return registrar(this.http, this.rootUrl, params, context);
@@ -49,12 +49,12 @@ export class AutenticacaoService extends BaseService {
   /**
    * Registrar usuário.
    *
-   * Registra um novo usuário e retorna um token de acesso
+   * Registra um novo usuário com foto de perfil
    *
    * This method provides access only to the response body.
    * To access the full response (for headers, for example), `registrar$Response()` instead.
    *
-   * This method sends `application/json` and handles request body of type `application/json`.
+   * This method sends `multipart/form-data` and handles request body of type `multipart/form-data`.
    */
   registrar(params: Registrar$Params, context?: HttpContext): Observable<TokenDto> {
     return this.registrar$Response(params, context).pipe(

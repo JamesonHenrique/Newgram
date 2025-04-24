@@ -30,10 +30,7 @@ import { ListarUsuariosMaisFamosos$Params } from '../fn/usuarios/listar-usuarios
 import { listarUsuariosPorAmigosEmComum } from '../fn/usuarios/listar-usuarios-por-amigos-em-comum';
 import { ListarUsuariosPorAmigosEmComum$Params } from '../fn/usuarios/listar-usuarios-por-amigos-em-comum';
 import { Page } from '../models/page';
-import { salvarFotoDePerfil } from '../fn/usuarios/salvar-foto-de-perfil';
-import { SalvarFotoDePerfil$Params } from '../fn/usuarios/salvar-foto-de-perfil';
 import { UsuarioResponseDto } from '../models/usuario-response-dto';
-import { UsuarioSummaryDto } from '../models';
 
 
 /**
@@ -58,7 +55,7 @@ export class UsuariosService extends BaseService {
    *
    * This method doesn't expect any request body.
    */
-  buscarUsuarioPorId$Response(params: BuscarUsuarioPorId$Params, context?: HttpContext): Observable<StrictHttpResponse<UsuarioSummaryDto>> {
+  buscarUsuarioPorId$Response(params: BuscarUsuarioPorId$Params, context?: HttpContext): Observable<StrictHttpResponse<UsuarioResponseDto>> {
     return buscarUsuarioPorId(this.http, this.rootUrl, params, context);
   }
 
@@ -72,9 +69,9 @@ export class UsuariosService extends BaseService {
    *
    * This method doesn't expect any request body.
    */
-  buscarUsuarioPorId(params: BuscarUsuarioPorId$Params, context?: HttpContext): Observable<UsuarioSummaryDto> {
+  buscarUsuarioPorId(params: BuscarUsuarioPorId$Params, context?: HttpContext): Observable<UsuarioResponseDto> {
     return this.buscarUsuarioPorId$Response(params, context).pipe(
-      map((r: StrictHttpResponse<UsuarioSummaryDto>): UsuarioSummaryDto => r.body)
+      map((r: StrictHttpResponse<UsuarioResponseDto>): UsuarioResponseDto => r.body)
     );
   }
 
@@ -108,31 +105,6 @@ export class UsuariosService extends BaseService {
   atualizarUsuario(params: AtualizarUsuario$Params, context?: HttpContext): Observable<UsuarioResponseDto> {
     return this.atualizarUsuario$Response(params, context).pipe(
       map((r: StrictHttpResponse<UsuarioResponseDto>): UsuarioResponseDto => r.body)
-    );
-  }
-
-  /** Path part for operation `salvarFotoDePerfil()` */
-  static readonly SalvarFotoDePerfilPath = '/usuarios/foto-de-perfil/{id}';
-
-  /**
-   * This method provides access to the full `HttpResponse`, allowing access to response headers.
-   * To access only the response body, use `salvarFotoDePerfil()` instead.
-   *
-   * This method sends `multipart/form-data` and handles request body of type `multipart/form-data`.
-   */
-  salvarFotoDePerfil$Response(params: SalvarFotoDePerfil$Params, context?: HttpContext): Observable<StrictHttpResponse<number>> {
-    return salvarFotoDePerfil(this.http, this.rootUrl, params, context);
-  }
-
-  /**
-   * This method provides access only to the response body.
-   * To access the full response (for headers, for example), `salvarFotoDePerfil$Response()` instead.
-   *
-   * This method sends `multipart/form-data` and handles request body of type `multipart/form-data`.
-   */
-  salvarFotoDePerfil(params: SalvarFotoDePerfil$Params, context?: HttpContext): Observable<number> {
-    return this.salvarFotoDePerfil$Response(params, context).pipe(
-      map((r: StrictHttpResponse<number>): number => r.body)
     );
   }
 

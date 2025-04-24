@@ -1,6 +1,4 @@
-<!-- Main Content Area -->
 <div class="content-area">
-  <!-- Posts Feed (Scrollable) -->
   <div
     class="feed-container custom-scrollbar animate__slideInUp animate__animated"
   >
@@ -18,7 +16,7 @@
             <div class="flex-between mb-4">
               <div class="flex-start gap-3">
                 <img
-                 src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRV61NGGfrNzInHErojPbfVKVdx_KvNiT_bmg&s"
+                  [src]="getFotoPerfil(post.autor)"
                   alt="Avatar do Usuário"
                   class="w-16 h-16 story-border"
                 />
@@ -46,7 +44,7 @@
             </div>
 
             <img
-             src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRV61NGGfrNzInHErojPbfVKVdx_KvNiT_bmg&s"
+              [src]="getImagemPost(post.imagem)"
               alt="Imagem do Post"
               class="post-card_img"
             />
@@ -54,7 +52,7 @@
             <div class="flex-between mt-3">
               <div class="flex gap-4">
                 <button
-                  class="flex-center gap-1 text-light-1hover:text-primary-custom transition"
+                  class="flex-center gap-1 text-light-1 hover:text-primary-custom transition"
                   (click)="toggleLike(post, $event)"
                   [ngClass]="{
                     'text-red': post.isLiked,
@@ -75,13 +73,32 @@
                     post.numeroCurtidas | formatNumber
                   }}</span>
                 </button>
+
+                <!-- Botão de Favoritar -->
                 <button
                   class="flex-center gap-1 text-light-1 hover:text-primary-custom transition"
-                  (click)="$event.stopPropagation()"
+                  (click)="toggleFavorite(post, $event)"
+                  [ngClass]="{
+                    'text-yellow-400': post.isFavorite,
+                    'hover:text-primary-custom': !post.isFavorite
+                  }"
                 >
-                  <i class="far fa-bookmark btn-icon text-xl"></i>
+                  <i
+                    class="fa-bookmark btn-icon text-xl"
+                    [ngClass]="{
+                      fas: post.isFavorite,
+                      far: !post.isFavorite
+                    }"
+                    [ngStyle]="{
+                      transform: post.isFavAnimating ? 'scale(1.2)' : 'scale(1)'
+                    }"
+                  ></i>
+                  <span *ngIf="post.numeroFavoritos > 0" class="small-medium">
+                    {{ post.numeroFavoritos | formatNumber }}
+                  </span>
                 </button>
               </div>
+
               <button
                 class="small-medium text-light-3"
                 (click)="$event.stopPropagation()"
@@ -95,80 +112,98 @@
     </div>
   </div>
   <div
-  class="top-creators sticky top-0 right-0 w-full lg:w-[350px] xl:w-[400px] h-screen p-4 lg:p-6 xl:p-8 overflow-y-auto custom-scrollbar bg-dark-2"
->
-  <div class="creators-box rounded-2xl lg:rounded-3xl p-4 lg:p-6 mb-6 shadow-lg bg-dark-3">
-    <!-- Top Creators Section -->
-    <h3 class="text-lg lg:text-xl font-bold mb-4 lg:mb-6 text-primary-custom">Top Criadores</h3>
-    <div class="creator-grid grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-1 gap-3 lg:gap-4">
+    class="top-creators sticky top-0 right-0 w-full lg:w-[350px] xl:w-[400px] h-screen p-4 lg:p-6 xl:p-8 overflow-y-auto custom-scrollbar bg-dark-2"
+  >
+    <div
+      class="creators-box rounded-2xl lg:rounded-3xl p-4 lg:p-6 mb-6 shadow-lg bg-dark-3"
+    >
+      <h3 class="text-lg lg:text-xl font-bold mb-4 lg:mb-6 text-primary-custom">
+        Top Criadores
+      </h3>
       <div
-        class="creator-card flex flex-col items-center justify-center gap-2 bg-dark-4 rounded-lg lg:rounded-xl p-3 transition-all duration-300 hover:bg-dark-5 hover:-translate-y-1 hover:shadow-md"
-        *ngFor="let topCreator of topCreators; let i = index"
+        class="creator-grid grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-1 gap-3 lg:gap-4"
       >
-
-        <img
-          [src]="getFotoPerfil(topCreator)"
-          alt="Criador"
-          class="w-10 h-10 lg:w-12 lg:h-12 rounded-full object-cover"
-        />
-
-        <h4 class="text-sm lg:text-base font-semibold truncate w-full text-center">{{ topCreator.name }}</h4>
-        <p class="text-xs lg:text-sm text-gray-400 truncate w-full text-center">
-          &#64;{{ topCreator.username }}
-
-        </p>
-        <button
-          class="btn-follow mt-1 lg:mt-2 bg-primary-500 hover:bg-primary-600 text-white text-xs lg:text-sm font-medium py-1 px-3 lg:px-4 rounded-full transition-colors duration-200"
-        >
-
-          Seguir
-        </button>
-      </div>
-    </div>
-
-    <!-- Suggested Topics Section -->
-    <div class="mt-6 lg:mt-8">
-      <h3 class="text-lg lg:text-xl font-bold mb-3 lg:mb-4 text-primary-custom">Tópicos Sugeridos</h3>
-      <div class="flex flex-wrap gap-2">
-        <span
-          *ngFor="let topic of topics"
-          class="tag whitespace-nowrap px-3 py-1 bg-gray-700 text-gray-200 rounded-full text-xs"
-        >
-          #{{ topic }}
-        </span>
-      </div>
-    </div>
-
-    <!-- Who to Follow Section -->
-    <div class="mt-6 lg:mt-8">
-      <h3 class="text-lg lg:text-xl font-bold mb-3 lg:mb-4 text-primary-custom">Quem Seguir</h3>
-      <div class="flex flex-col gap-3 lg:gap-4">
         <div
-          class="flex items-center gap-2 lg:gap-3"
-          *ngFor="let otherUser of otherUsers"
+          class="creator-card flex flex-col items-center justify-center gap-2 bg-dark-4 rounded-lg lg:rounded-xl p-3 transition-all duration-300 hover:bg-dark-5 hover:-translate-y-1 hover:shadow-md"
+          *ngFor="let topCreator of topCreators; let i = index"
         >
           <img
-            [src]="otherUser.avatar"
-            alt="Usuário"
+            [src]="getFotoPerfil(topCreator)"
+            alt="Criador"
             class="w-10 h-10 lg:w-12 lg:h-12 rounded-full object-cover"
           />
-          <div class="flex-1 min-w-0">
-            <h4 class="text-sm lg:text-base font-semibold truncate">{{ otherUser.name }}</h4>
-            <p class="text-xs lg:text-sm text-gray-400 truncate">
-              &#64;{{ otherUser.username }}
-            </p>
-          </div>
-          <button class="btn-follow margin-responsive text-xs lg:text-sm px-2 lg:px-3 py-1 rounded-full bg-primary-500 hover:bg-primary-600 text-white">
+
+          <h4
+            class="text-sm lg:text-base font-semibold truncate w-full text-center"
+          >
+            {{ topCreator.name }}
+          </h4>
+          <p
+            class="text-xs lg:text-sm text-gray-400 truncate w-full text-center"
+          >
+            &#64;{{ topCreator.username }}
+          </p>
+          <button
+            class="btn-follow mt-1 lg:mt-2 bg-primary-500 hover:bg-primary-600 text-white text-xs lg:text-sm font-medium py-1 px-3 lg:px-4 rounded-full transition-colors duration-200"
+          >
             Seguir
           </button>
         </div>
       </div>
+
+      <div class="mt-6 lg:mt-8">
+        <h3
+          class="text-lg lg:text-xl font-bold mb-3 lg:mb-4 text-primary-custom"
+        >
+          Tópicos Sugeridos
+        </h3>
+        <div class="flex flex-wrap gap-2">
+          <span
+            *ngFor="let topic of topics"
+            class="tag whitespace-nowrap px-3 py-1 bg-gray-700 text-gray-200 rounded-full text-xs"
+          >
+            #{{ topic }}
+          </span>
+        </div>
+      </div>
+
+      <div class="mt-6 lg:mt-8">
+        <h3
+          class="text-lg lg:text-xl font-bold mb-3 lg:mb-4 text-primary-custom"
+        >
+          Quem Seguir
+        </h3>
+        <div class="flex flex-col gap-3 lg:gap-4">
+          <div
+            class="flex items-center gap-2 lg:gap-3"
+            *ngFor="let otherUser of otherUsers"
+          >
+            <img
+              [src]="otherUser.avatar"
+              alt="Usuário"
+              class="w-10 h-10 lg:w-12 lg:h-12 rounded-full object-cover"
+            />
+            <div class="flex-1 min-w-0">
+              <h4 class="text-sm lg:text-base font-semibold truncate">
+                {{ otherUser.name }}
+              </h4>
+              <p class="text-xs lg:text-sm text-gray-400 truncate">
+                &#64;{{ otherUser.username }}
+              </p>
+            </div>
+            <button
+              class="btn-follow margin-responsive text-xs lg:text-sm px-2 lg:px-3 py-1 rounded-full bg-primary-500 hover:bg-primary-600 text-white"
+            >
+              Seguir
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
-</div>
 
   <app-post-details
-    [postSelected]="postSelected"
-    [modalId]="'modal-1'"
-  ></app-post-details>
+  [postSelected]="postSelected"
+  (postSelectedChange)="postSelected = $event"
+></app-post-details>
 </div>

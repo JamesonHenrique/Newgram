@@ -11,7 +11,7 @@ import {
 import { DomSanitizer, SafeUrl, Title } from '@angular/platform-browser';
 import { PostsService } from '../services/services';
 import { catchError, of, switchMap } from 'rxjs';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 
 @Component({
   selector: 'app-create-post',
@@ -20,12 +20,30 @@ import { Router } from '@angular/router';
   styleUrl: './create-post.component.css',
 })
 export class CreatePostComponent {
-  constructor(private title: Title, private sanitizer: DomSanitizer, private postService: PostsService, private router: Router, private tokenService:TokenService) {
-    this.title.setTitle('Criar post');
+  constructor(
+    private title: Title,
+    private sanitizer: DomSanitizer,
+    private postService: PostsService,
+    private router: Router,
+    private tokenService: TokenService,
+    private route: ActivatedRoute
+  ) {
+    if (this.postId) {
+      this.title.setTitle('Editar post');
+    } else {
+      this.title.setTitle('Criar post');
+    }
   }
+
+  @ViewChild('imageUpload') imageUpload!: ElementRef<HTMLInputElement>;
+  @ViewChild('imagePreview') imagePreview!: ElementRef<HTMLImageElement>;
+  @ViewChild('uploadPlaceholder')
+  uploadPlaceholder!: ElementRef<HTMLDivElement>;
+
   selectedFoto: any;
   postForm!: FormGroup;
   selectedTags: string[] = [];
+  postId: number | null = null;
   popularTags = [
     { name: 'fotografia' },
     { name: 'viagem' },
@@ -37,21 +55,52 @@ export class CreatePostComponent {
   ];
 
   ngOnInit(): void {
+    this.postId = this.route.snapshot.params['id'];
+
     this.postForm = new FormGroup({
       legenda: new FormControl('', Validators.required),
       localizacao: new FormControl('', Validators.required),
       hashtags: new FormControl([], Validators.required),
       visibilidade: new FormControl('PUBLICO', Validators.required),
     });
-
+    if (this.postId) {
+      this.loadPostData(this.postId);
+    }
     this.setupDragAndDrop();
     this.setupTagInput();
+  }
+ 
+  loadPostData(postId: number): void {
+    this.postService.buscarPorId({
+      id: postId,
+    }).subscribe({
+      next: (post) => {
+        this.postForm.patchValue({
+          legenda: post.legenda,
+          localizacao: post.localizacao,
+          visibilidade: post.visibilidade
+        });
+
+
+        if (post.hashtags) {
+          this.selectedTags = post.hashtags.map(tag => tag.trim());
+          this.updateTagsInput();
+          this.renderSelectedTags();
+        }
+
+
+      },
+      error: (err) => {
+        console.error('Erro ao carregar post:', err);
+        this.router.navigate(['/erro']);
+      }
+    });
   }
   addPopularTag(tagName: string): void {
     const normalizedTag = this.normalizeTag(tagName);
 
-    const tagExists = this.selectedTags.some(tag =>
-      this.normalizeTag(tag) === normalizedTag
+    const tagExists = this.selectedTags.some(
+      (tag) => this.normalizeTag(tag) === normalizedTag
     );
 
     if (!tagExists) {
@@ -62,15 +111,13 @@ export class CreatePostComponent {
   }
 
   private normalizeTag(tag: string): string {
-    return tag.trim()
-              .toLowerCase()
-              .replace(/^#+/, '');
+    return tag.trim().toLowerCase().replace(/^#+/, '');
   }
 
   removeTag(tagToRemove: string): void {
     const normalizedToRemove = this.normalizeTag(tagToRemove);
     this.selectedTags = this.selectedTags.filter(
-      tag => this.normalizeTag(tag) !== normalizedToRemove
+      (tag) => this.normalizeTag(tag) !== normalizedToRemove
     );
     this.updateTagsInput();
     this.renderSelectedTags();
@@ -83,7 +130,7 @@ export class CreatePostComponent {
     const container = document.getElementById('tagsContainer');
     if (container) {
       container.innerHTML = '';
-      this.selectedTags.forEach(tag => {
+      this.selectedTags.forEach((tag) => {
         const cleanedTag = tag.startsWith('#') ? tag.substring(1) : tag;
         const tagElement = document.createElement('span');
         tagElement.className = `inline-flex items-center px-3 py-1 rounded-full text-sm font-medium
@@ -118,12 +165,15 @@ export class CreatePostComponent {
           const inputValue = input.value.trim();
 
           if (inputValue) {
-            const tags = inputValue.split(',')
-              .map(tag => tag.trim())
-              .filter(tag => tag.length > 0);
+            const tags = inputValue
+              .split(',')
+              .map((tag) => tag.trim())
+              .filter((tag) => tag.length > 0);
 
-            tags.forEach(tag => {
-              const normalizedTag = tag.startsWith('#') ? tag.substring(1) : tag;
+            tags.forEach((tag) => {
+              const normalizedTag = tag.startsWith('#')
+                ? tag.substring(1)
+                : tag;
               const finalTag = `#${normalizedTag}`;
 
               if (!this.selectedTags.includes(finalTag)) {
@@ -140,14 +190,15 @@ export class CreatePostComponent {
     }
   }
 
-
   previewSelectedImage(event: Event): void {
     const input = event.target as HTMLInputElement;
     if (input.files && input.files[0]) {
       const file = input.files[0];
 
       if (file.size > 10 * 1024 * 1024) {
-        alert('O arquivo é muito grande. Por favor, selecione uma imagem menor que 10MB.');
+        alert(
+          'O arquivo é muito grande. Por favor, selecione uma imagem menor que 10MB.'
+        );
         return;
       }
 
@@ -168,15 +219,17 @@ export class CreatePostComponent {
 
   savePost() {
     const postRequest = { ...this.postForm.value };
-    this.postService.criarPost({ body: postRequest })
+    this.postService
+      .criarPost({ body: postRequest })
       .pipe(
         switchMap((response: any) => {
           if (this.selectedFoto) {
             const formData = new FormData();
             formData.append('file', this.selectedFoto);
-            return this.postService.salvarFotoDoPost({
-              id: response.id,
-              body: formData
+            return this.postService
+              .salvarFotoDoPost({
+                id: response.id,
+                body: formData,
               })
               .pipe(
                 catchError((error) => {
@@ -190,37 +243,25 @@ export class CreatePostComponent {
       )
       .subscribe({
         next: (response) => {
-
-          this.postForm.reset()
+          this.postForm.reset();
           this.selectedTags = [];
           this.selectedFoto = null;
           this.imagePreview.nativeElement.style.display = 'none';
           this.uploadPlaceholder.nativeElement.style.display = 'block';
-          const userId = this.tokenService.userId
+          const userId = this.tokenService.userId;
           this.router.navigate([`/perfis/${userId}`]);
         },
         error: (error) => {
           console.error('Erro ao criar post:', error);
-        }
+        },
       });
   }
   onSubmit() {
     this.savePost();
   }
-
-  @ViewChild('imageUpload') imageUpload!: ElementRef<HTMLInputElement>;
-  @ViewChild('imagePreview') imagePreview!: ElementRef<HTMLImageElement>;
-  @ViewChild('uploadPlaceholder') uploadPlaceholder!: ElementRef<HTMLDivElement>;
-
-
-
-
   triggerFileInput(): void {
     this.imageUpload.nativeElement.click();
   }
-
-
-
 
   setupDragAndDrop(): void {
     const container = document.getElementById('imageUploadContainer');
@@ -240,7 +281,6 @@ export class CreatePostComponent {
         container.classList.remove('dragover');
 
         if (e.dataTransfer?.files && e.dataTransfer.files[0]) {
-
           this.imageUpload.nativeElement.files = e.dataTransfer.files;
           const event = new Event('change');
           this.imageUpload.nativeElement.dispatchEvent(event);

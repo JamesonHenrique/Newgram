@@ -41,7 +41,7 @@ public class AutenticacaoResource {
         return ResponseEntity.status(HttpStatus.CREATED).body(tokenDTO);
     }
 
-    @PostMapping("/login")
+    @PostMapping(path= "/login", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Autenticar usuário", description = "Autentica o usuário com email e senha e retorna um token de acesso")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Autenticação realizada com sucesso",
@@ -58,7 +58,7 @@ public class AutenticacaoResource {
         return ResponseEntity.ok(tokenDTO);
     }
 
-    @PostMapping("/refresh-token")
+    @PostMapping(path="/refresh-token", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Renovar token", description = "Renova o token de acesso utilizando um refresh token válido")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Token renovado com sucesso",

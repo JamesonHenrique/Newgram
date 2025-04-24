@@ -1,18 +1,15 @@
-<div class="main-layout custom-scrollbar">
-  <!-- Left Sidebar -->
+<div class="main-layout custom-scrollbar flex justify-center items-start p-4">
+  <div class="content-area w-full ">
+    <div class="create-post-container bg-dark-2 rounded-lg p-6 md:p-8 w-full">
+      <h1 class="h2-bold mb-6 text-center text-primary-500">{{ postId ? 'Editar Post' : 'Criar Novo Post' }}</h1>
 
-  <!-- Main Content Area -->
-  <div class="content-area">
-    <div class="create-post-container">
-      <h1 class="h2-bold mb-6 text-center text-primary-500">Criar Novo Post</h1>
-
-      <form id="createPostForm " [formGroup]="postForm" (ngSubmit)="onSubmit()">
-        <div class="form-group">
-          <label class="form-label">Foto</label>
+      <form id="createPostForm" [formGroup]="postForm" (ngSubmit)="onSubmit()" class="w-full">
+        <div class="form-group mb-6" *ngIf="!postId">
+          <label class="form-label block mb-2">Foto</label>
           <div
             (click)="triggerFileInput()"
             id="image-upload-container"
-            class="image-upload-container flex-center flex-col"
+            class="image-upload-container flex-center flex-col border-2 border-dashed border-dark-4 rounded-lg p-6 cursor-pointer hover:border-primary-500 transition"
           >
             <input
               type="file"
@@ -20,19 +17,19 @@
               accept="image/*"
               #imageUpload
               (change)="previewSelectedImage($event)"
-              style="display: none"
+              class="hidden"
             />
             <img
               id="imagePreview"
               #imagePreview
-              class="image-preview"
+              class="image-preview max-h-64 mb-4 rounded-lg hidden"
               [src]="selectedFoto"
               alt="Preview da imagem"
             />
             <div
               #uploadPlaceholder
               id="uploadPlaceholder"
-              class="flex-center flex-col gap-3"
+              class="flex-center flex-col gap-3 text-center"
             >
               <i class="fas fa-cloud-upload-alt text-4xl text-light-3"></i>
               <p class="base-medium text-light-3">
@@ -45,79 +42,79 @@
           </div>
         </div>
 
-        <!-- Caption -->
-        <div class="form-group">
-          <label for="caption" class="form-label">Legenda</label>
+        <div class="form-group mb-6">
+          <label for="caption" class="form-label block mb-2">Legenda</label>
           <textarea
             id="caption"
-            class="form-input form-textarea custom-scrollbar"
+            class="form-input form-textarea custom-scrollbar w-full p-3 rounded-lg bg-dark-3 border border-dark-4 focus:border-primary-500 focus:ring-1 focus:ring-primary-500"
             placeholder="Escreva uma legenda para seu post..."
             formControlName="legenda"
+            rows="4"
           ></textarea>
         </div>
 
-        <!-- Location -->
-        <div class="form-group">
-          <label for="location" class="form-label">Localização</label>
+        <div class="form-group mb-6">
+          <label for="location" class="form-label block mb-2">Localização</label>
           <div class="relative">
             <div class="flex items-center">
-              <i class="fas fa-map-marker-alt icon-custom mr-2"></i>
+              <i class="fas fa-map-marker-alt icon-custom mr-2 text-light-3"></i>
               <input
                 type="text"
                 id="localizacao"
-                class="form-input"
+                class="form-input w-full p-3 rounded-lg bg-dark-3 border border-dark-4 focus:border-primary-500 focus:ring-1 focus:ring-primary-500"
                 placeholder="Adicione uma localização"
                 formControlName="localizacao"
               />
             </div>
             <div
               id="locationSuggestions"
-              class="location-suggestions custom-scrollbar"
+              class="location-suggestions custom-scrollbar absolute z-10 w-full mt-1 bg-dark-3 border border-dark-4 rounded-lg shadow-lg hidden"
             ></div>
           </div>
         </div>
 
-
-        <div class="form-group">
-          <label for="tagInput" class="form-label">Tags</label>
+        <div class="form-group mb-6">
+          <label for="tagInput" class="form-label block mb-2">Tags</label>
           <div class="tag-input-container">
             <div class="flex items-center">
-              <i class="fas fa-hashtag icon-custom mr-2"></i>
+              <i class="fas fa-hashtag icon-custom mr-2 text-light-3"></i>
               <input
                 type="text"
                 id="tagInput"
-                class="form-input"
+                class="form-input w-full p-3 rounded-lg bg-dark-3 border border-dark-4 focus:border-primary-500 focus:ring-1 focus:ring-primary-500"
                 placeholder="Adicione tags (pressione Enter para adicionar)"
                 formControlName="hashtags"
               />
             </div>
             <div
               id="tagSuggestions"
-              class="tag-suggestions custom-scrollbar"
+              class="tag-suggestions custom-scrollbar absolute z-10 w-full mt-1 bg-dark-3 border border-dark-4 rounded-lg shadow-lg hidden"
             ></div>
           </div>
           <div
             id="tagsContainer"
-            class="tags-container flex flex-wrap mt-2"
+            class="tags-container flex flex-wrap gap-2 mt-2"
           ></div>
         </div>
 
-        <div class="form-group">
-          <label class="form-label">Tags Populares</label>
-          <div class="flex flex-wrap gap-2 mt-2">
+        <div class="form-group mb-8">
+          <label class="form-label block mb-2">Tags Populares</label>
+          <div class="flex flex-wrap gap-2">
             <span
               *ngFor="let popularTag of popularTags"
               (click)="addPopularTag(popularTag.name)"
-              class="tag px-3 py-1 bg-dark-3 rounded-full text-sm hover:bg-primary-custom transition cursor-pointer tag-suggestion"
+              class="tag px-3 py-1 bg-dark-3 rounded-full text-sm hover:bg-primary-500 transition cursor-pointer"
             >
               #{{ popularTag.name }}
             </span>
           </div>
         </div>
 
-        <div class="form-actions">
-          <a href="index.html" class="btn btn-secondary">Cancelar</a>
-          <button type="submit" class="btn btn-primary">
+        <div class="form-actions flex justify-end gap-4">
+          <a href="index.html" class="btn btn-secondary px-6 py-2 rounded-lg hover:bg-dark-4 transition">
+            Cancelar
+          </a>
+          <button type="submit" class="btn btn-primary px-6 py-2 rounded-lg bg-primary-500 hover:bg-primary-600 transition">
             <i class="fas fa-paper-plane mr-2"></i>
             Publicar
           </button>
