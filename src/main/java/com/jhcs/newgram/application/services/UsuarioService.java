@@ -11,6 +11,7 @@ import com.jhcs.newgram.core.domain.repositories.SeguidorRepository;
 import com.jhcs.newgram.core.domain.repositories.StatusUsuarioRepository;
 import com.jhcs.newgram.core.domain.repositories.UsuarioRepository;
 import com.jhcs.newgram.core.domain.utils.ArquivoUtils;
+import com.jhcs.newgram.infrastructure.aws.S3StorageService;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -47,6 +48,8 @@ public class UsuarioService {
 
     @Autowired
     private PasswordEncoder passwordEncoder;
+    @Autowired
+    private S3StorageService s3StorageService;
 
 
     @Transactional(readOnly = true)
@@ -201,7 +204,7 @@ public class UsuarioService {
 
         dto.setDataCadastro(usuario.getDataCriacao());
 
-
+        dto.setFotoPerfil(s3StorageService.getFileUrl(usuario.getFotoPerfil()));
         dto.setNumeroSeguidores(seguidorRepository.countSeguidoresByUsuarioId(usuario.getId()));
         dto.setNumeroSeguindo(seguidorRepository.countSeguidosByUsuarioId(usuario.getId()));
         dto.setNumeroPosts((long) usuario.getPosts().size());

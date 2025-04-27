@@ -1,0 +1,110 @@
+ <div class="post-modal " [class.active]="isOpen">
+  <div class="post-modal-content" style="max-width: 600px; height: auto">
+    <button class="post-modal-close" (click)="closeModal()">
+      <i class="fas fa-times"></i>
+    </button>
+
+    <div class="post-modal-info p-6">
+      <!-- Step 1 - Capa e Nome -->
+      <div *ngIf="currentStep === 1">
+        <h2 class="h3-bold mb-4">Criar Novo Destaque</h2>
+
+        <div class="mb-4">
+          <label class="small-semibold block mb-2">Nome do Destaque</label>
+          <input
+            type="text"
+            [(ngModel)]="highlightName"
+            class="w-full bg-dark-3 rounded-lg p-2 text-light-1"
+            placeholder="Ex: Viagens 2024"
+          />
+        </div>
+
+        <div class="mb-6">
+          <label class="small-semibold block mb-2">Escolher Capa</label>
+          <div class="flex gap-4 flex-wrap">
+            <div
+              class="highlight-cover-option relative cursor-pointer"
+              *ngFor="let story of availableStories"
+              (click)="selectedCover = story.image"
+            >
+              <img
+                [src]="story.image"
+                class="w-20 h-20 rounded-full object-cover"
+              />
+              <div
+                *ngIf="story.used"
+                class="absolute inset-0 bg-dark-1/80 flex-center rounded-full"
+              >
+                <i class="fas fa-lock small-medium"></i>
+              </div>
+            </div>
+
+            <label class="flex-center flex-col gap-2 cursor-pointer">
+              <div class="w-20 h-20 rounded-full bg-dark-3 flex-center">
+                <i class="fas fa-plus text-light-3"></i>
+              </div>
+              <span class="small-medium">Upload</span>
+              <input
+                type="file"
+                class="hidden"
+                accept="image/*"
+                (change)="handleFileUpload($event)"
+              />
+            </label>
+          </div>
+        </div>
+
+        <button
+          class="follow-btn w-full"
+          [disabled]="!validateStep1()"
+          (click)="nextStep()"
+        >
+          Próximo
+        </button>
+      </div>
+
+      <!-- Step 2 - Selecionar Stories -->
+      <div *ngIf="currentStep === 2">
+        <h2 class="h3-bold mb-4">Selecionar Stories</h2>
+
+        <div
+          class="posts-grid mb-4"
+          style="grid-template-columns: repeat(3, 1fr)"
+        >
+          <div
+            *ngFor="let story of userStories"
+            [class]="[
+              'post-item',
+              {
+                'selected-story': selectedStories.includes(story.id),
+                'disabled-story': story.inHighlight
+              }
+            ]"
+            (click)="!story.inHighlight && toggleStory(story.id)"
+          >
+            <img [src]="story.image" class="post-image" />
+            <div
+              *ngIf="story.inHighlight"
+              class="absolute inset-0 bg-dark-1/80 flex-center"
+            >
+              <i class="fas fa-lock"></i>
+            </div>
+          </div>
+        </div>
+
+        <div class="flex-between">
+          <button class="following-btn" (click)="prevStep()">Voltar</button>
+          <button
+            class="follow-btn"
+            [disabled]="
+              selectedStories.length < 1 || selectedStories.length > 5
+            "
+            (click)="createHighlight()"
+          >
+            Criar
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

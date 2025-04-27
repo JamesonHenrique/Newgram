@@ -45,6 +45,7 @@
 
             <img
               [src]="getImagemPost(post.imagem)"
+              (error)="handleImageError($event)" 
               alt="Imagem do Post"
               class="post-card_img"
             />

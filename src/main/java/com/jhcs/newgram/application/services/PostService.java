@@ -15,6 +15,7 @@ import com.jhcs.newgram.core.domain.repositories.PostRepository;
 import com.jhcs.newgram.core.domain.repositories.SalvosRepository;
 import com.jhcs.newgram.core.domain.repositories.UsuarioRepository;
 import com.jhcs.newgram.core.domain.utils.ArquivoUtils;
+import com.jhcs.newgram.infrastructure.aws.S3StorageService;
 import com.jhcs.newgram.infrastructure.exception.BusinessException;
 import com.jhcs.newgram.infrastructure.exception.ResourceNotFoundException;
 import com.jhcs.newgram.infrastructure.exception.UnauthorizedException;
@@ -66,6 +67,8 @@ public class PostService {
     private SalvosService salvosService;
     @Autowired
     private CurtidaService curtidaService;
+    @Autowired
+    private S3StorageService s3StorageService;
     @Transactional
     public PostResponseDTO criarPost(PostCreateDTO dto, Long usuarioId) {
         Usuario autor = usuarioRepository.findById(usuarioId)
@@ -501,7 +504,7 @@ public class PostService {
     private PostSummaryDTO converterParaSummaryDTO(Post post, Long usuarioLogadoId) {
         PostSummaryDTO dto = new PostSummaryDTO();
         dto.setId(post.getId());
-        dto.setImagem(ArquivoUtils.lerArquivoDoLocal(post.getImagemUrl()));
+        dto.setImagem(s3StorageService.getFileUrl(post.getImagemUrl()));
         dto.setDataCriacao(post.getDataCriacao());
         UsuarioSummaryDTO autorDTO = new UsuarioSummaryDTO();
         autorDTO.setId(post.getAutor().getId());

@@ -360,3 +360,18 @@
     padding-bottom: 0.75rem;
   }
 }
+.btn-icon {
+  background-color: transparent;
+  border: none;
+  color: var(--light-3);
+  font-size: 1.25rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  padding: 0.5rem;
+  border-radius: 50%;
+}
+
+.btn-icon:hover {
+  color: var(--light-1);
+  background-color: var(--dark-4);
+}

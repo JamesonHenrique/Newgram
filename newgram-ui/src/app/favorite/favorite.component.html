@@ -168,6 +168,7 @@
           <label [for]="'modal-1'" class="cursor-pointer">
             <img
               [src]="getImagemPost(post.imagem)"
+              (error)="handleImageError($event)"
               alt="Post"
               class="post-card-img"
             />

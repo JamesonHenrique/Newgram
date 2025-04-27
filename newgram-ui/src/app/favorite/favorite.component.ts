@@ -68,10 +68,19 @@ export class FavoriteComponent {
     return (this.pageable.page || 0) >= this.paginaTotal - 1;
   }
 
-  getImagemPost(imagemBase64: string | null | undefined): string {
-    return imagemBase64?.trim()
-      ? `data:image/jpg;base64,${imagemBase64}`
-      : '/icons/post-placeholder.svg';
+  getImagemPost(imagem: string | null | undefined): string {
+    if (!imagem || imagem.trim() === '') {
+      return '/icons/post-placeholder.svg';
+    }
+    if (imagem.includes('post-placeholder.svg')) {
+      return imagem;
+    }
+    return imagem;
+  }
+  handleImageError(event: Event): void {
+    const imgElement = event.target as HTMLImageElement;
+    imgElement.src = '/icons/post-placeholder.svg';
+    imgElement.onerror = null;
   }
 
   getFotoPerfil(user: any): string {

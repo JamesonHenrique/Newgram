@@ -36,6 +36,7 @@
 
       <img
         [src]="getImagemPost(postSelected?.imagem)"
+        (error)="handleImageError($event)"
         alt="Imagem do Post"
         class="post-detail-image"
       />

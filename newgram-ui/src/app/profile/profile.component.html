@@ -2,11 +2,16 @@
   <div class="content-area">
     <div class="max-w-7xl mx-auto">
       <div class="profile-header animate__fadeIn animate__animated">
-        <img
-          [src]="getFotoPerfil(userProfile)"
-          alt="Foto de Perfil"
-          class="profile-avatar"
-        />
+        <div class="profile-avatar">
+          <div class="profile-avatar" (click)="toggleViewed()">
+            <div class="story-circle" [class.viewed]="viewed"></div>
+            <img
+              [src]="getFotoPerfil(userProfile)"
+              alt="Foto de Perfil"
+              class="profile-avatar-img"
+            />
+          </div>
+        </div>
 
         <div class="profile-info">
           <div class="profile-name-section">
@@ -50,7 +55,8 @@
           </div>
 
           <div class="profile-actions">
-            <button *ngIf="!isPerfilDoUsuarioLogado"
+            <button
+              *ngIf="!isPerfilDoUsuarioLogado"
               (click)="follow()"
               [class.follow-btn]="!following"
               [class.following-btn]="following"
@@ -76,18 +82,25 @@
         <div
           class="highlights-container custom-scrollbar mb-2 animate__lightSpeedInLeft animate__animated"
         >
+          <div class="highlight-item" (click)="openCreateHighlightModal()">
+            <div class="highlight-circle bg-dark-3 flex-center">
+              <i class="fas fa-plus text-2xl text-light-3"></i>
+            </div>
+            <span class="highlight-title">Novo</span>
+          </div>
           <div
             class="highlight-item"
             *ngFor="let highlight of userProfilee[0].highlights"
+            (click)="openStory(highlight)"
           >
             <div class="highlight-circle">
               <img
-                [src]="highlight.image"
+                [src]="highlight?.images"
                 alt="Destaque"
                 class="highlight-image"
               />
             </div>
-            <span class="highlight-title">{{ highlight.title }}</span>
+            <span class="highlight-title">{{ highlight?.title }}</span>
           </div>
         </div>
 
@@ -111,10 +124,12 @@
           >
             <label for="modal-1" class="">
               <img
+                (error)="handleImageError($event)"
                 [src]="getImagemPost(post.imagem)"
                 alt="Post"
                 class="post-image"
               />
+
               <div class="post-overlay">
                 <div class="post-stats">
                   <div class="post-stat">
@@ -131,11 +146,20 @@
           </div>
         </div>
 
-        <div  *ngIf="!posts.length " class="posts-grid hidden" id="savedGrid">
+        <div *ngIf="!posts.length" class="posts-grid hidden" id="savedGrid">
           <div class="empty-state col-span-3">
             <i class="far fa-bookmark empty-state-icon"></i>
-            <h3  class="h3-bold mb-2">{{isPerfilDoUsuarioLogado ? 'Nenhum post criado' : 'Usuário não tem posts'}}</h3>
-            <p *ngIf="isPerfilDoUsuarioLogado" class="base-medium text-light-3 mb-6">
+            <h3 class="h3-bold mb-2">
+              {{
+                isPerfilDoUsuarioLogado
+                  ? "Nenhum post criado"
+                  : "Usuário não tem posts"
+              }}
+            </h3>
+            <p
+              *ngIf="isPerfilDoUsuarioLogado"
+              class="base-medium text-light-3 mb-6"
+            >
               Quando você criar posts, eles aparecerão aqui.
             </p>
           </div>
@@ -146,5 +170,13 @@
       [postSelected]="postSelected"
       (postSelectedChange)="postSelected = $event"
     ></app-post-details>
+    <app-story-modal
+      [isOpen]="isStoryModalOpen"
+      [storyImages]="currentStory?.images || []"
+      [storyTitle]="currentStory?.title || ''"
+      [storyAvatar]="profileAvatar"
+      (close)="closeStoryModal()"
+    >
+    </app-story-modal>
   </div>
 </div>

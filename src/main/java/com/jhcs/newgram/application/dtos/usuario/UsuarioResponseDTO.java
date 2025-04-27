@@ -36,6 +36,8 @@ public class UsuarioResponseDTO {
 
     @Schema(description = "Número de posts do usuário", example = "10")
     private Long numeroPosts;
+    @Schema(description = "Foto de perfil do usuário em formato binário", type = "string", format = "binary")
+    private String fotoPerfil;
 
     @Schema(description = "Indica se o usuário atual está seguindo este usuário", example = "true")
     private boolean seguindoUsuario;

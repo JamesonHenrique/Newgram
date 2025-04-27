@@ -1,0 +1,29 @@
+<div class="story-modal" [class.active]="isOpen" (click)="onOverlayClick($event)">
+  <button class="story-close" (click)="closeModal()">
+    <i class="fas fa-times"></i>
+  </button>
+
+  <!-- Progress bars for each image -->
+  <div class="story-progress-container">
+    <div *ngFor="let img of storyImages; let i = index" class="story-progress-background">
+      <div class="story-progress" [class.active]="i === currentImageIndex">
+        <div class="story-progress-fill" [style.width.%]="i === currentImageIndex ? progressValue : (i < currentImageIndex ? 100 : 0)"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="story-content">
+    <div class="story-header">
+      <img [src]="storyAvatar" alt="Avatar" class="story-avatar" />
+      <span class="story-title">{{ storyTitle }}</span>
+    </div>
+
+    <img [src]="storyImages[currentImageIndex]" alt="Story" class="story-image" />
+
+    <!-- Navigation controls -->
+    <div class="story-nav">
+      <div class="story-nav-left" (click)="prevImage()"></div>
+      <div class="story-nav-right" (click)="nextImage()"></div>
+    </div>
+  </div>
+</div>

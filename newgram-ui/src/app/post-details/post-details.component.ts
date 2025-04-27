@@ -34,12 +34,12 @@ export class PostDetailsComponent {
   isModalActive = false;
   post: any;
   postService: any;
-  teste=false
+  teste = false;
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['postSelected']) {
       if (this.postSelected?.id) {
-        console.log(this.postSelected)
+        console.log(this.postSelected);
         this.openModal();
       } else {
         this.closeModal();
@@ -82,15 +82,23 @@ export class PostDetailsComponent {
   }
   getFotoPerfil(user: any): string {
     if (user?.fotoPerfil && user.fotoPerfil.trim() !== '') {
-      return 'data:image/jpg;base64,' + user.fotoPerfil;
+      return user.fotoPerfil;
     }
     return '/icons/profile-placeholder.svg';
   }
-  getImagemPost(imagemBase64: string | null | undefined): string {
-    if (imagemBase64 && imagemBase64.trim() !== '') {
-      return 'data:image/jpg;base64,' + imagemBase64;
+  getImagemPost(imagem: string | null | undefined): string {
+    if (!imagem || imagem.trim() === '') {
+      return '/icons/post-placeholder.svg';
     }
-    return '/icons/post-placeholder.svg';
+    if (imagem.includes('post-placeholder.svg')) {
+      return imagem;
+    }
+    return imagem;
+  }
+  handleImageError(event: Event): void {
+    const imgElement = event.target as HTMLImageElement;
+    imgElement.src = '/icons/post-placeholder.svg';
+    imgElement.onerror = null;
   }
   private isClosing = false;
 
@@ -126,5 +134,4 @@ export class PostDetailsComponent {
       document.body.style.overflow = '';
     }, 300); // Tempo igual à duração da transição CSS
   }
-
 }

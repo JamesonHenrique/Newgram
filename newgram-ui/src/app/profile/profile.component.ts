@@ -14,9 +14,11 @@ import {
   tap,
   throwError,
 } from 'rxjs';
+import { StoryModalComponent } from "../story-modal/story-modal.component";
+
 @Component({
   selector: 'app-profile',
-  imports: [PostDetailsComponent, CommonModule, FormatNumberPipe],
+  imports: [PostDetailsComponent, CommonModule, FormatNumberPipe, StoryModalComponent],
   templateUrl: './profile.component.html',
   styleUrl: './profile.component.css',
 })
@@ -107,35 +109,48 @@ export class ProfileComponent {
       highlights: [
         {
           title: 'Gameplays',
-          image:
+          images: [
             'https://st2.depositphotos.com/4744673/8357/i/450/depositphotos_83575466-stock-photo-looking-through-window-airplane.jpg',
+            'https://images.unsplash.com/photo-1598550476439-6847785fcea6?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80',
+            'https://images.unsplash.com/photo-1542751371-adc38448a05e?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80'
+          ]
         },
         {
           title: 'Reviews',
-          image:
+          images: [
             'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS4ixlqhwWUSt63c0RXEUFTCd1DVbp4hvxo8Q&s',
+            'https://images.unsplash.com/photo-1493711662062-fa541adb3fc8?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80'
+          ]
         },
         {
           title: 'Dicas',
-          image:
+          images: [
             'https://i0.wp.com/blog.portaleducacao.com.br/wp-content/uploads/2022/07/Fotografia-e-a-sua-importancia-para-a-sociedade.jpg',
+            'https://images.unsplash.com/photo-1522542550221-31fd19575a2d?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80'
+          ]
         },
         {
           title: 'Eventos',
-          image:
+          images: [
             'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ_VcSIKb_yfIhKVBGf1mWpS6-lfmKe_h7mLw&s',
+            'https://images.unsplash.com/photo-1511578314322-379afb476865?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80'
+          ]
         },
         {
           title: 'Unboxing',
-          image:
+          images: [
             'https://upload.wikimedia.org/wikipedia/commons/thumb/4/4b/Everest_kalapatthar_crop.jpg/250px-Everest_kalapatthar_crop.jpg',
+            'https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80'
+          ]
         },
         {
           title: 'Memes',
-          image:
+          images: [
             'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQJet3DAVZswBCCgf8qXaSNSscay5LBfmVMNg&s',
-        },
-      ],
+            'https://images.unsplash.com/photo-1605559424843-9e4c228bf1c2?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80'
+          ]
+        }
+      ]
     },
   ];
   postSelected: any = [];
@@ -144,6 +159,42 @@ export class ProfileComponent {
   userProfile: any = [];
   username: string = '';
   posts: any = [];
+  isStoryModalOpen = false;
+  currentStory: any = null;
+  profileAvatar = 'https://media.istockphoto.com/id/610259354/pt/foto/jovem-mulher-usando-dslr-c%C3%A2mara.jpg?s=612x612&w=0&k=20&c=R1agbbanj4qKfZ6dFERdUovwchDOgIvtlJmEnLEO_XY=';
+  viewed: boolean = false;
+  storiesExists: boolean = true;
+// No seu component.ts
+showCreateHighlightModal = false;
+
+openCreateHighlightModal() {
+  this.showCreateHighlightModal = true;
+}
+
+onHighlightCreated(newHighlight: any) {
+
+  console.log('Novo highlight criado:', newHighlight);
+  this.showCreateHighlightModal = false;
+
+}
+  toggleViewed() {
+    this.viewed = !this.viewed;
+
+  }
+
+  checkStories(): void {
+    this.storiesExists = this.userProfilee[0].highlights.length > 0;
+  }
+  openStory(highlight: any) {
+    this.currentStory = highlight;
+    this.isStoryModalOpen = true;
+    document.body.style.overflow = 'hidden';
+  }
+
+  closeStoryModal() {
+    this.isStoryModalOpen = false;
+    document.body.style.overflow = '';
+  }
   private loadProfileAndPosts(): void {
     this.route.params
       .pipe(
@@ -181,15 +232,28 @@ export class ProfileComponent {
   }
   getFotoPerfil(user: any): string {
     if (user?.fotoPerfil && user.fotoPerfil.trim() !== '') {
-      return 'data:image/jpg;base64,' + user.fotoPerfil;
+      return user.fotoPerfil;
     }
     return '/icons/profile-placeholder.svg';
   }
-  getImagemPost(imagemBase64: string | null | undefined): string {
-    if (imagemBase64 && imagemBase64.trim() !== '') {
-      return 'data:image/jpg;base64,' + imagemBase64;
+  getImagemPost(imagem: string | null | undefined): string {
+    if (!imagem || imagem.trim() === '') {
+      return '/icons/post-placeholder.svg';
     }
-    return '/icons/post-placeholder.svg';
+
+    if (imagem.includes('post-placeholder.svg')) {
+      return imagem;
+    }
+
+    return imagem;
+  }
+
+  handleImageError(event: Event): void {
+    const imgElement = event.target as HTMLImageElement;
+    imgElement.src = '/icons/post-placeholder.svg';
+
+
+    imgElement.onerror = null;
   }
   private findAllPostsById() {
     if (!this.userProfile?.id) {

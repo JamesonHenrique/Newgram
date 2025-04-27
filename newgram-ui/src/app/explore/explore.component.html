@@ -15,130 +15,14 @@
       />
     </div>
 
-    <div class="mb-4 sm:mb-6 animate-slideUp" style="animation-delay: 0.1s">
-      <h3 class="font-semibold mb-3 text-sm sm:text-base">Tags Populares</h3>
-      <div
-        class="popular-tags flex overflow-x-auto pb-2 gap-2 scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-gray-800"
-      >
-        <span
-          *ngFor="let tag of popularTags"
-          class="tag whitespace-nowrap px-3 py-1 bg-gray-700 text-gray-200 rounded-full text-xs sm:text-sm"
-          >#{{ tag }}</span
-        >
-      </div>
-    </div>
 
-    <div
-      class="filter-tabs flex overflow-x-auto pb-2 mb-4 sm:mb-6 gap-2 sm:gap-3 scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-gray-800 animate-slideUp"
-      style="animation-delay: 0.2s"
-    >
-      <div
-        class="filter-tab active whitespace-nowrap px-3 py-1.5 bg-primary-500 text-white rounded-full text-xs sm:text-sm font-medium"
-        data-filter="all"
-      >
-        Todos
-      </div>
-      <div
-        class="filter-tab whitespace-nowrap px-3 py-1.5 bg-gray-700 text-gray-200 rounded-full text-xs sm:text-sm font-medium hover:bg-gray-600"
-        data-filter="trending"
-      >
-        Tendências
-      </div>
-      <div
-        class="filter-tab whitespace-nowrap px-3 py-1.5 bg-gray-700 text-gray-200 rounded-full text-xs sm:text-sm font-medium hover:bg-gray-600"
-        data-filter="latest"
-      >
-        Mais Recentes
-      </div>
-      <div
-        class="filter-tab whitespace-nowrap px-3 py-1.5 bg-gray-700 text-gray-200 rounded-full text-xs sm:text-sm font-medium hover:bg-gray-600"
-        data-filter="popular"
-      >
-        Mais Populares
-      </div>
-      <div
-        class="filter-tab whitespace-nowrap px-3 py-1.5 bg-gray-700 text-gray-200 rounded-full text-xs sm:text-sm font-medium hover:bg-gray-600"
-        data-filter="following"
-      >
-        Seguindo
-      </div>
-    </div>
-
-    <div
-      class="category-pills flex overflow-x-auto pb-2 gap-2 sm:gap-3 scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-gray-800 animate-slideUp"
-      style="animation-delay: 0.3s"
-    >
-      <div
-        class="category-pill active flex items-center whitespace-nowrap px-3 py-1.5 bg-primary-500 text-white rounded-full text-xs sm:text-sm gap-2"
-        data-category="all"
-      >
-        <i class="fas fa-th-large text-xs sm:text-sm"></i>
-        <span>Todos</span>
-      </div>
-      <div
-        class="category-pill flex items-center whitespace-nowrap px-3 py-1.5 bg-gray-700 text-gray-200 rounded-full text-xs sm:text-sm gap-2 hover:bg-gray-600"
-        data-category="photography"
-      >
-        <i class="fas fa-camera text-xs sm:text-sm"></i>
-        <span>Fotografia</span>
-      </div>
-      <div
-        class="category-pill flex items-center whitespace-nowrap px-3 py-1.5 bg-gray-700 text-gray-200 rounded-full text-xs sm:text-sm gap-2 hover:bg-gray-600"
-        data-category="travel"
-      >
-        <i class="fas fa-plane text-xs sm:text-sm"></i>
-        <span>Viagem</span>
-      </div>
-      <div
-        class="category-pill flex items-center whitespace-nowrap px-3 py-1.5 bg-gray-700 text-gray-200 rounded-full text-xs sm:text-sm gap-2 hover:bg-gray-600"
-        data-category="food"
-      >
-        <i class="fas fa-utensils text-xs sm:text-sm"></i>
-        <span>Comida</span>
-      </div>
-      <div
-        class="category-pill flex items-center whitespace-nowrap px-3 py-1.5 bg-gray-700 text-gray-200 rounded-full text-xs sm:text-sm gap-2 hover:bg-gray-600"
-        data-category="art"
-      >
-        <i class="fas fa-palette text-xs sm:text-sm"></i>
-        <span>Arte</span>
-      </div>
-      <div
-        class="category-pill flex items-center whitespace-nowrap px-3 py-1.5 bg-gray-700 text-gray-200 rounded-full text-xs sm:text-sm gap-2 hover:bg-gray-600"
-        data-category="music"
-      >
-        <i class="fas fa-music text-xs sm:text-sm"></i>
-        <span>Música</span>
-      </div>
-      <div
-        class="category-pill flex items-center whitespace-nowrap px-3 py-1.5 bg-gray-700 text-gray-200 rounded-full text-xs sm:text-sm gap-2 hover:bg-gray-600"
-        data-category="tech"
-      >
-        <i class="fas fa-laptop text-xs sm:text-sm"></i>
-        <span>Tecnologia</span>
-      </div>
-      <div
-        class="category-pill flex items-center whitespace-nowrap px-3 py-1.5 bg-gray-700 text-gray-200 rounded-full text-xs sm:text-sm gap-2 hover:bg-gray-600"
-        data-category="fashion"
-      >
-        <i class="fas fa-tshirt text-xs sm:text-sm"></i>
-        <span>Moda</span>
-      </div>
-    </div>
 
     <div
       class="flex-between mb-6 animate-slideUp"
       style="animation-delay: 0.4s"
     >
-      <h3 class="base-semibold text-light-2">Resultados</h3>
-      <div class="view-toggle">
-        <div class="view-toggle-btn active" data-view="grid">
-          <i class="fas fa-th-large"></i>
-        </div>
-        <div class="view-toggle-btn" data-view="list">
-          <i class="fas fa-list"></i>
-        </div>
-      </div>
+      <h1 class="font-semibold text-sm sm:text-lg">Resultados</h1>
+
     </div>
     <section
       class="trending-section mb-4 sm:mb-8 animate-slideUp"
@@ -163,7 +47,8 @@
         >
           <label [for]="'modal-1'" class="cursor-pointer">
             <img
-              src="{{ getImagemPost(post) }}"
+              [src]="getImagemPost(post.imagem)"
+              (error)="handleImageError($event)"
               alt="Post em Tendência"
               class="trending-post-img w-full h-32 xs:h-36 sm:h-40 md:h-48 object-cover"
             />
@@ -209,13 +94,13 @@
                   <span
                     class="flex items-center gap-1 text-gray-400 text-[10px] xs:text-xs sm:text-sm"
                   >
-                    <i class="far fa-heart"></i>
+                    <i class="far fa-heart btn-icon"></i>
                     <span>{{ post.numeroCurtidas | formatNumber }}</span>
                   </span>
                   <span
                     class="flex items-center gap-1 text-gray-400 text-[10px] xs:text-xs sm:text-sm"
                   >
-                    <i class="far fa-comment"></i>
+                    <i class="far fa-comment btn-icon"></i>
                     <span>{{ post.numeroComentarios | formatNumber }}</span>
                   </span>
                 </div>
@@ -250,7 +135,8 @@
           class="trending-post bg-gray-800 rounded-lg sm:rounded-xl overflow-hidden transition-transform hover:scale-[1.02] active:scale-[0.98]"
         >
           <img
-            src="{{ getImagemPost(post) }}"
+            [src]="getImagemPost(post.imagem)"
+            (error)="handleImageError($event)"
             alt="Post em Tendência"
             class="trending-post-img w-full h-32 xs:h-36 sm:h-40 md:h-48 object-cover"
           />
@@ -290,13 +176,13 @@
                 <span
                   class="flex items-center gap-1 text-gray-400 text-[10px] xs:text-xs sm:text-sm"
                 >
-                  <i class="far fa-heart"></i>
+                  <i class="far fa-heart btn-icon"></i>
                   <span>{{ post.numeroCurtidas | formatNumber }}</span>
                 </span>
                 <span
                   class="flex items-center gap-1 text-gray-400 text-[10px] xs:text-xs sm:text-sm"
                 >
-                  <i class="far fa-comment"></i>
+                  <i class="far fa-comment btn-icon"></i>
                   <span>{{ post.numeroComentarios | formatNumber }}</span>
                 </span>
               </div>
@@ -336,7 +222,8 @@
           class="trending-post bg-gray-800 rounded-lg sm:rounded-xl overflow-hidden transition-transform hover:scale-[1.02] active:scale-[0.98]"
         >
           <img
-            src="{{ getImagemPost(post) }}"
+            [src]="getImagemPost(post.imagem)"
+            (error)="handleImageError($event)"
             alt="Post em Tendência"
             class="trending-post-img w-full h-32 xs:h-36 sm:h-40 md:h-48 object-cover"
           />
@@ -376,13 +263,13 @@
                 <span
                   class="flex items-center gap-1 text-gray-400 text-[10px] xs:text-xs sm:text-sm"
                 >
-                  <i class="far fa-heart"></i>
+                  <i class="far fa-heart btn-icon"></i>
                   <span>{{ post.numeroCurtidas | formatNumber }}</span>
                 </span>
                 <span
                   class="flex items-center gap-1 text-gray-400 text-[10px] xs:text-xs sm:text-sm"
                 >
-                  <i class="far fa-comment"></i>
+                  <i class="far fa-comment btn-icon"></i>
                   <span>{{ post.numeroComentarios | formatNumber }}</span>
                 </span>
               </div>
@@ -409,7 +296,13 @@
         style="animation-delay: 0.6s"
       >
         <div class="post-card" *ngFor="let celebrity of celebrityPosts">
-          <img src="{{ getImagemPost(celebrity) }}" alt="Post" class="post-card-img" (click)="openPostDetails(celebrity, $event)" />
+          <img
+            [src]="getImagemPost(celebrity.imagem)"
+            (error)="handleImageError($event)"
+            alt="Post"
+            class="post-card-img"
+            (click)="openPostDetails(celebrity, $event)"
+          />
           <div class="post-card-content">
             <div class="flex-between mb-2">
               <div class="flex-start gap-2">
@@ -425,11 +318,11 @@
             </h4>
             <div class="post-card-stats">
               <span class="flex-center gap-1 text-light-3">
-                <i class="far fa-heart"></i>
+                <i class="far fa-heart btn-icon"></i>
                 <small>{{ celebrity.numeroCurtidas | formatNumber }}</small>
               </span>
               <span class="flex-center gap-1 text-light-3">
-                <i class="far fa-comment"></i>
+                <i class="far fa-comment btn-icon"></i>
                 <small>{{ celebrity.numeroComentarios | formatNumber }}</small>
               </span>
             </div>
@@ -452,7 +345,8 @@
           *ngFor="let followedPeople of followedPeoplePosts; let i = index"
         >
           <img
-            src="{{ getImagemPost(followedPeople) }}"
+            [src]="getImagemPost(followedPeople.imagem)"
+            (error)="handleImageError($event)"
             alt="Post"
             class="post-list-img"
           />
@@ -477,19 +371,19 @@
             <div class="flex-between">
               <div class="flex gap-3">
                 <span class="flex-center gap-1 text-light-3">
-                  <i class="far fa-heart"></i>
+                  <i class="far fa-heart btn-icon"></i>
                   <small>{{
                     followedPeople.numeroCurtidas | formatNumber
                   }}</small>
                 </span>
                 <span class="flex-center gap-1 text-light-3">
-                  <i class="far fa-comment"></i>
+                  <i class="far fa-comment btn-icon"></i>
                   <small>{{
                     followedPeople.numeroComentarios | formatNumber
                   }}</small>
                 </span>
               </div>
-              <i class="far fa-bookmark text-light-3"></i>
+              <i class="far fa-bookmark text-light-3 btn-icon"></i>
             </div>
           </div>
         </div>

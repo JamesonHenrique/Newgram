@@ -20,5 +20,5 @@ public class PostSummaryDTO {
     private Long numeroComentarios;
     private boolean salvoPeloUsuario;
     private boolean curtidoPeloUsuario;
-    private byte[] imagem;
+    private String imagem;
 }

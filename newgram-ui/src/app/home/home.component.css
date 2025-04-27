@@ -189,6 +189,7 @@
     height: auto;
     position: static;
     padding: 1rem 2rem 2rem;
+    display: none;
   }
   .feed-container {
     height: auto;

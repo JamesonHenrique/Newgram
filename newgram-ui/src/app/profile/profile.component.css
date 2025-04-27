@@ -1,4 +1,3 @@
-
 /* Main Layout */
 .main-layout {
   display: flex;
@@ -12,7 +11,7 @@
   padding: 2rem;
 }
 
-/* Profile Header */
+
 .profile-header {
   background-color: var(--dark-2);
   border-radius: 1.5rem;
@@ -27,8 +26,66 @@
   width: 150px;
   height: 150px;
   border-radius: 50%;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.profile-avatar::before {
+  content: '';
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  border: 2px solid var(--dark-2);
+  border-radius: 50%;
+  z-index: 2;
+}
+
+.profile-avatar img {
+  width: calc(100% - 6px);
+  height: calc(100% - 6px);
+  border-radius: 50%;
   object-fit: cover;
-  border: 4px solid var(--primary-custom);
+  z-index: 1;
+  position: relative;
+}
+.story-circle.viewed {
+  background: rgb(46, 46, 46);
+  animation: none;
+  box-shadow: none;
+}
+.story-circle {
+  position: absolute;
+  top: -4px;
+  left: -4px;
+  right: -4px;
+  bottom: -4px;
+  background: linear-gradient(
+      135deg,
+      #9b71fc,
+      #8860ce,
+      #652fbb,
+      #44168d,
+      #230058
+  );
+  background-size: 300% 300%;
+  animation: gradientRotate 3s ease infinite;
+
+  border-radius: 50%;
+  z-index: 0;
+}
+
+@keyframes gradientRotate {
+  0% {
+      background-position: 0% 50%;
+  }
+  50% {
+      background-position: 100% 50%;
+  }
+  100% {
+      background-position: 0% 50%;
+  }
 }
 
 .profile-info {
@@ -180,7 +237,7 @@
 }
 
 .profile-tab.active::after {
-  content: '';
+  content: "";
   position: absolute;
   bottom: -1px;
   left: 0;
@@ -222,7 +279,11 @@
   left: 0;
   width: 100%;
   height: 100%;
-  background: linear-gradient(to top, rgba(0, 0, 0, 0.7) 0%, rgba(0, 0, 0, 0) 50%);
+  background: linear-gradient(
+    to top,
+    rgba(0, 0, 0, 0.7) 0%,
+    rgba(0, 0, 0, 0) 50%
+  );
   opacity: 0;
   transition: opacity 0.3s ease;
   display: flex;
@@ -510,17 +571,33 @@
 
 /* Animations */
 @keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 @keyframes slideUp {
-  from { transform: translateY(20px); opacity: 0; }
-  to { transform: translateY(0); opacity: 1; }
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
 }
 @keyframes pulse {
-  0% { transform: scale(1); }
-  50% { transform: scale(1.05); }
-  100% { transform: scale(1); }
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+  100% {
+    transform: scale(1);
+  }
 }
 .animate-fadeIn {
   animation: fadeIn 0.5s ease forwards;
@@ -582,12 +659,12 @@
 }
 
 @media (max-width: 768px) {
-
   .content-area {
     margin-left: 0;
     padding: 1rem;
   }
-  .topbar, .bottom-bar {
+  .topbar,
+  .bottom-bar {
     display: flex;
   }
   .profile-header {
@@ -651,8 +728,6 @@
     margin-right: 0.25rem;
   }
 
-
-
   .highlight-title {
     font-size: 0.7rem;
     max-width: 50px;
@@ -709,7 +784,8 @@
     width: 100%;
   }
 
-  .follow-btn, .message-btn {
+  .follow-btn,
+  .message-btn {
     width: 100%;
   }
 
@@ -785,4 +861,3 @@
     font-size: 1.25rem;
   }
 }
-

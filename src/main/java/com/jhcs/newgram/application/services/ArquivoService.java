@@ -1,10 +1,12 @@
 package com.jhcs.newgram.application.services;
 
 import com.jhcs.newgram.core.domain.enums.TipoArquivo;
+import com.jhcs.newgram.infrastructure.aws.S3StorageService;
 import com.jhcs.newgram.infrastructure.exception.ArquivoException;
 import jakarta.annotation.Nonnull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
@@ -34,6 +36,8 @@ public class ArquivoService {
 
     @Value("${file.max-size:5242880}")
     private long maxFileSize;
+    @Autowired
+    private final S3StorageService s3StorageService;
 
     private static final List<String> EXTENSOES_PERMITIDAS = Arrays.asList("jpg", "jpeg", "png", "gif");
 
@@ -43,39 +47,11 @@ public class ArquivoService {
             @Nonnull TipoArquivo tipoArquivo
     ) {
         validarArquivo(sourceFile);
-        final String fileUploadSubPath = "usuarios" + separator + nomeUsuario + separator + tipoArquivo.getPasta();
-        return uploadFile(sourceFile, fileUploadSubPath);
+        final String fileUploadSubPath = "usuarios/" + nomeUsuario + "/" + tipoArquivo.getPasta();
+        return s3StorageService.uploadFile(sourceFile, fileUploadSubPath);
     }
-    private String uploadFile(
-            @Nonnull MultipartFile sourceFile,
-            @Nonnull String fileUploadSubPath
-    ) {
-        final String finalUploadPath = fileUploadPath + "/" + fileUploadSubPath.replace("\\", "/");
-        File targetFolder = new File(finalUploadPath);
 
-        if (!targetFolder.exists()) {
-            boolean folderCreated = targetFolder.mkdirs();
-            if (!folderCreated) {
-                log.error("Falha ao criar a pasta de destino: {}", targetFolder);
-                throw new ArquivoException("Não foi possível criar o diretório para upload");
-            }
-        }
 
-        final String fileExtension = getFileExtension(sourceFile.getOriginalFilename());
-        String nomeArquivo = System.currentTimeMillis() + "." + fileExtension;
-        String targetFilePath = finalUploadPath + "/" + nomeArquivo;
-        Path targetPath = Paths.get(targetFilePath);
-
-        try {
-            Files.write(targetPath, sourceFile.getBytes());
-            log.info("Arquivo salvo com sucesso em: {}", targetFilePath);
-
-            return fileUploadSubPath + "/" + nomeArquivo;
-        } catch (IOException e) {
-            log.error("Erro ao salvar o arquivo", e);
-            throw new ArquivoException("Falha ao salvar o arquivo: " + e.getMessage());
-        }
-    }
 
     private void validarArquivo(MultipartFile arquivo) {
         if (arquivo.isEmpty()) {

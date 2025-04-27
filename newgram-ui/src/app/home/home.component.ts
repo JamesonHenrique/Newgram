@@ -35,13 +35,13 @@ export class HomeComponent {
   pageable: Pageable = {
     page: 0,
     size: 10,
-    sort: ['']
+    sort: [''],
   };
 
   pageableCreators: Pageable = {
     page: 0,
     size: 4,
-    sort: ['']
+    sort: [''],
   };
   otherUsers = [
     {
@@ -68,8 +68,13 @@ export class HomeComponent {
     },
   ];
   topics = [
-    'fotografia', 'esportes', 'tecnologia', 'musica',
-    'beleza', 'moda', 'gastronomia'
+    'fotografia',
+    'esportes',
+    'tecnologia',
+    'musica',
+    'beleza',
+    'moda',
+    'gastronomia',
   ].filter((item, index, self) => self.indexOf(item) === index); // Remove duplicatas
 
   constructor(
@@ -97,64 +102,81 @@ export class HomeComponent {
     forkJoin([
       this.listFeed(),
       this.findAllTopCriadores(),
-      this.findUsuarioLogado()
-    ]).pipe(
-      takeUntil(this.destroy$),
-      finalize(() => this.loading = false)
-    ).subscribe();
+      this.findUsuarioLogado(),
+    ])
+      .pipe(
+        takeUntil(this.destroy$),
+        finalize(() => (this.loading = false))
+      )
+      .subscribe();
   }
 
   getFotoPerfil(user: any | null): string {
     if (user?.fotoPerfil?.trim()) {
-      return 'data:image/jpg;base64,' + user.fotoPerfil;
+      return user.fotoPerfil;
     }
     return '/icons/profile-placeholder.svg';
   }
 
-  getImagemPost(imagemBase64: string | null | undefined): string {
-    if (imagemBase64?.trim()) {
-      return 'data:image/jpg;base64,' + imagemBase64;
+  getImagemPost(imagem: string | null | undefined): string {
+    if (!imagem || imagem.trim() === '') {
+      return '/icons/post-placeholder.svg';
     }
-    return '/icons/post-placeholder.svg';
+
+    if (imagem.includes('post-placeholder.svg')) {
+      return imagem;
+    }
+
+    return imagem;
+  }
+
+  handleImageError(event: Event): void {
+    const imgElement = event.target as HTMLImageElement;
+    imgElement.src = '/icons/post-placeholder.svg';
+    imgElement.onerror = null;
   }
 
   private findUsuarioLogado(): Observable<void> {
     if (!this.tokenService.userId) return of(undefined);
 
-    return this.usuariosService.buscarUsuarioPorId({ id: this.tokenService.userId }).pipe(
-      tap(res => this.usuarioLogado = res),
-      map(() => undefined),
-      catchError(error => {
-        console.error('Erro ao buscar usuário logado:', error);
-        return of(undefined);
-      })
-    );
+    return this.usuariosService
+      .buscarUsuarioPorId({ id: this.tokenService.userId })
+      .pipe(
+        tap((res) => (this.usuarioLogado = res)),
+        map(() => undefined),
+        catchError((error) => {
+          console.error('Erro ao buscar usuário logado:', error);
+          return of(undefined);
+        })
+      );
   }
 
   private findAllTopCriadores(): Observable<void> {
-    return this.usuariosService.listarUsuariosMaisFamosos({ pageable: this.pageableCreators }).pipe(
-      tap(response => this.topCreators = response.content || []),
-      map(() => undefined),
-      catchError(error => {
-        console.error('Erro ao buscar top criadores:', error);
-        return of(undefined);
-      })
-    );
+    return this.usuariosService
+      .listarUsuariosMaisFamosos({ pageable: this.pageableCreators })
+      .pipe(
+        tap((response) => (this.topCreators = response.content || [])),
+        map(() => undefined),
+        catchError((error) => {
+          console.error('Erro ao buscar top criadores:', error);
+          return of(undefined);
+        })
+      );
   }
 
   private listFeed(): Observable<void> {
     return this.postsService.listarFeed({ pageable: this.pageable }).pipe(
-      tap(response => {
+      tap((response) => {
         this.posts = (response.content || []).map((post: any) => ({
           ...post,
           isLiked: post.curtidoPeloUsuario,
           isFavorite: post.salvoPeloUsuario,
           isAnimating: false,
-          isFavAnimating: false
+          isFavAnimating: false,
         }));
       }),
       map(() => undefined),
-      catchError(error => {
+      catchError((error) => {
         console.error('Erro ao carregar feed:', error);
         return of(undefined);
       })
@@ -181,15 +203,17 @@ export class HomeComponent {
       ? this.postsService.descurtirPost({ id: post.id })
       : this.postsService.curtirPost({ id: post.id });
 
-    likeAction$.pipe(
-      takeUntil(this.destroy$),
-      finalize(() => post.isAnimating = false)
-    ).subscribe({
-      error: () => {
-        post.isLiked = wasLiked;
-        post.numeroCurtidas += wasLiked ? 1 : -1;
-      }
-    });
+    likeAction$
+      .pipe(
+        takeUntil(this.destroy$),
+        finalize(() => (post.isAnimating = false))
+      )
+      .subscribe({
+        error: () => {
+          post.isLiked = wasLiked;
+          post.numeroCurtidas += wasLiked ? 1 : -1;
+        },
+      });
   }
 
   toggleFavorite(post: any, event: Event): void {
@@ -206,15 +230,17 @@ export class HomeComponent {
       ? this.postsService.removerPostSalvo({ id: post.id })
       : this.postsService.salvarPost({ id: post.id });
 
-    favAction$.pipe(
-      takeUntil(this.destroy$),
-      finalize(() => post.isFavAnimating = false)
-    ).subscribe({
-      error: () => {
-        post.isFavorite = wasFavorite;
-        post.numeroFavoritos += wasFavorite ? 1 : -1;
-      }
-    });
+    favAction$
+      .pipe(
+        takeUntil(this.destroy$),
+        finalize(() => (post.isFavAnimating = false))
+      )
+      .subscribe({
+        error: () => {
+          post.isFavorite = wasFavorite;
+          post.numeroFavoritos += wasFavorite ? 1 : -1;
+        },
+      });
   }
 
   trackByPostId(index: number, post: any): number {

@@ -94,11 +94,9 @@ export class SearchProfileComponent {
   private handleSearch(term: string): Observable<void> {
     this.searchProfiles = term;
 
-    // Primeiro mostra resultados do cache
     const cachedResults = this.searchInCache(term);
     this.updateDisplayedUsers(cachedResults);
 
-    // Depois busca no servidor e atualiza
     return this.buscarTodosUsuariosPorTermo(term).pipe(
       tap((serverResults) => {
         if (term === this.searchProfiles) {
@@ -106,7 +104,7 @@ export class SearchProfileComponent {
           this.updateCache(serverResults);
         }
       }),
-      map(() => undefined), // Convertemos para Observable<void>
+      map(() => undefined),
       catchError(() => of(undefined))
     );
   }
@@ -234,7 +232,7 @@ export class SearchProfileComponent {
   }
   getFotoPerfil(user: any | null): string {
     if (user?.fotoPerfil?.trim()) {
-      return 'data:image/jpg;base64,' + user.fotoPerfil;
+      return user.fotoPerfil;
     }
     return '/icons/profile-placeholder.svg';
   }
