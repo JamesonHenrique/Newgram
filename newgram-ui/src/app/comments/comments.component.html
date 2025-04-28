@@ -4,8 +4,9 @@
   <div *ngFor="let comentario of comentariosSelected" class="comment">
     <img
       [src]="getFotoPerfil(comentario)"
+      (error)="handleFotoPerfilError($event)"
       alt="Avatar do Usuário"
-      class="w-10 h-10 rounded-full object-cover border border-primary-custom"
+      class="w-10 h-10 rounded-full object-cover "
     />
     <div>
       <div class="flex gap-2 items-center">
@@ -31,6 +32,7 @@
 <div class="comment-input">
   <img
     [src]="getFotoPerfil()"
+    (error)="handleFotoPerfilError($event)"
     alt="Seu Avatar"
     class="w-12 h-12 rounded-full object-cover"
   />

@@ -1,17 +1,17 @@
 -- V14__inserir_posts_tendencias.sql
 
 -- Ajuste para usar uma data fixa, considerando que hoje é 04/03/2025
-INSERT INTO post (legenda, data_criacao, localizacao, arquivado, visibilidade, autor_id) VALUES
+INSERT INTO post (legenda, data_criacao, localizacao, arquivado, visibilidade, autor_id,imagem_url) VALUES
 ('Show incrível em São Paulo ontem! Obrigado a todos que compareceram. #ShowInesquecivel #FãsIncríveis',
-  '2025-03-03 19:30:00', 'São Paulo, SP', false, 'PUBLICO', 6), -- Anitta
+  '2025-03-03 19:30:00', 'São Paulo, SP', false, 'PUBLICO', 6,'usuarios/anitta/posts/anitta_posts_1.webp'), -- Anitta
 ('Gravação do novo programa finalizada! Em breve vocês vão poder assistir. #NovoPrograma',
-  '2025-03-03 14:15:00', 'Rio de Janeiro, RJ', false, 'PUBLICO', 1), -- Rodrigo Faro
+  '2025-03-03 14:15:00', 'Rio de Janeiro, RJ', false, 'PUBLICO', 1,'usuarios/rodrigofaro/posts/rodrigofaro_posts_1.webp'), -- Rodrigo Faro
 ('Dia de treino especial para o grande jogo da semana que vem! #Determinação #Foco',
-  '2025-03-02 16:45:00', 'Paris, França', false, 'PUBLICO', 5), -- Neymar
+  '2025-03-02 16:45:00', 'Paris, França', false, 'PUBLICO', 5,'usuarios/neymarjr/posts/neymarjr_posts_1.jpg'), -- Neymar
 ('Nova música chegando! Essa colaboração vai surpreender vocês. #NovaMusica #Colaboração',
-  '2025-03-03 10:20:00', 'Salvador, BA', false, 'PUBLICO', 4), -- Ivete
+  '2025-03-03 10:20:00', 'Salvador, BA', false, 'PUBLICO', 4,'usuarios/ivetesangalo/posts/ivetesangalo_posts_3.jpg'), -- Ivete
 ('Estreia do filme hoje! Não percam nas telonas de todo o Brasil. #NovoFilme #Estreia',
-  '2025-03-04 09:15:00', 'São Paulo, SP', false, 'PUBLICO', 10); -- Taís
+  '2025-03-04 09:15:00', 'São Paulo, SP', false, 'PUBLICO', 10,'usuarios/taisaraujo/posts/taisaraujo_posts_1.jpg'); -- Taís
 
 -- Inserir hashtags (se não existirem)
 INSERT INTO hashtag (nome)

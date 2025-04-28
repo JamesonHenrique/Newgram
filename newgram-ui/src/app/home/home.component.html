@@ -17,6 +17,7 @@
               <div class="flex-start gap-3">
                 <img
                   [src]="getFotoPerfil(post.autor)"
+                  (error)="handleFotoPerfilError($event)"
                   alt="Avatar do Usuário"
                   class="w-16 h-16 story-border"
                 />
@@ -45,7 +46,7 @@
 
             <img
               [src]="getImagemPost(post.imagem)"
-              (error)="handleImageError($event)" 
+              (error)="handleImageError($event)"
               alt="Imagem do Post"
               class="post-card_img"
             />
@@ -75,7 +76,6 @@
                   }}</span>
                 </button>
 
-                <!-- Botão de Favoritar -->
                 <button
                   class="flex-center gap-1 text-light-1 hover:text-primary-custom transition"
                   (click)="toggleFavorite(post, $event)"
@@ -130,6 +130,7 @@
         >
           <img
             [src]="getFotoPerfil(topCreator)"
+            (error)="handleFotoPerfilError($event)"
             alt="Criador"
             class="w-10 h-10 lg:w-12 lg:h-12 rounded-full object-cover"
           />
@@ -152,59 +153,12 @@
         </div>
       </div>
 
-      <div class="mt-6 lg:mt-8">
-        <h3
-          class="text-lg lg:text-xl font-bold mb-3 lg:mb-4 text-primary-custom"
-        >
-          Tópicos Sugeridos
-        </h3>
-        <div class="flex flex-wrap gap-2">
-          <span
-            *ngFor="let topic of topics"
-            class="tag whitespace-nowrap px-3 py-1 bg-gray-700 text-gray-200 rounded-full text-xs"
-          >
-            #{{ topic }}
-          </span>
-        </div>
-      </div>
 
-      <div class="mt-6 lg:mt-8">
-        <h3
-          class="text-lg lg:text-xl font-bold mb-3 lg:mb-4 text-primary-custom"
-        >
-          Quem Seguir
-        </h3>
-        <div class="flex flex-col gap-3 lg:gap-4">
-          <div
-            class="flex items-center gap-2 lg:gap-3"
-            *ngFor="let otherUser of otherUsers"
-          >
-            <img
-              [src]="otherUser.avatar"
-              alt="Usuário"
-              class="w-10 h-10 lg:w-12 lg:h-12 rounded-full object-cover"
-            />
-            <div class="flex-1 min-w-0">
-              <h4 class="text-sm lg:text-base font-semibold truncate">
-                {{ otherUser.name }}
-              </h4>
-              <p class="text-xs lg:text-sm text-gray-400 truncate">
-                &#64;{{ otherUser.username }}
-              </p>
-            </div>
-            <button
-              class="btn-follow margin-responsive text-xs lg:text-sm px-2 lg:px-3 py-1 rounded-full bg-primary-500 hover:bg-primary-600 text-white"
-            >
-              Seguir
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
   </div>
 
-  <app-post-details
-  [postSelected]="postSelected"
-  (postSelectedChange)="postSelected = $event"
-></app-post-details>
+
 </div>
+<app-post-details
+[postSelected]="postSelected"
+(postSelectedChange)="postSelected = $event"
+></app-post-details>

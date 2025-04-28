@@ -21,7 +21,7 @@
           <img
             [src]="getFotoPerfil(postSelected?.autor)"
             alt="Avatar do Usuário"
-            class="w-12 h-12 rounded-full object-cover border border-primary-custom"
+            class="w-12 h-12 rounded-full object-cover "
           />
           <div>
             <h4 class="base-semibold">{{ postSelected?.autor?.nome }}</h4>
@@ -62,19 +62,56 @@
 
     <div class="post-detail-actions">
       <div class="flex gap-4">
-        <button class="btn-icon">
-          <i class="far fa-heart"></i>
-        </button>
-        <button class="btn-icon">
-          <i class="far fa-comment"></i>
-        </button>
-        <button class="btn-icon">
-          <i class="far fa-paper-plane"></i>
-        </button>
+        <span
+        class="flex items-center gap-1 text-gray-400 text-[10px] xs:text-xs sm:text-sm"
+      >
+      <button
+      class="flex-center gap-1 text-light-1 hover:text-primary-custom transition"
+      (click)="toggleLike(postSelected, $event)"
+      [ngClass]="{
+        'text-red': postSelected?.isLiked,
+        'hover:text-primary-custom': !postSelected?.isLiked
+      }"
+    >
+      <i
+        class="fa-heart btn-icon text-xl"
+        [ngClass]="{
+          fas: postSelected?.isLiked,
+          far: !postSelected?.isLiked
+        }"
+        [ngStyle]="{
+          transform: postSelected?.isAnimating ? 'scale(1.2)' : 'scale(1)'
+        }"
+      ></i>
+      <span class="small-medium">{{
+        postSelected?.numeroCurtidas | formatNumber
+      }}</span>
+    </button>
+      </span>
+
       </div>
-      <button class="btn-icon">
-        <i class="far fa-bookmark"></i>
-      </button>
+      <button
+      class="flex-center gap-1 text-light-1 hover:text-primary-custom transition"
+      (click)="toggleFavorite(postSelected, $event)"
+      [ngClass]="{
+        'text-yellow-400': postSelected?.isFavorite,
+        'hover:text-primary-custom': !postSelected?.isFavorite
+      }"
+    >
+      <i
+        class="fa-bookmark btn-icon text-xl"
+        [ngClass]="{
+          fas: postSelected?.isFavorite,
+          far: !postSelected?.isFavorite
+        }"
+        [ngStyle]="{
+          transform: postSelected?.isFavAnimating ? 'scale(1.2)' : 'scale(1)'
+        }"
+      ></i>
+      <span *ngIf="postSelected?.numeroFavoritos > 0" class="small-medium">
+        {{ postSelected?.numeroFavoritos | formatNumber }}
+      </span>
+    </button>
     </div>
 
     <app-comments [postId]="postSelected?.id"></app-comments>

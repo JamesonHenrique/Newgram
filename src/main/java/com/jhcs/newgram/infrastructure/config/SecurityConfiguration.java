@@ -51,7 +51,8 @@ public class SecurityConfiguration {
             "/swagger-ui/**",
             "/webjars/**",
             "/swagger-ui.html",
-            "/actuator/health"
+            "/actuator/health",
+            "/ws-chat/**",
     };
 
     @Bean

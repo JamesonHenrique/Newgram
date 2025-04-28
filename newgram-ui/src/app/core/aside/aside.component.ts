@@ -33,12 +33,30 @@ export class AsideComponent {
   private __fotoPerfil: string | undefined;
   getFotoPerfil(): string {
     if (
-      this.usuarioLogado?.fotoPerfil &&
-      this.usuarioLogado.fotoPerfil.trim() !== ''
+      !this.usuarioLogado.fotoPerfil ||
+      this.usuarioLogado.fotoPerfil.trim() === ''
     ) {
-      return 'data:image/jpg;base64,' + this.usuarioLogado.fotoPerfil;
+      return '/icons/profile-placeholder.svg';
     }
-    return '/icons/profile-placeholder.svg';
+    if (
+      this.usuarioLogado.fotoPerfil.includes('/icons/profile-placeholder.svg')
+    ) {
+      return this.usuarioLogado.fotoPerfil;
+    }
+    return this.usuarioLogado.fotoPerfil;
+  }
+  get nomeComQuebra(): string {
+    const nome = this.usuarioLogado.nome;
+    if (nome && nome.length > 18) {
+      return nome.slice(0, 18) + '<br>' + nome.slice(18);
+    }
+    return nome || '';
+  }
+  handleFotoPerfilError(event: Event): void {
+    const imgElement = event.target as HTMLImageElement;
+    imgElement.src = '/icons/profile-placeholder.svg';
+
+    imgElement.onerror = null;
   }
   ngOnInit(): void {
     this.findUsuarioLogado();

@@ -111,13 +111,15 @@ export class HomeComponent {
       .subscribe();
   }
 
-  getFotoPerfil(user: any | null): string {
-    if (user?.fotoPerfil?.trim()) {
+  getFotoPerfil(user: any): string {
+    if (!user.fotoPerfil || user.fotoPerfil.trim() === '') {
+      return '/icons/profile-placeholder.svg';
+    }
+    if (user.fotoPerfil.includes('post-placeholder.svg')) {
       return user.fotoPerfil;
     }
-    return '/icons/profile-placeholder.svg';
+    return user.fotoPerfil;
   }
-
   getImagemPost(imagem: string | null | undefined): string {
     if (!imagem || imagem.trim() === '') {
       return '/icons/post-placeholder.svg';
@@ -129,10 +131,18 @@ export class HomeComponent {
 
     return imagem;
   }
+  handleFotoPerfilError( event: Event): void {
+    const imgElement = event.target as HTMLImageElement;
+    imgElement.src = '/icons/profile-placeholder.svg';
+
+    imgElement.onerror = null;
+  }
 
   handleImageError(event: Event): void {
     const imgElement = event.target as HTMLImageElement;
     imgElement.src = '/icons/post-placeholder.svg';
+
+
     imgElement.onerror = null;
   }
 

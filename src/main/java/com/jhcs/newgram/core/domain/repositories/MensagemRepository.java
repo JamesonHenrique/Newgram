@@ -14,23 +14,4 @@ import java.util.List;
 
 public interface MensagemRepository extends JpaRepository<Mensagem, Long> {
 
-    List<Mensagem> findByConversaIdOrderByDataEnvioAsc(Long conversaId);
-
-    Page<Mensagem> findByConversaIdOrderByDataEnvioDesc(Long conversaId, Pageable pageable);
-
-    @Query("SELECT m FROM Mensagem m WHERE m.conversa.id = :conversaId AND m.dataEnvio > :ultimaData ORDER BY m.dataEnvio ASC")
-    List<Mensagem> findNovasMensagens(@Param("conversaId") Long conversaId, @Param("ultimaData") Date ultimaData);
-
-    @Query("SELECT COUNT(m) FROM Mensagem m WHERE m.conversa.id = :conversaId AND m.remetente.id <> :usuarioId AND m.visualizada = false")
-    Long countMensagensNaoVisualizadas(@Param("conversaId") Long conversaId, @Param("usuarioId") Long usuarioId);
-
-    @Modifying
-    @Query("UPDATE Mensagem m SET m.visualizada = true WHERE m.conversa.id = :conversaId AND m.remetente.id <> :usuarioId")
-    void marcarMensagensComoVisualizadas(@Param("conversaId") Long conversaId, @Param("usuarioId") Long usuarioId);
-
-    @Query("SELECT m FROM Mensagem m WHERE m.conversa.id = :conversaId AND m.tipo = :tipo ORDER BY m.dataEnvio DESC")
-    Page<Mensagem> findByConversaIdAndTipo(@Param("conversaId") Long conversaId, @Param("tipo") TipoMensagem tipo, Pageable pageable);
-
-    @Query("SELECT m FROM Mensagem m WHERE m.conversa.id IN :conversasIds AND m.id IN (SELECT MAX(m2.id) FROM Mensagem m2 WHERE m2.conversa.id IN :conversasIds GROUP BY m2.conversa.id) ORDER BY m.dataEnvio DESC")
-    List<Mensagem> findUltimasMensagensPorConversas(@Param("conversasIds") List<Long> conversasIds);
-}
+    List<Mensagem> findByConversaIdOrderByDataEnvioAsc(Long conversaId);}

@@ -134,7 +134,9 @@ export class SearchProfileComponent {
       }
     });
   }
-
+  toggleFollowing(user:any, event:Event) {
+    event.stopPropagation()
+  }
   findAllUsuarios(): void {
     if (this.pesquisando) {
       this.buscarTodosUsuariosPorTermo(this.searchProfiles.trim()).pipe(
@@ -230,10 +232,21 @@ export class SearchProfileComponent {
     const end = start + (this.pageable.size || 1);
     return users.slice(start, end);
   }
-  getFotoPerfil(user: any | null): string {
-    if (user?.fotoPerfil?.trim()) {
+  getFotoPerfil(user: any): string {
+    if (!user.fotoPerfil || user.fotoPerfil.trim() === '') {
+      return '/icons/profile-placeholder.svg';
+    }
+    if (user.fotoPerfil.includes('post-placeholder.svg')) {
       return user.fotoPerfil;
     }
-    return '/icons/profile-placeholder.svg';
+    return user.fotoPerfil;
   }
+
+  handleFotoPerfilError( event: Event): void {
+    const imgElement = event.target as HTMLImageElement;
+    imgElement.src = '/icons/profile-placeholder.svg';
+    imgElement.onerror = null;
+  }
+
+
 }

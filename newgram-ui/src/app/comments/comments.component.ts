@@ -50,7 +50,7 @@ export class CommentsComponent implements OnChanges {
       .subscribe({
         next: (response) => {
           this.comentarioTexto = '';
-          this.loadComentarios(this.postId); 
+          this.loadComentarios(this.postId);
         },
         error: (err) => {
           console.error('Erro ao enviar comentário:', err);
@@ -78,13 +78,19 @@ export class CommentsComponent implements OnChanges {
 
     const user = (usuario as UsuarioSummaryDto) || this.usuarioLogado;
 
-    if (user?.fotoPerfil?.trim()) {
-      return 'data:image/jpg;base64,' + user.fotoPerfil;
+    if (!user.fotoPerfil || user.fotoPerfil.trim() === '') {
+      return '/icons/profile-placeholder.svg';
     }
-
-    return '/icons/profile-placeholder.svg';
+    if (user.fotoPerfil.includes('post-placeholder.svg')) {
+      return user.fotoPerfil;
+    }
+    return user.fotoPerfil;
   }
-
+  handleFotoPerfilError( event: Event): void {
+    const imgElement = event.target as HTMLImageElement;
+    imgElement.src = '/icons/profile-placeholder.svg';
+    imgElement.onerror = null;
+  }
   findUsuarioLogado() {
     this.usuariosService
       .buscarUsuarioPorId({ id: this.tokenService.userId })

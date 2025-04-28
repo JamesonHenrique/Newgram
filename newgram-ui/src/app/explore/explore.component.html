@@ -43,9 +43,9 @@
         <div
           *ngFor="let post of postsPorLegenda; let i = index"
           (click)="openPostDetails(post, $event)"
-          class="trending-post bg-gray-800 rounded-lg sm:rounded-xl overflow-hidden transition-transform hover:scale-[1.02] active:scale-[0.98]"
+          class="trending-post bg-gray-800 rounded-lg sm:rounded-xl overflow-hidden transition-transform hover:scale-[1.02] active:scale-[0.98] flex flex-col"
+
         >
-          <label [for]="'modal-1'" class="cursor-pointer">
             <img
               [src]="getImagemPost(post.imagem)"
               (error)="handleImageError($event)"
@@ -53,7 +53,7 @@
               class="trending-post-img w-full h-32 xs:h-36 sm:h-40 md:h-48 object-cover"
             />
 
-            <div class="trending-post-content p-2 sm:p-3 md:p-4">
+            <div class="trending-post-content p-2 sm:p-3 md:p-4 flex flex-col justify-between flex-grow">
               <div class="flex justify-between items-center mb-1 sm:mb-2">
                 <div class="flex items-center gap-1 sm:gap-2">
                   <img
@@ -89,27 +89,65 @@
                 </span>
               </div>
 
-              <div class="flex justify-between items-center">
+              <div class="flex justify-between items-center ">
                 <div class="flex gap-2 sm:gap-3 md:gap-4">
                   <span
                     class="flex items-center gap-1 text-gray-400 text-[10px] xs:text-xs sm:text-sm"
                   >
-                    <i class="far fa-heart btn-icon"></i>
-                    <span>{{ post.numeroCurtidas | formatNumber }}</span>
+                  <button
+                  class="flex-center gap-1 text-light-1 hover:text-primary-custom transition"
+                  (click)="toggleLike(post, $event)"
+                  [ngClass]="{
+                    'text-red': post.isLiked,
+                    'hover:text-primary-custom': !post.isLiked
+                  }"
+                >
+                  <i
+                    class="fa-heart btn-icon text-xl"
+                    [ngClass]="{
+                      fas: post.isLiked,
+                      far: !post.isLiked
+                    }"
+                    [ngStyle]="{
+                      transform: post.isAnimating ? 'scale(1.2)' : 'scale(1)'
+                    }"
+                  ></i>
+                  <span class="small-medium">{{
+                    post.numeroCurtidas | formatNumber
+                  }}</span>
+                </button>
                   </span>
                   <span
                     class="flex items-center gap-1 text-gray-400 text-[10px] xs:text-xs sm:text-sm"
                   >
-                    <i class="far fa-comment btn-icon"></i>
+                    <i (click)="openComments(post, $event)" class="far fa-comment btn-icon"></i>
                     <span>{{ post.numeroComentarios | formatNumber }}</span>
                   </span>
                 </div>
+                <button
+                class="flex-center gap-1 text-light-1 hover:text-primary-custom transition"
+                (click)="toggleFavorite(post, $event)"
+                [ngClass]="{
+                  'text-yellow-400': post.isFavorite,
+                  'hover:text-primary-custom': !post.isFavorite
+                }"
+              >
                 <i
-                  class="far fa-bookmark text-gray-400 hover:text-primary-500 cursor-pointer text-xs sm:text-sm"
+                  class="fa-bookmark btn-icon text-xl"
+                  [ngClass]="{
+                    fas: post.isFavorite,
+                    far: !post.isFavorite
+                  }"
+                  [ngStyle]="{
+                    transform: post.isFavAnimating ? 'scale(1.2)' : 'scale(1)'
+                  }"
                 ></i>
+                <span *ngIf="post.numeroFavoritos > 0" class="small-medium">
+                  {{ post.numeroFavoritos | formatNumber }}
+                </span>
+              </button>
               </div>
             </div>
-          </label>
         </div>
       </div>
     </section>
@@ -182,13 +220,11 @@
                 <span
                   class="flex items-center gap-1 text-gray-400 text-[10px] xs:text-xs sm:text-sm"
                 >
-                  <i class="far fa-comment btn-icon"></i>
+                  <i (click)="openComments(post, $event)" class="far fa-comment btn-icon"></i>
                   <span>{{ post.numeroComentarios | formatNumber }}</span>
                 </span>
               </div>
-              <i
-                class="far fa-bookmark text-gray-400 hover:text-primary-500 cursor-pointer text-xs sm:text-sm"
-              ></i>
+              <i (click)="toggleFavorite(post, $event)" class="far fa-bookmark text-gray-400 hover:text-primary-500 cursor-pointer text-xs sm:text-sm"></i>
             </div>
           </div>
         </div>
@@ -269,13 +305,11 @@
                 <span
                   class="flex items-center gap-1 text-gray-400 text-[10px] xs:text-xs sm:text-sm"
                 >
-                  <i class="far fa-comment btn-icon"></i>
+                  <i (click)="openComments(post, $event)" class="far fa-comment btn-icon"></i>
                   <span>{{ post.numeroComentarios | formatNumber }}</span>
                 </span>
               </div>
-              <i
-                class="far fa-bookmark text-gray-400 hover:text-primary-500 cursor-pointer text-xs sm:text-sm"
-              ></i>
+              <i (click)="toggleFavorite(post, $event)" class="far fa-bookmark text-gray-400 hover:text-primary-500 cursor-pointer text-xs sm:text-sm"></i>
             </div>
           </div>
         </div>
@@ -295,35 +329,55 @@
         class="post-grid animate-slideUp"
         style="animation-delay: 0.6s"
       >
-        <div class="post-card" *ngFor="let celebrity of celebrityPosts">
+        <div class="post-card" *ngFor="let post of celebrityPosts">
           <img
-            [src]="getImagemPost(celebrity.imagem)"
+            [src]="getImagemPost(post.imagem)"
             (error)="handleImageError($event)"
             alt="Post"
             class="post-card-img"
-            (click)="openPostDetails(celebrity, $event)"
+            (click)="openPostDetails(post, $event)"
           />
           <div class="post-card-content">
             <div class="flex-between mb-2">
               <div class="flex-start gap-2">
-                <img src="{{ getFotoPerfil(celebrity.autor) }}" alt="Avatar" class="w-6 h-6 rounded-full object-cover" />
-                <p class="small-medium">{{ celebrity.autor.nome }}</p>
+                <img src="{{ getFotoPerfil(post.autor) }}" alt="Avatar" class="w-6 h-6 rounded-full object-cover" />
+                <p class="small-medium">{{ post.autor.nome }}</p>
               </div>
               <span class="subtle-semibold text-light-3">{{
-                celebrity.dataCriacao | dateFormat
+                post.dataCriacao | dateFormat
               }}</span>
             </div>
             <h4 class="base-semibold mb-1 truncate">
-              {{ celebrity.legenda }}
+              {{ post.legenda }}
             </h4>
             <div class="post-card-stats">
               <span class="flex-center gap-1 text-light-3">
-                <i class="far fa-heart btn-icon"></i>
-                <small>{{ celebrity.numeroCurtidas | formatNumber }}</small>
+                <button
+                class="flex-center gap-1 text-light-1 hover:text-primary-custom transition"
+                (click)="toggleLike(post, $event)"
+                [ngClass]="{
+                  'text-red': post.isLiked,
+                  'hover:text-primary-custom': !post.isLiked
+                }"
+              >
+                <i
+                  class="fa-heart btn-icon text-xl"
+                  [ngClass]="{
+                    fas: post.isLiked,
+                    far: !post.isLiked
+                  }"
+                  [ngStyle]="{
+                    transform: post.isAnimating ? 'scale(1.2)' : 'scale(1)'
+                  }"
+                ></i>
+                <span class="small-medium">{{
+                  post.numeroCurtidas | formatNumber
+                }}</span>
+              </button>
               </span>
               <span class="flex-center gap-1 text-light-3">
-                <i class="far fa-comment btn-icon"></i>
-                <small>{{ celebrity.numeroComentarios | formatNumber }}</small>
+                <i (click)="openComments(post, $event)" class="far fa-comment btn-icon"></i>
+                <small>{{ post.numeroComentarios | formatNumber }}</small>
               </span>
             </div>
           </div>
@@ -341,11 +395,11 @@
       <div id="listView" class="post-list hidden">
         <div
           class="post-list-item"
-          (click)="openPostDetails(followedPeople, $event)"
-          *ngFor="let followedPeople of followedPeoplePosts; let i = index"
+          (click)="openPostDetails(post, $event)"
+          *ngFor="let post of followedPeoplePosts; let i = index"
         >
           <img
-            [src]="getImagemPost(followedPeople.imagem)"
+            [src]="getImagemPost(post.imagem)"
             (error)="handleImageError($event)"
             alt="Post"
             class="post-list-img"
@@ -354,42 +408,81 @@
             <div>
               <div class="flex-between mb-2">
                 <div class="flex-start gap-2">
-                  <img src="{{ getFotoPerfil(followedPeople.autor) }}" alt="Avatar" class="w-6 h-6 rounded-full object-cover" />
-                  <p class="small-medium">{{ followedPeople.autor.nome }}</p>
+                  <img src="{{ getFotoPerfil(post.autor) }}" alt="Avatar" class="w-6 h-6 rounded-full object-cover" />
+                  <p class="small-medium">{{ post.autor.nome }}</p>
                 </div>
                 <span class="subtle-semibold text-light-3">{{
-                  followedPeople.dataCriacao | dateFormat
+                  post.dataCriacao | dateFormat
                 }}</span>
               </div>
               <h4 class="base-semibold mb-1">
-                {{ followedPeople.legenda }}
+                {{ post.legenda }}
               </h4>
               <p class="small-medium text-light-3 mb-2 line-clamp-2">
-                {{ followedPeople.tags }}
+                {{ post.tags }}
               </p>
             </div>
             <div class="flex-between">
               <div class="flex gap-3">
                 <span class="flex-center gap-1 text-light-3">
-                  <i class="far fa-heart btn-icon"></i>
-                  <small>{{
-                    followedPeople.numeroCurtidas | formatNumber
-                  }}</small>
+                  <button
+                  class="flex-center gap-1 text-light-1 hover:text-primary-custom transition"
+                  (click)="toggleLike(post, $event)"
+                  [ngClass]="{
+                    'text-red': post.isLiked,
+                    'hover:text-primary-custom': !post.isLiked
+                  }"
+                >
+                  <i
+                    class="fa-heart btn-icon text-xl"
+                    [ngClass]="{
+                      fas: post.isLiked,
+                      far: !post.isLiked
+                    }"
+                    [ngStyle]="{
+                      transform: post.isAnimating ? 'scale(1.2)' : 'scale(1)'
+                    }"
+                  ></i>
+                  <span class="small-medium">{{
+                    post.numeroCurtidas | formatNumber
+                  }}</span>
+                </button>
                 </span>
                 <span class="flex-center gap-1 text-light-3">
-                  <i class="far fa-comment btn-icon"></i>
+                  <i (click)="openComments(post, $event)" class="far fa-comment btn-icon"></i>
                   <small>{{
-                    followedPeople.numeroComentarios | formatNumber
+                    post.numeroComentarios | formatNumber
                   }}</small>
                 </span>
               </div>
-              <i class="far fa-bookmark text-light-3 btn-icon"></i>
+              <button
+              class="flex-center gap-1 text-light-1 hover:text-primary-custom transition"
+              (click)="toggleFavorite(post, $event)"
+              [ngClass]="{
+                'text-yellow-400': post.isFavorite,
+                'hover:text-primary-custom': !post.isFavorite
+              }"
+            >
+              <i
+                class="fa-bookmark btn-icon text-xl"
+                [ngClass]="{
+                  fas: post.isFavorite,
+                  far: !post.isFavorite
+                }"
+                [ngStyle]="{
+                  transform: post.isFavAnimating ? 'scale(1.2)' : 'scale(1)'
+                }"
+              ></i>
+              <span *ngIf="post.numeroFavoritos > 0" class="small-medium">
+                {{ post.numeroFavoritos | formatNumber }}
+              </span>
+            </button>
             </div>
           </div>
         </div>
       </div>
     </div>
-    <button class="load-more-btn animate-slideUp" style="animation-delay: 0.7s">
+    <button *ngIf="!isUltimaPagina()"  (click)="carregarMais('followedPeoplePosts')" class="load-more-btn animate-slideUp" style="animation-delay: 0.7s">
       Carregar Mais
     </button>
   </div>

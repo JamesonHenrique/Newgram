@@ -31,8 +31,7 @@ import static java.io.File.separator;
 @Slf4j
 public class ArquivoService {
 
-    @Value("${file.upload-dir}")
-    private String fileUploadPath;
+
 
     @Value("${file.max-size:5242880}")
     private long maxFileSize;

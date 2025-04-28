@@ -125,7 +125,7 @@ export class ProfileComponent {
         {
           title: 'Dicas',
           images: [
-            'https://i0.wp.com/blog.portaleducacao.com.br/wp-content/uploads/2022/07/Fotografia-e-a-sua-importancia-para-a-sociedade.jpg',
+            'https://images.unsplash.com/photo-1522542550221-31fd19575a2d?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80',
             'https://images.unsplash.com/photo-1522542550221-31fd19575a2d?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80'
           ]
         },
@@ -134,13 +134,6 @@ export class ProfileComponent {
           images: [
             'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ_VcSIKb_yfIhKVBGf1mWpS6-lfmKe_h7mLw&s',
             'https://images.unsplash.com/photo-1511578314322-379afb476865?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80'
-          ]
-        },
-        {
-          title: 'Unboxing',
-          images: [
-            'https://upload.wikimedia.org/wikipedia/commons/thumb/4/4b/Everest_kalapatthar_crop.jpg/250px-Everest_kalapatthar_crop.jpg',
-            'https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80'
           ]
         },
         {
@@ -164,7 +157,6 @@ export class ProfileComponent {
   profileAvatar = 'https://media.istockphoto.com/id/610259354/pt/foto/jovem-mulher-usando-dslr-c%C3%A2mara.jpg?s=612x612&w=0&k=20&c=R1agbbanj4qKfZ6dFERdUovwchDOgIvtlJmEnLEO_XY=';
   viewed: boolean = false;
   storiesExists: boolean = true;
-// No seu component.ts
 showCreateHighlightModal = false;
 
 openCreateHighlightModal() {
@@ -231,10 +223,13 @@ onHighlightCreated(newHighlight: any) {
       );
   }
   getFotoPerfil(user: any): string {
-    if (user?.fotoPerfil && user.fotoPerfil.trim() !== '') {
+    if (!user.fotoPerfil || user.fotoPerfil.trim() === '') {
+      return '/icons/profile-placeholder.svg';
+    }
+    if (user.fotoPerfil.includes('post-placeholder.svg')) {
       return user.fotoPerfil;
     }
-    return '/icons/profile-placeholder.svg';
+    return user.fotoPerfil;
   }
   getImagemPost(imagem: string | null | undefined): string {
     if (!imagem || imagem.trim() === '') {
@@ -247,12 +242,15 @@ onHighlightCreated(newHighlight: any) {
 
     return imagem;
   }
+  handleFotoPerfilError( event: Event): void {
+    const imgElement = event.target as HTMLImageElement;
+    imgElement.src = '/icons/profile-placeholder.svg';
+    imgElement.onerror = null;
+  }
 
   handleImageError(event: Event): void {
     const imgElement = event.target as HTMLImageElement;
     imgElement.src = '/icons/post-placeholder.svg';
-
-
     imgElement.onerror = null;
   }
   private findAllPostsById() {

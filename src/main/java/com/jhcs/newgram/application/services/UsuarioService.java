@@ -192,6 +192,7 @@ public class UsuarioService {
         dto.setNome(usuario.getNome());
         dto.setUsername(usuario.getUsuarioName());
         dto.setCommonFollowers(commonFollowers);
+        dto.setFotoPerfil(s3StorageService.getFileUrl(usuario.getFotoPerfil()));
         return dto;
     }
     private UsuarioResponseDTO converterParaUsuarioResponseDTO(Usuario usuario, ArquivoDTO fotoPerfil) {
@@ -221,7 +222,7 @@ public class UsuarioService {
         dto.setNumeroSeguindo(seguidorRepository.countSeguidosByUsuarioId(usuario.getId()));
         dto.setNumeroPosts((long) usuario.getPosts().size());
 
-        dto.setFotoPerfil(ArquivoUtils.lerArquivoDoLocal(usuario.getFotoPerfil()));
+        dto.setFotoPerfil(s3StorageService.getFileUrl(usuario.getFotoPerfil()));
         boolean seguindoUsuario = false;
         if (usuarioLogadoId != null) {
             seguindoUsuario = seguidorRepository.existsBySeguidorIdAndSeguidoId(usuarioLogadoId, usuario.getId());

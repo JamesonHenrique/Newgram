@@ -26,6 +26,6 @@ public class UsuarioSummaryDTO {
     @Schema(description = "Número de posts do usuário", example = "10")
     private Long numeroPosts;
 
-    @Schema(description = "Foto de perfil do usuário em formato binário", type = "string", format = "binary")
-    private byte[] fotoPerfil;
+
+    private String fotoPerfil;
 }

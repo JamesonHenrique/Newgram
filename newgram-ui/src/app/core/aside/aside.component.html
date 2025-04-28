@@ -8,7 +8,7 @@
       <div class="group relative flex flex-col gap-3" [routerLink]="['/perfil', usuarioLogado.username]">
         <div class="flex items-center gap-4">
           <div class="relative">
-            <img [src]="getFotoPerfil()" alt="Perfil do Usuário"
+            <img [src]="getFotoPerfil() " (error)="handleFotoPerfilError($event)" alt="Perfil do Usuário"
                  class="avatar w-10 h-10 rounded-full object-cover transition-all" />
 
             <div class="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 hidden group-hover:block w-auto whitespace-nowrap px-3 py-2 bg-[#877EFF] text-white text-sm rounded-md shadow-md">
@@ -21,8 +21,8 @@
           </div>
 
           <div class="flex flex-col">
-            <h3 class="base-semibold text-light-1">{{ usuarioLogado.nome }}</h3>
-            <p class="small-medium text-primary-500 text-principal">
+            <h3   class="base-semibold text-light-1 max-w-[13ch] break-words">{{ usuarioLogado.nome }}</h3>
+            <p class="small-medium text-primary-500 text-principal max-w-[13ch] break-words">
               &#64;{{ usuarioLogado.username }}
             </p>
           </div>

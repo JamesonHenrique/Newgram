@@ -10,19 +10,19 @@ INSERT INTO hashtag (nome)
 SELECT 'DicasDeViagem' WHERE NOT EXISTS (SELECT 1 FROM hashtag WHERE nome = 'DicasDeViagem');
 
 -- 2. Inserir posts com hashtags que o usuário 1 curte (critério 1 de recomendação)
-INSERT INTO post (legenda, data_criacao, localizacao, arquivado, visibilidade, autor_id) VALUES
+INSERT INTO post (legenda, data_criacao, localizacao, arquivado, visibilidade, autor_id, imagem_url) VALUES
 ('Experimentando novas receitas hoje! #ReceitasCulinárias #Gastronomia',
- '2025-03-05 09:30:00', 'São Paulo, SP', false, 'PUBLICO', 3), -- Luciano Huck
+ '2025-03-05 09:30:00', 'São Paulo, SP', false, 'PUBLICO', 3,'usuarios/lucianohuck/posts/lucianohuck_posts_3.webp'), -- Luciano Huck
 ('Férias inesquecíveis! Vocês precisam conhecer esse lugar. #DicasDeViagem #Viagem',
- '2025-03-05 12:45:00', 'Ilhas Maldivas', false, 'PUBLICO', 8); -- Fátima Bernardes
+ '2025-03-05 12:45:00', 'Ilhas Maldivas', false, 'PUBLICO', 8,'usuarios/fatimabernards/posts/fatimabernards_posts_3.webp'); -- Fátima Bernardes
 
 -- 3. Inserir posts de autores que o usuário 1 já curtiu posts (critério 2 de recomendação)
 -- Suponha que usuário 1 já curtiu posts do usuário 4 (Ivete)
-INSERT INTO post (legenda, data_criacao, localizacao, arquivado, visibilidade, autor_id,imagem_url) VALUES
+INSERT INTO post (legenda, data_criacao, localizacao, arquivado, visibilidade, autor_id, imagem_url) VALUES
 ('Dia especial com amigos especiais. Momentos que ficam para sempre.',
- '2025-03-06 14:20:00', 'Salvador, BA', false, 'PUBLICO', 4,'teste.png'), -- Ivete Sangalo
+ '2025-03-06 14:20:00', 'Salvador, BA', false, 'PUBLICO', 4,'usuarios/ivetesangalo/posts/ivetesangalo_posts_4.jpg'), -- Ivete Sangalo
 ('Reflexões sobre a vida e carreira. Gratidão por tudo!',
- '2025-03-07 11:15:00', 'Rio de Janeiro, RJ', false, 'PUBLICO', 2,'teste.png'); -- Sabrina Sato
+ '2025-03-07 11:15:00', 'Rio de Janeiro, RJ', false, 'PUBLICO', 2,'usuarios/sabrinasato/posts/sabrinasato_posts_3.jpg'); -- Sabrina Sato
 
 -- 4. Vincular hashtags aos posts (para critério 1)
 INSERT INTO post_hashtag (post_id, hashtag_id)

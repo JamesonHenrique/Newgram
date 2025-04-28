@@ -13,9 +13,10 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { FormatNumberPipe } from '../format-number.pipe';
 import { DateFormatPipe } from '../services/pipes/date-format-pipe';
 import { Pageable, UsuarioSummaryDto } from '../services/models';
-import { ComentariosService, UsuariosService } from '../services/services';
+import { ComentariosService, PostsService, UsuariosService } from '../services/services';
 import { TokenService } from '../services/token/token.service';
 import { CommentsComponent } from '../comments/comments.component';
+import { finalize, Subject, takeUntil } from 'rxjs';
 
 @Component({
   selector: 'app-post-details',
@@ -30,16 +31,71 @@ export class PostDetailsComponent {
   @Output() confirm = new EventEmitter<void>();
   @Output() cancel = new EventEmitter<void>();
   @Input() isOpen: boolean = false;
+  private destroy$ = new Subject<void>();
+  private loading = false;
 
   isModalActive = false;
   post: any;
   postService: any;
-  teste = false;
+  private postsService = inject(PostsService);
 
+
+toggleLike(post: any, event: Event): void {
+    event.stopPropagation();
+    if (post.isAnimating) return;
+
+    post.isAnimating = true;
+    const wasLiked = post.isLiked;
+
+    post.isLiked = !wasLiked;
+    post.numeroCurtidas += wasLiked ? -1 : 1;
+
+    const likeAction$ = wasLiked
+      ? this.postsService.descurtirPost({ id: post.id })
+      : this.postsService.curtirPost({ id: post.id });
+
+    likeAction$
+      .pipe(
+        takeUntil(this.destroy$),
+        finalize(() => (post.isAnimating = false))
+      )
+      .subscribe({
+        error: () => {
+          post.isLiked = wasLiked;
+          post.numeroCurtidas += wasLiked ? 1 : -1;
+        },
+      });
+  }
+
+  toggleFavorite(post: any, event: Event): void {
+    event.stopPropagation();
+    if (post.isFavAnimating) return;
+
+    post.isFavAnimating = true;
+    const wasFavorite = post.isFavorite;
+
+    post.isFavorite = !wasFavorite;
+    post.numeroFavoritos += wasFavorite ? -1 : 1;
+
+    const favAction$ = wasFavorite
+      ? this.postsService.removerPostSalvo({ id: post.id })
+      : this.postsService.salvarPost({ id: post.id });
+
+    favAction$
+      .pipe(
+        takeUntil(this.destroy$),
+        finalize(() => (post.isFavAnimating = false))
+      )
+      .subscribe({
+        error: () => {
+          post.isFavorite = wasFavorite;
+          post.numeroFavoritos += wasFavorite ? 1 : -1;
+        },
+      });
+  }
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['postSelected']) {
       if (this.postSelected?.id) {
-        console.log(this.postSelected);
         this.openModal();
       } else {
         this.closeModal();
@@ -119,19 +175,18 @@ export class PostDetailsComponent {
       setTimeout(() => {
         this.closeModal();
         this.isClosing = false;
-      }, 300); // Tempo igual à duração da transição CSS
+      }, 300); 
     }
   }
   closeModal(): void {
     const overlay = document.getElementById('postDetailOverlay');
     if (overlay) overlay.classList.remove('active');
 
-    // Espera a animação terminar antes de limpar o post
     setTimeout(() => {
       this.isModalActive = false;
       this.postSelected = null;
       this.postSelectedChange.emit(null);
       document.body.style.overflow = '';
-    }, 300); // Tempo igual à duração da transição CSS
+    }, 300);
   }
 }

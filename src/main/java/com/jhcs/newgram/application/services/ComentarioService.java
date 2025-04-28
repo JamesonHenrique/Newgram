@@ -11,6 +11,7 @@ import com.jhcs.newgram.core.domain.repositories.CurtidaRepository;
 import com.jhcs.newgram.core.domain.repositories.PostRepository;
 import com.jhcs.newgram.core.domain.repositories.UsuarioRepository;
 import com.jhcs.newgram.core.domain.utils.ArquivoUtils;
+import com.jhcs.newgram.infrastructure.aws.S3StorageService;
 import com.jhcs.newgram.infrastructure.exception.BusinessException;
 import com.jhcs.newgram.infrastructure.exception.ResourceNotFoundException;
 import com.jhcs.newgram.infrastructure.exception.UnauthorizedException;
@@ -43,6 +44,8 @@ public class ComentarioService {
     private CurtidaRepository curtidaRepository;
     @Autowired
     private ArquivoService arquivoService;
+    @Autowired
+    private S3StorageService s3StorageService;
 
     @Transactional
     public ComentarioResponseDTO criarComentario(ComentarioCreateDTO dto, Long usuarioId) {
@@ -211,7 +214,7 @@ public class ComentarioService {
         autorDTO.setId(comentario.getAutor().getId());
         autorDTO.setNome(comentario.getAutor().getNome());
         autorDTO.setUsername(comentario.getAutor().getUsername());
-        autorDTO.setFotoPerfil(ArquivoUtils.lerArquivoDoLocal(comentario.getAutor().getFotoPerfil()));
+        autorDTO.setFotoPerfil(s3StorageService.getFileUrl(comentario.getAutor().getFotoPerfil()));
 
         dto.setAutor(autorDTO);
 

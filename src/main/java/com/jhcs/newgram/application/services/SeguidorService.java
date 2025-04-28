@@ -114,7 +114,6 @@ public class SeguidorService {
 
         relacao = seguidorRepository.save(relacao);
 
-        // Enviar notificação para o seguido
         notificacaoService.criarNotificacao(
                 seguidoId,
                 seguidorId,
@@ -146,6 +145,7 @@ public class SeguidorService {
         relacao.setNotificacoesAtivadas(ativar);
         seguidorRepository.save(relacao);
     }
+
     @Transactional(readOnly = true)
     public List<UsuarioSummaryDTO> buscarSeguidosAleatorios(Long usuarioId, int limite) {
         List<Usuario> seguidosAleatorios = seguidorRepository.findRandomSeguidosByUsuarioId(usuarioId, limite);
@@ -156,8 +156,6 @@ public class SeguidorService {
                     dto.setId(seguido.getId());
                     dto.setNome(seguido.getNome());
                     dto.setUsername(seguido.getUsername());
-
-
 
 
                     return dto;

@@ -32,19 +32,19 @@ export class ExploreComponent {
   postsRecomendados: any[] = [];
   postsPorLegenda: any[] = [];
 
-
   postSelected: any | null = null;
   selectedIndex: number | null = null;
   selectedPostType: string = '';
   termo: string = '';
 
-
   pageable: Pageable = {
     page: 0,
-    size: 3,
-    sort: ['']
+    size: 4,
+    sort: [''],
   };
-
+  numberOfElements = 0;
+  totalPages = 0;
+  totalElements = 0;
   popularTags = [
     'Humor',
     'Esportes',
@@ -59,13 +59,10 @@ export class ExploreComponent {
     'RioGrandeDoSul',
     'Evento',
     'TV',
-    'Entretenimento'
+    'Entretenimento',
   ];
 
-  constructor(
-    private title: Title,
-    private postsService: PostsService
-  ) {
+  constructor(private title: Title, private postsService: PostsService) {
     this.title.setTitle('Explore');
   }
 
@@ -93,11 +90,13 @@ export class ExploreComponent {
       this.listCelebritiesPost(),
       this.listViralPost(),
       this.listFollowedPeoplePost(),
-      this.listPostRecomendados()
-    ]).pipe(
-      takeUntil(this.destroy$),
-      finalize(() => this.loading = false)
-    ).subscribe();
+      this.listPostRecomendados(),
+    ])
+      .pipe(
+        takeUntil(this.destroy$),
+        finalize(() => (this.loading = false))
+      )
+      .subscribe();
   }
 
   openModal(post: any, index: number, postType: string): void {
@@ -106,8 +105,67 @@ export class ExploreComponent {
     this.selectedPostType = postType;
   }
 
+  openComments(post: any, event: MouseEvent) {}
+
+  toggleLike(post: any, event: Event): void {
+    event.stopPropagation();
+    if (post.isAnimating) return;
+
+    post.isAnimating = true;
+    const wasLiked = post.isLiked;
+
+    post.isLiked = !wasLiked;
+    post.numeroCurtidas += wasLiked ? -1 : 1;
+
+    const likeAction$ = wasLiked
+      ? this.postsService.descurtirPost({ id: post.id })
+      : this.postsService.curtirPost({ id: post.id });
+
+    likeAction$
+      .pipe(
+        takeUntil(this.destroy$),
+        finalize(() => (post.isAnimating = false))
+      )
+      .subscribe({
+        error: () => {
+          post.isLiked = wasLiked;
+          post.numeroCurtidas += wasLiked ? 1 : -1;
+        },
+      });
+  }
+
+  toggleFavorite(post: any, event: Event): void {
+    event.stopPropagation();
+    if (post.isFavAnimating) return;
+
+    post.isFavAnimating = true;
+    const wasFavorite = post.isFavorite;
+
+    post.isFavorite = !wasFavorite;
+    post.numeroFavoritos += wasFavorite ? -1 : 1;
+
+    const favAction$ = wasFavorite
+      ? this.postsService.removerPostSalvo({ id: post.id })
+      : this.postsService.salvarPost({ id: post.id });
+
+    favAction$
+      .pipe(
+        takeUntil(this.destroy$),
+        finalize(() => (post.isFavAnimating = false))
+      )
+      .subscribe({
+        error: () => {
+          post.isFavorite = wasFavorite;
+          post.numeroFavoritos += wasFavorite ? 1 : -1;
+        },
+      });
+  }
   openPostDetails(post: any, event: Event): void {
     event.preventDefault();
+    const target = event.target as HTMLElement;
+    if (target.closest('.btn-icon, [class*="fa-"]')) {
+      return;
+    }
     this.postSelected = post;
   }
 
@@ -115,64 +173,144 @@ export class ExploreComponent {
     return `modal-${this.selectedPostType}-${this.selectedIndex}`;
   }
 
+  isUltimaPagina(): boolean {
+    return (this.pageable.page || 0) >= this.totalPages - 1;
+  }
+
+  avancarPagina(): void {
+    if (this.isUltimaPagina() || this.numberOfElements === 0) {
+      this.pageable.page = 0;
+    } else {
+      this.pageable.page = (this.pageable.page || 0) + 1;
+    }
+  }
+  carregarMais(tipoDeUsuario: string): void {
+    this.avancarPagina();
+
+    switch (tipoDeUsuario) {
+      case 'followedPeoplePosts':
+        this.listFollowedPeoplePost();
+        break;
+      case 'random':
+        this.listPostRecomendados();
+        break;
+
+        break;
+    }
+  }
   listPostRecomendados(): Observable<void> {
-    return this.postsService.listarPostsRecomendados({ pageable: this.pageable }).pipe(
-      tap(response => this.postsRecomendados = response.content || []),
-      map(() => undefined),
-      catchError(error => {
-        console.error('Erro ao carregar posts recomendados:', error);
-        return of(undefined);
-      })
-    );
+    return this.postsService
+      .listarPostsRecomendados({ pageable: this.pageable })
+      .pipe(
+        tap((response) => {
+          this.postsRecomendados = (response.content || []).map(
+            (post: any) => ({
+              ...post,
+              isLiked: post.curtidoPeloUsuario,
+              isFavorite: post.salvoPeloUsuario,
+              isAnimating: false,
+              isFavAnimating: false,
+            })
+          );
+        }),
+        map(() => undefined),
+        catchError((error) => {
+          console.error('Erro ao carregar posts recomendados:', error);
+          return of(undefined);
+        })
+      );
   }
 
   listPostsByLegenda(): void {
     if (!this.termo.trim()) return;
 
     this.loading = true;
-    this.postsService.buscarPostsPorLegenda({
-      termo: this.termo,
-      pageable: this.pageable
-    }).pipe(
-      takeUntil(this.destroy$),
-      finalize(() => this.loading = false)
-    ).subscribe({
-      next: response => this.postsPorLegenda = response.content || [],
-      error: error => console.error('Erro ao buscar posts por legenda:', error)
-    });
+    this.postsService
+      .buscarPostsPorLegenda({
+        termo: this.termo,
+        pageable: this.pageable,
+      })
+      .pipe(
+        takeUntil(this.destroy$),
+        finalize(() => (this.loading = false))
+      )
+      .subscribe({
+        next: (response) =>
+          (this.postsPorLegenda = (response.content || []).map((post: any) => ({
+            ...post,
+            isLiked: post.curtidoPeloUsuario,
+            isFavorite: post.salvoPeloUsuario,
+            isAnimating: false,
+            isFavAnimating: false,
+          }))),
+        error: (error) =>
+          console.error('Erro ao buscar posts por legenda:', error),
+      });
   }
 
   private listCelebritiesPost(): Observable<void> {
-    return this.postsService.listarPostsPopulares({ pageable: this.pageable }).pipe(
-      tap(response => this.celebrityPosts = response.content || []),
-      map(() => undefined),
-      catchError(error => {
-        console.error('Erro ao carregar posts de celebridades:', error);
-        return of(undefined);
-      })
-    );
+    return this.postsService
+      .listarPostsPopulares({ pageable: this.pageable })
+      .pipe(
+        tap((response) => {
+          this.celebrityPosts = (response.content || []).map((post: any) => ({
+            ...post,
+            isLiked: post.curtidoPeloUsuario,
+            isFavorite: post.salvoPeloUsuario,
+            isAnimating: false,
+            isFavAnimating: false,
+          }));
+        }),
+        map(() => undefined),
+        catchError((error) => {
+          console.error('Erro ao carregar posts de celebridades:', error);
+          return of(undefined);
+        })
+      );
   }
 
   private listViralPost(): Observable<void> {
-    return this.postsService.listarPostsTendencias({ pageable: this.pageable }).pipe(
-      tap(response => this.viralPosts = response.content || []),
-      map(() => undefined),
-      catchError(error => {
-        console.error('Erro ao carregar posts virais:', error);
-        return of(undefined);
-      })
-    );
+    return this.postsService
+      .listarPostsTendencias({ pageable: this.pageable })
+      .pipe(
+        tap((response) => {
+          this.viralPosts = (response.content || []).map((post: any) => ({
+            ...post,
+            isLiked: post.curtidoPeloUsuario,
+            isFavorite: post.salvoPeloUsuario,
+            isAnimating: false,
+            isFavAnimating: false,
+          }));
+        }),
+        map(() => undefined),
+        catchError((error) => {
+          console.error('Erro ao carregar posts virais:', error);
+          return of(undefined);
+        })
+      );
   }
 
   private listFollowedPeoplePost(): Observable<void> {
-    return this.postsService.listarPostsPopularesSeguidores({ pageable: this.pageable }).pipe(
-      tap(response => this.followedPeoplePosts = response.content || []),
-      map(() => undefined),
-      catchError(error => {
-        console.error('Erro ao carregar posts de pessoas seguidas:', error);
-        return of(undefined);
-      })
-    );
+    return this.postsService
+      .listarPostsPopularesSeguidores({ pageable: this.pageable })
+      .pipe(
+        tap((response) => {
+          this.followedPeoplePosts = (response.content || []).map(
+            (post: any) => ({
+              ...post,
+              isLiked: post.curtidoPeloUsuario,
+              isFavorite: post.salvoPeloUsuario,
+              isAnimating: false,
+              isFavAnimating: false,
+            })
+          );
+        }),
+        map(() => undefined),
+        catchError((error) => {
+          console.error('Erro ao carregar posts de pessoas seguidas:', error);
+          return of(undefined);
+        })
+      );
   }
 
   onSearchTermChange(term: string): void {
@@ -185,7 +323,7 @@ export class ExploreComponent {
   }
   getFotoPerfil(user: any | null): string {
     if (user?.fotoPerfil?.trim()) {
-      return 'data:image/jpg;base64,' + user.fotoPerfil;
+      return user.fotoPerfil;
     }
     return '/icons/profile-placeholder.svg';
   }

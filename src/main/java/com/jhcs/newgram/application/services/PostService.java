@@ -472,6 +472,7 @@ public class PostService {
         autorDTO.setId(post.getAutor().getId());
         autorDTO.setNome(post.getAutor().getNome());
         autorDTO.setUsername(post.getAutor().getUsername());
+        autorDTO.setFotoPerfil((s3StorageService.getFileUrl(post.getAutor().getFotoPerfil())));
         dto.setAutor(autorDTO);
 
         List<String> hashtags = post.getHashtags().stream()
@@ -510,6 +511,7 @@ public class PostService {
         autorDTO.setId(post.getAutor().getId());
         autorDTO.setNome(post.getAutor().getNome());
         autorDTO.setUsername(post.getAutor().getUsername());
+        autorDTO.setFotoPerfil((s3StorageService.getFileUrl(post.getAutor().getFotoPerfil())));
         dto.setAutor(autorDTO);
         dto.setLegenda(post.getLegenda());
         dto.setLocalizacao(post.getLocalizacao());

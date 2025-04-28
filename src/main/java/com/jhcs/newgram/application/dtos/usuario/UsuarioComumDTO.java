@@ -16,4 +16,6 @@ public class UsuarioComumDTO {
 
     @Schema(description = "Número de seguidores em comum", example = "5")
     private int commonFollowers;
+    @Schema(description = "Foto de perfil do usuário em formato binário", type = "string")
+    private String fotoPerfil;
 }

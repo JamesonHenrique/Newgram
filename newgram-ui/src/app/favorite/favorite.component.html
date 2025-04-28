@@ -73,33 +73,11 @@
             <i class="fas fa-th-large text-xs"></i>
             <span>Todos os Salvos</span>
           </div>
-          <div
-            class="collection-tab whitespace-nowrap flex items-center gap-1 px-3 py-2 bg-gray-700 hover:bg-gray-600 rounded-full text-xs sm:text-sm"
-          >
-            <i class="fas fa-heart text-xs"></i>
-            <span>Favoritos</span>
-          </div>
-          <div
-            class="collection-tab whitespace-nowrap flex items-center gap-1 px-3 py-2 bg-gray-700 hover:bg-gray-600 rounded-full text-xs sm:text-sm"
-          >
-            <i class="fas fa-plane text-xs"></i>
-            <span>Viagens</span>
-          </div>
-          <div
-            class="collection-tab whitespace-nowrap flex items-center gap-1 px-3 py-2 bg-gray-700 hover:bg-gray-600 rounded-full text-xs sm:text-sm"
-          >
-            <i class="fas fa-utensils text-xs"></i>
-            <span>Comida</span>
-          </div>
-          <div
-            class="collection-tab whitespace-nowrap flex items-center gap-1 px-3 py-2 bg-gray-700 hover:bg-gray-600 rounded-full text-xs sm:text-sm"
-          >
-            <i class="fas fa-lightbulb text-xs"></i>
-            <span>Inspiração</span>
-          </div>
+        
         </div>
 
         <button
+        *ngIf="false"
           id="createCollectionToggle"
           class="create-collection-btn w-full sm:w-auto whitespace-nowrap flex items-center justify-center gap-1 px-3 py-2 bg-gray-700 hover:bg-gray-600 rounded-full text-xs sm:text-sm"
         >
@@ -116,43 +94,8 @@
           <span id="savedCount">{{ postsTotais }}</span> posts salvos
         </div>
 
-        <div class="flex gap-2 sm:gap-4 w-full sm:w-auto">
-          <div class="filter-dropdown relative flex-1 sm:flex-none">
-            <button
-              id="sortDropdownBtn"
-              class="filter-btn w-full flex items-center justify-between gap-1 px-3 py-2 bg-gray-700 hover:bg-gray-600 rounded-full text-xs sm:text-sm"
-            >
-              <div class="flex items-center gap-1">
-                <i class="fas fa-sort text-xs"></i>
-                <span>Ordenar por</span>
-              </div>
-              <i class="fas fa-chevron-down text-xs"></i>
-            </button>
-            <div
-              id="sortDropdown"
-              class="filter-dropdown-content hidden absolute z-10 mt-1 w-full bg-gray-800 rounded shadow-lg py-1"
-            >
-              <div
-                class="filter-option active flex items-center gap-2 px-3 py-2 hover:bg-gray-700 text-xs sm:text-sm"
-              >
-                <i class="fas fa-clock text-xs"></i>
-                <span>Mais Recentes</span>
-              </div>
-              <div
-                class="filter-option flex items-center gap-2 px-3 py-2 hover:bg-gray-700 text-xs sm:text-sm"
-              >
-                <i class="fas fa-history text-xs"></i>
-                <span>Mais Antigos</span>
-              </div>
-              <div
-                class="filter-option flex items-center gap-2 px-3 py-2 hover:bg-gray-700 text-xs sm:text-sm"
-              >
-                <i class="fas fa-fire text-xs"></i>
-                <span>Mais Populares</span>
-              </div>
-            </div>
-          </div>
-        </div>
+
+
       </div>
 
       <div
@@ -165,7 +108,6 @@
           *ngFor="let post of savedPosts; let i = index"
           (click)="openModal(post, i)"
         >
-          <label [for]="'modal-1'" class="cursor-pointer">
             <img
               [src]="getImagemPost(post.imagem)"
               (error)="handleImageError($event)"
@@ -175,7 +117,7 @@
 
             <div class="absolute bottom-3 left-3 z-10">
               <img
-                [src]="getFotoPerfil(post.usuario)"
+                [src]="getFotoPerfil(post.autor)"
                 alt="Avatar"
                 class="w-8 h-8 rounded-full object-cover shadow-md hover:scale-110 hover:border-primary-500 transition-all duration-300"
               />
@@ -184,7 +126,7 @@
             <div class="post-actions flex gap-2">
               <div class="relative group">
                 <button
-                  class="post-action-btn p-2 rounded-full hover:bg-gray-700 transition-colors"
+                  class="post-action-btn p-2 rounded-full hover:bg-gray-700 transition-colors" (click)="desfavoritar(post, $event)"
                 >
                   <i class="fas fa-bookmark hover:text-red-500"></i>
                 </button>
@@ -198,7 +140,6 @@
                 </button>
               </div>
             </div>
-          </label>
         </div>
       </div>
       <app-post-details
@@ -206,6 +147,7 @@
         (postSelectedChange)="postSelected = $event"
       ></app-post-details>
       <app-pagination
+      *ngIf="savedPosts.length"
         [currentPage]="pageable.page || 0"
         [totalPages]="paginaTotal || 0"
         (pageChange)="onPageChange($event)"

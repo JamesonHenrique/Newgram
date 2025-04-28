@@ -4,7 +4,7 @@ import { Title } from '@angular/platform-browser';
 import { PostsService } from '../services/services';
 import { Pageable } from '../services/models';
 import { PostDetailsComponent } from '../post-details/post-details.component';
-import { PaginationComponent } from "../pagination/pagination.component";
+import { PaginationComponent } from '../pagination/pagination.component';
 import { of, Subject } from 'rxjs';
 import { takeUntil, catchError, finalize } from 'rxjs/operators';
 @Component({
@@ -24,16 +24,13 @@ export class FavoriteComponent {
   pageable: Pageable = {
     page: 0,
     size: 4,
-    sort: ['']
+    sort: [''],
   };
 
   postsTotais = 0;
   paginaTotal = 0;
 
-  constructor(
-    private title: Title,
-    private postsService: PostsService
-  ) {
+  constructor(private title: Title, private postsService: PostsService) {
     this.title.setTitle('Favoritos');
   }
 
@@ -45,7 +42,24 @@ export class FavoriteComponent {
     this.destroy$.next();
     this.destroy$.complete();
   }
+  desfavoritar(post: any, event: Event) {
+    event.stopPropagation();
+    this.postsService
+      .removerPostSalvo({ id: post.id })
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: () => {
+          this.savedPosts = this.savedPosts.filter((p) => p.id !== post.id);
+          this.postsTotais -= 1;
 
+          if (this.savedPosts.length === 0 && (this.pageable.page || 0) > 0) {
+            this.pageable.page = (this.pageable.page || 0) - 1;
+            this.listSavedPosts();
+          }
+        },
+        error: (err) => console.error('Erro ao remover favorito:', err),
+      });
+  }
   get isLoading(): boolean {
     return this.loading;
   }
@@ -85,7 +99,7 @@ export class FavoriteComponent {
 
   getFotoPerfil(user: any): string {
     return user?.fotoPerfil?.trim()
-      ? `data:image/jpg;base64,${user.fotoPerfil}`
+      ? `${user.fotoPerfil}`
       : '/icons/profile-placeholder.svg';
   }
 
@@ -102,36 +116,38 @@ export class FavoriteComponent {
   private listSavedPosts(): void {
     this.loading = true;
 
-    this.postsService.listarPostsSalvos({ pageable: this.pageable })
+    this.postsService
+      .listarPostsSalvos({ pageable: this.pageable })
       .pipe(
         takeUntil(this.destroy$),
-        catchError(error => {
+        catchError((error) => {
           console.error('Erro ao carregar posts salvos:', error);
           return of({
             content: [],
             totalElements: 0,
-            totalPages: 0
-          } );
+            totalPages: 0,
+          });
         }),
-        finalize(() => this.loading = false)
+        finalize(() => (this.loading = false))
       )
       .subscribe({
         next: (response: any) => {
           this.savedPosts = response.content || [];
           this.postsTotais = response.totalElements || 0;
           this.paginaTotal = response.totalPages || 0;
-        }
+        },
       });
   }
 
   removeFromFavorites(post: any, index: number): void {
     if (!post.id) return;
 
-    this.postsService.removerPostSalvo({ id: post.id })
+    this.postsService
+      .removerPostSalvo({ id: post.id })
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: () => {
-          this.savedPosts = this.savedPosts.filter(p => p.id !== post.id);
+          this.savedPosts = this.savedPosts.filter((p) => p.id !== post.id);
           this.postsTotais -= 1;
 
           if (this.savedPosts.length === 0 && (this.pageable.page || 0) > 0) {
@@ -139,7 +155,7 @@ export class FavoriteComponent {
             this.listSavedPosts();
           }
         },
-        error: (err) => console.error('Erro ao remover favorito:', err)
+        error: (err) => console.error('Erro ao remover favorito:', err),
       });
   }
 
