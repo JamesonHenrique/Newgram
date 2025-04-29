@@ -28,9 +28,6 @@ import org.springframework.web.multipart.MultipartFile;
 @Tag(name = "Autenticação", description = "API para autenticação e registro de usuários")
 public class AutenticacaoResource {
     private final AutenticacaoService autenticacaoService;
-
-
-
     @PostMapping(path = "/register", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @Operation(summary = "Registrar usuário", description = "Registra um novo usuário com foto de perfil")
     public ResponseEntity<TokenDTO> registrar(
