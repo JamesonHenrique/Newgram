@@ -142,7 +142,6 @@
     margin-bottom: 1.5rem;
     line-height: 1.4;
     display: -webkit-box;
-    -webkit-line-clamp: 3;
     -webkit-box-orient: vertical;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -458,7 +457,6 @@ box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
     }
 
     .person-bio {
-      -webkit-line-clamp: 2;
       font-size: 0.8rem;
       margin-bottom: 1rem;
     }
@@ -585,7 +583,6 @@ box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
     .person-bio {
       font-size: 0.75rem;
       margin-bottom: 0.75rem;
-      -webkit-line-clamp: 2;
     }
 
     .follow-btn,
@@ -810,9 +807,7 @@ s em telas pequenas */
       min-width: 110px;
     }
 
-    .person-bio {
-      -webkit-line-clamp: 1;
-    }
+
 
     .connection-card .follow-btn {
       padding: 0.3rem 0.6rem;
@@ -864,7 +859,6 @@ s em telas pequenas */
     }
 
     .person-bio {
-      -webkit-line-clamp: 1;
       margin-bottom: 0.75rem;
     }
 

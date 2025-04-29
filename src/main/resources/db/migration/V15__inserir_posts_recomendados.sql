@@ -115,9 +115,9 @@ INSERT INTO comentario (texto, data_criacao, autor_id, post_id, comentario_pai_i
 
 -- 7. Criar dados para recomendações similares para o usuário 2 (Sabrina Sato)
 -- Criar mais um post que seria recomendado, com hashtags que o usuário 2 curte
-INSERT INTO post (legenda, data_criacao, localizacao, arquivado, visibilidade, autor_id) VALUES
+INSERT INTO post (legenda, data_criacao, localizacao, arquivado, visibilidade, autor_id, imagem_url) VALUES
 ('Nos bastidores do novo projeto! Aguardem novidades em breve. #TV #Entretenimento',
- '2025-03-08 16:30:00', 'São Paulo, SP', false, 'PUBLICO', 7); -- Marcos Mion
+ '2025-03-08 16:30:00', 'São Paulo, SP', false, 'PUBLICO', 7,   'usuarios/marcosmion/posts/marcosmion_posts_3.jpg'); -- Marcos Mion
 
 -- Vincular hashtags ao post
 INSERT INTO post_hashtag (post_id, hashtag_id)

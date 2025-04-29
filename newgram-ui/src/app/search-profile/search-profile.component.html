@@ -103,7 +103,7 @@
             <p class="connection-username ">&#64;{{ connection.username }}</p>
             <p class="connection-mutual">{{ connection.commonFollowers }} amigos em comum</p>
           </div>
-          <button class="follow-btn" (click)="toggleFollowing(connection, $event)">Seguir</button>
+          <button class="follow-btn">Seguir</button>
         </div>
       </div>
     </section>
@@ -153,7 +153,7 @@
             >
               {{ person.bio }}
             </p>
-            <button (click)="toggleFollowing(person, $event)" class="follow-btn w-full">Seguir</button>
+            <button class="follow-btn w-full">Seguir</button>
           </div>
 
 

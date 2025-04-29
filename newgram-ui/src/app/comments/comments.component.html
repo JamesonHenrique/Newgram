@@ -3,7 +3,7 @@
 
   <div *ngFor="let comentario of comentariosSelected" class="comment">
     <img
-      [src]="getFotoPerfil(comentario)"
+      [src]="getFotoPerfil(comentario) "
       (error)="handleFotoPerfilError($event)"
       alt="Avatar do Usuário"
       class="w-10 h-10 rounded-full object-cover "

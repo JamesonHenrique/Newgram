@@ -1,6 +1,6 @@
-<div class="content-area">
+<div class="content-area overflow-hidden">
   <div
-    class="feed-container custom-scrollbar animate__slideInUp animate__animated"
+    class="feed-container custom-scrollbar animate__animated animate__slideInUp"
   >
     <h1 class="h1-bold max-w-3xl mx-auto mb-4 mr-1">Feed</h1>
     <div class="flex flex-col max-w-3xl mx-auto mr-1 animate-fadeIn">
@@ -110,6 +110,12 @@
           </label>
         </article>
       </div>
+      <div *ngIf="!hasMorePosts" class="end-of-feed-message text-center py-8 text-light-3">
+        {{ endOfPostsMessage }}
+      </div>
+    </div>
+    <div *ngIf="!hasMorePosts" class="end-of-feed-message text-center py-8 text-light-3">
+      {{ endOfPostsMessage }}
     </div>
   </div>
   <div
@@ -127,6 +133,7 @@
         <div
           class="creator-card flex flex-col items-center justify-center gap-2 bg-dark-4 rounded-lg lg:rounded-xl p-3 transition-all duration-300 hover:bg-dark-5 hover:-translate-y-1 hover:shadow-md"
           *ngFor="let topCreator of topCreators; let i = index"
+          (click)="verPerfil(topCreator.username)"
         >
           <img
             [src]="getFotoPerfil(topCreator)"
@@ -147,6 +154,7 @@
           </p>
           <button
             class="btn-follow mt-1 lg:mt-2 bg-primary-500 hover:bg-primary-600 text-white text-xs lg:text-sm font-medium py-1 px-3 lg:px-4 rounded-full transition-colors duration-200"
+            (click)="seguir(topCreators, $event)"
           >
             Seguir
           </button>

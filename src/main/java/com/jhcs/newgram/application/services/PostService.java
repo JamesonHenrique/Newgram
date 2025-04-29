@@ -224,11 +224,10 @@ public class PostService {
 
     @Transactional(readOnly = true)
     public Page<PostSummaryDTO> listarFeedDoUsuario(Long usuarioId, Pageable pageable) {
-        Sort sort = Sort.by(Sort.Direction.DESC, "dataCriacao");
         Pageable safePageable = PageRequest.of(
                 pageable.getPageNumber(),
                 pageable.getPageSize(),
-                sort
+                Sort.unsorted()
         );
         Page<Post> posts = postRepository.findFeedByUsuarioId(usuarioId, safePageable);
         return posts.map(post -> converterParaSummaryDTO(post, usuarioId));

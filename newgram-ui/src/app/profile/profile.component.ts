@@ -204,7 +204,9 @@ onHighlightCreated(newHighlight: any) {
       !!this.userProfile && this.userProfile.id === this.tokenService.userId
     );
   }
-
+  get nomeDoUsuario(): string {
+    return this.userProfile?.nome || '';
+  }
   private carregarPerfil() {
     if (!this.username) {
       return throwError(() => new Error('Username não definido'));

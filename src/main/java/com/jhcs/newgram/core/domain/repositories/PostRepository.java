@@ -15,7 +15,18 @@ public interface PostRepository extends JpaRepository<Post, Long> {
 
     Page<Post> findByAutorId(Long autorId, Pageable pageable);
 
-    @Query("SELECT p FROM Post p WHERE p.autor.id IN (SELECT s.seguido.id FROM Seguidor s WHERE s.seguidor.id = :usuarioId) AND p.arquivado = false ORDER BY p.dataCriacao DESC")
+    @Query(value = "SELECT p.* FROM post p " +
+            "LEFT JOIN (" +
+            "SELECT s.seguido_id FROM seguidor s WHERE s.seguidor_id = :usuarioId" +
+            ") f ON p.autor_id = f.seguido_id " +
+            "WHERE p.arquivado = false " +
+            "ORDER BY " +
+            "CASE WHEN f.seguido_id IS NOT NULL THEN 1 ELSE 0 END DESC, " +  // Prioritize followed content
+            "(SELECT COUNT(*) FROM curtida c WHERE c.post_id = p.id) * 0.6 + " +  // Weight by popularity
+            "(SELECT COUNT(*) FROM comentario cm WHERE cm.post_id = p.id) * 0.4 DESC, " +
+            "p.data_criacao DESC",
+            countQuery = "SELECT COUNT(*) FROM post p WHERE p.arquivado = false",
+            nativeQuery = true)
     Page<Post> findFeedByUsuarioId(@Param("usuarioId") Long usuarioId, Pageable pageable);
     @Query("SELECT p FROM Post p WHERE p.arquivado = false ORDER BY SIZE(p.curtidas) DESC")
     Page<Post> findPostsPopulares(Pageable pageable);

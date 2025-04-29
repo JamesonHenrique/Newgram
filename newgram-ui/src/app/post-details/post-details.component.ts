@@ -175,7 +175,7 @@ toggleLike(post: any, event: Event): void {
       setTimeout(() => {
         this.closeModal();
         this.isClosing = false;
-      }, 300); 
+      }, 300);
     }
   }
   closeModal(): void {

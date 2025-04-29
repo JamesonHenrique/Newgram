@@ -1,4 +1,4 @@
-<div class="main-layout">
+<div class="main-layout overflow-y-hidden">
   <div class="content-area">
     <div class="max-w-7xl mx-auto">
       <div class="profile-header animate__fadeIn animate__animated">
@@ -72,9 +72,7 @@
               <span>Mensagem</span>
             </button>
 
-            <button *ngIf="!isPerfilDoUsuarioLogado" class="more-options-btn">
-              <i class="fas fa-ellipsis-h"></i>
-            </button>
+
           </div>
         </div>
       </div>
@@ -153,8 +151,8 @@
             <h3 class="h3-bold mb-2">
               {{
                 isPerfilDoUsuarioLogado
-                  ? "Nenhum post criado"
-                  : "Usuário não tem posts"
+    ? `Você ainda não criou nenhum post.`
+    : `${nomeDoUsuario} ainda não publicou nenhum post.`
               }}
             </h3>
             <p

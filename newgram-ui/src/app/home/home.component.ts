@@ -75,20 +75,22 @@ export class HomeComponent {
     'beleza',
     'moda',
     'gastronomia',
-  ].filter((item, index, self) => self.indexOf(item) === index); // Remove duplicatas
-
+  ].filter((item, index, self) => self.indexOf(item) === index);
+  hasMorePosts = true;
+  endOfPostsMessage = "Você chegou ao final do feed! 🎉";
   constructor(
     private title: Title,
     private postsService: PostsService,
     private usuariosService: UsuariosService,
     private tokenService: TokenService,
-    private sanitizer: DomSanitizer,
+    private router: Router,
     private changeDetector: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
     this.title.setTitle('Feed');
     this.loadInitialData();
+    setTimeout(() => this.setupScrollListener(), 1000);
   }
 
   ngOnDestroy(): void {
@@ -109,6 +111,55 @@ export class HomeComponent {
         finalize(() => (this.loading = false))
       )
       .subscribe();
+  }
+  private setupScrollListener(): void {
+    const feedContainer = document.querySelector('.feed-container');
+    if (feedContainer) {
+      feedContainer.addEventListener('scroll', () => {
+        const { scrollTop, scrollHeight, clientHeight } = feedContainer;
+        const isNearBottom = scrollHeight - (scrollTop + clientHeight) < 100;
+
+        if (isNearBottom && !this.loading && this.hasMorePosts) {
+          this.loadMorePosts();
+        }
+      });
+    }
+  }
+  private loadMorePosts(): void {
+    if (this.loading || !this.hasMorePosts) return;
+
+    this.loading = true;
+    this.pageable.size = (this.pageable.size || 0) + 5;
+
+    this.postsService.listarFeed({ pageable: this.pageable })
+      .pipe(
+        takeUntil(this.destroy$),
+        finalize(() => this.loading = false)
+      )
+      .subscribe({
+        next: (response) => {
+          const newPosts = response.content || [];
+
+          if (newPosts.length <= this.posts.length) {
+            this.hasMorePosts = false;
+            return;
+          }
+
+          this.posts = newPosts.map((post: any) => ({
+            ...post,
+            isLiked: post.curtidoPeloUsuario,
+            isFavorite: post.salvoPeloUsuario,
+            isAnimating: false,
+            isFavAnimating: false,
+          }));
+        },
+        error: (error) => {
+          console.error('Erro ao carregar mais posts:', error);
+        }
+      });
+  }
+  verPerfil(username: string): void {
+    this.router.navigate(['/perfil', username]);
   }
 
   getFotoPerfil(user: any): string {
@@ -197,6 +248,10 @@ export class HomeComponent {
     event.preventDefault();
     this.postSelected = post;
     this.showDetail = true;
+  }
+  seguir(user:any, event:Event) {
+    event.stopPropagation();
+
   }
 
   toggleLike(post: any, event: Event): void {

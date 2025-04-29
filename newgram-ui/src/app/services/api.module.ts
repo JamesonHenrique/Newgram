@@ -10,6 +10,7 @@ import { UsuariosService } from './services/usuarios.service';
 import { PostsService } from './services/posts.service';
 import { ComentariosService } from './services/comentarios.service';
 import { AutenticacaoService } from './services/autenticacao.service';
+import { ImageCacheService } from './cache/image-cache.service';
 
 /**
  * Module that provides all services and configuration.
@@ -23,7 +24,8 @@ import { AutenticacaoService } from './services/autenticacao.service';
     PostsService,
     ComentariosService,
     AutenticacaoService,
-    ApiConfiguration
+    ApiConfiguration,
+    ImageCacheService
   ],
 })
 export class ApiModule {
@@ -39,7 +41,7 @@ export class ApiModule {
     }
   }
 
-  constructor( 
+  constructor(
     @Optional() @SkipSelf() parentModule: ApiModule,
     @Optional() http: HttpClient
   ) {
