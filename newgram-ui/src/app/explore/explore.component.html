@@ -222,8 +222,28 @@
                 <span
                   class="flex items-center gap-1 text-gray-400 text-[10px] xs:text-xs sm:text-sm"
                 >
-                  <i class="far fa-heart btn-icon"></i>
-                  <span>{{ post.numeroCurtidas | formatNumber }}</span>
+                <button
+                class="flex-center gap-1 text-light-1 hover:text-primary-custom transition"
+                (click)="toggleLike(post, $event)"
+                [ngClass]="{
+                  'text-red': post.isLiked,
+                  'hover:text-primary-custom': !post.isLiked
+                }"
+              >
+                <i
+                  class="fa-heart btn-icon text-xl"
+                  [ngClass]="{
+                    fas: post.isLiked,
+                    far: !post.isLiked
+                  }"
+                  [ngStyle]="{
+                    transform: post.isAnimating ? 'scale(1.2)' : 'scale(1)'
+                  }"
+                ></i>
+                <span class="small-medium">{{
+                  post.numeroCurtidas | formatNumber
+                }}</span>
+              </button>
                 </span>
                 <span
                   class="flex items-center gap-1 text-gray-400 text-[10px] xs:text-xs sm:text-sm"
@@ -232,7 +252,28 @@
                   <span>{{ post.numeroComentarios | formatNumber }}</span>
                 </span>
               </div>
-              <i (click)="toggleFavorite(post, $event)" class="far fa-bookmark text-gray-400 hover:text-primary-500 cursor-pointer text-xs sm:text-sm"></i>
+              <button
+              class="flex-center gap-1 text-light-1 hover:text-primary-custom transition"
+              (click)="toggleFavorite(post, $event)"
+              [ngClass]="{
+                'text-yellow-400': post.isFavorite,
+                'hover:text-primary-custom': !post.isFavorite
+              }"
+            >
+              <i
+                class="fa-bookmark btn-icon text-xl"
+                [ngClass]="{
+                  fas: post.isFavorite,
+                  far: !post.isFavorite
+                }"
+                [ngStyle]="{
+                  transform: post.isFavAnimating ? 'scale(1.2)' : 'scale(1)'
+                }"
+              ></i>
+              <span *ngIf="post.numeroFavoritos > 0" class="small-medium">
+                {{ post.numeroFavoritos | formatNumber }}
+              </span>
+            </button>
             </div>
           </div>
         </div>
@@ -243,7 +284,7 @@
       style="animation-delay: 0.5s"
     >
       <div
-        *ngIf="!pesquisaOcorreu && postsRecomendados.length > 0"
+        *ngIf="!pesquisaOcorreu && viralPosts.length > 0"
         class="trending-header flex justify-between items-center mb-2 sm:mb-4"
       >
         <h3 class="font-semibold text-primary-custom text-sm sm:text-lg">
