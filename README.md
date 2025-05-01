@@ -199,7 +199,7 @@ classDiagram
     note for Usuario "Entidade central do sistema\ncontendo todos os dados do usuário"
     note for Post "Conteúdo principal do sistema\ncom controle de visibilidade"
     note for Storie "Conteúdo temporário\nexpira após 24h"
-
+```
 ## 🛠️ Tecnologias
 
 
