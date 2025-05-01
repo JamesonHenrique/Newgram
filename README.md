@@ -102,9 +102,7 @@ classDiagram
     Usuario "1" *-- "1" StatusUsuario : possui
     Usuario "1" *-- "0..*" Salvos : salvou
     Usuario "1" *-- "0..*" Notificacao : recebeu
-    Usuario "1" *-- "0..*" Mensagem : enviou
-    Usuario "1" *-- "0..*" Mensagem : recebeu
-    Usuario "1" *-- "0..*" Conversa : participa
+
     Usuario "1" *-- "0..*" Usuario : segue
     Usuario "1" *-- "0..*" Usuario : seguidoPor
 
