@@ -17,11 +17,6 @@
 
 [![Demo Newgram](https://img.shields.io/badge/🚀_Acesse_o_Newgram-FF6B6B?style=for-the-badge&logo=vercel&logoColor=white)](https://newgram-nine.vercel.app/)
 
-<p>Experimente agora mesmo a nova geração de redes sociais!</p>
-
-[![Web Preview](https://img.shields.io/badge/📱_Mobile_Ready-9cf?style=flat-square)]() 
-[![PWA](https://img.shields.io/badge/📲_Instalável_PWA-4285F4?style=flat-square&logo=progressive-web-apps)]() 
-[![Performance](https://img.shields.io/badge/⚡_High_Performance-00C58E?style=flat-square&logo=pagespeed-insights)]()
 
 </div>
 
