@@ -8,15 +8,13 @@
 
   <p>Conectando pessoas através de conteúdos significativos</p>
 
-  [![GitHub Release](https://img.shields.io/github/v/release/JamesonHenrique/Newgram?include_prereleases&style=for-the-badge&color=ff69b4)](https://github.com/JamesonHenrique/Newgram/releases)
-  [![GitHub stars](https://img.shields.io/github/stars/JamesonHenrique/Newgram?style=social&logo=reverbnation&label=Stars)](https://github.com/JamesonHenrique/Newgram/stargazers)
-  [![GitHub last commit](https://img.shields.io/github/last-commit/JamesonHenrique/Newgram?color=9cf&logo=git&logoColor=white)](https://github.com/JamesonHenrique/Newgram/commits/main)
-  [![License](https://img.shields.io/badge/license-MIT-blue?logo=creativecommons)](LICENSE)
-  [![Open Issues](https://img.shields.io/github/issues-raw/JamesonHenrique/Newgram?color=red&logo=github)](https://github.com/JamesonHenrique/Newgram/issues)
+[![GitHub Release](https://img.shields.io/github/v/release/JamesonHenrique/Newgram?include_prereleases&style=for-the-badge&color=392E9F)](https://github.com/JamesonHenrique/Newgram/releases)
+[![GitHub stars](https://img.shields.io/github/stars/JamesonHenrique/Newgram?style=social&logo=reverbnation&label=Stars&color=392E9F)](https://github.com/JamesonHenrique/Newgram/stargazers)
+[![GitHub last commit](https://img.shields.io/github/last-commit/JamesonHenrique/Newgram?color=5147B5&logo=git&logoColor=white)](https://github.com/JamesonHenrique/Newgram/commits/main)
+[![License](https://img.shields.io/badge/license-MIT-6A5ACD?logo=creativecommons)](LICENSE)
+[![Open Issues](https://img.shields.io/github/issues-raw/JamesonHenrique/Newgram?color=7B68EE&logo=github)](https://github.com/JamesonHenrique/Newgram/issues)
 
-
-[![Demo Newgram](https://img.shields.io/badge/🚀_Acesse_o_Newgram-FF6B6B?style=for-the-badge&logo=vercel&logoColor=white)](https://newgram-nine.vercel.app/)
-
+[![Demo Newgram](https://img.shields.io/badge/🚀_Acesse_o_Newgram-392E9F?style=for-the-badge&logo=vercel&logoColor=white)](https://newgram-nine.vercel.app/)
 
 </div>
 
