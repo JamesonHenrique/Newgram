@@ -112,7 +112,6 @@ classDiagram
     Post "1" *-- "0..*" Usuario : marcou
     Post "1" *-- "0..*" Salvos : salvoEm
 
-    Conversa "1" *-- "1" Usuario : criadoPor
 
     %% Classes de Suporte
     class Comentario {
