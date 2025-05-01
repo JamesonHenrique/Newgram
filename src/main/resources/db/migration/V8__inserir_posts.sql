@@ -15,7 +15,7 @@ INSERT INTO hashtag (nome) VALUES
 INSERT INTO post (legenda, data_criacao, localizacao, arquivado, visibilidade, autor_id, imagem_url) VALUES
 ('Mais um dia de gravação! Adoro meu trabalho! 📺', '2025-03-20 10:00:00', 'São Paulo, SP', false, 'PUBLICO', 1,'usuarios/rodrigofaro/posts/rodrigofaro_posts_2.jpg'),
 ('Viagem incrível para o Japão! 🇯🇵', '2025-03-21 09:00:00', 'Tokyo, Japão', false, 'PUBLICO', 2, 'usuarios/sabrinasato/posts/sabrinasato_posts_2.jpg'),
-('Dia de gravação especial no Japão! 🇯🇵', '2025-03-21 11:00:00', 'Tokyo, Japão', false, 'PUBLICO', 3, 'usuarios/lucianohuck/posts/lucianohuck_posts_3.webp'),
+('Dia de gravação especial no Japão! 🇯🇵', '2025-03-21 11:00:00', 'Tokyo, Japão', false, 'PUBLICO', 3, 'usuarios/lucianohuck/posts/lucianohuck_posts_4.jpg'),
 ('Preparativos finais para o programa de domingo. Vai ser incrível!', '2025-03-22 12:00:00', 'Rio de Janeiro, RJ', false, 'PUBLICO',4, 'usuarios/ivetesangalo/posts/ivetesangalo_posts_2.webp'),
 ('Treino matinal. Foco, força e determinação! ⚽', '2025-03-23 13:00:00','Paris, França', false, 'PUBLICO', 5, 'usuarios/neymarjr/posts/neymarjr_posts_2.jpg'),
 ('Ensaio para o show de hoje! Energia total! 🎵', '2025-03-24 14:00:00', 'Salvador, BA', false, 'PUBLICO', 6, 'usuarios/anitta/posts/anitta_posts_2.jpg'),
