@@ -53,8 +53,11 @@ O Newgram redefine a experiência de compartilhamento de conteúdo, oferecendo:
 
 ```mermaid
 classDiagram
-    %% Entidades Principais
+    direction TB
+    
+    %% ==================== ENTIDADES PRINCIPAIS ====================
     class Usuario {
+        <<Entity>>
         +Long id
         +String nome
         +String username
@@ -71,6 +74,7 @@ classDiagram
     }
 
     class Post {
+        <<Entity>>
         +Long id
         +String legenda
         +Date dataCriacao
@@ -85,6 +89,7 @@ classDiagram
     }
 
     class Storie {
+        <<Entity>>
         +Long id
         +Date dataCriacao
         +Date dataExpiracao
@@ -94,28 +99,9 @@ classDiagram
         +List~Usuario~ marcacoes
     }
 
-
-
-    %% Relacionamentos Complexos
-    Usuario "1" *-- "0..*" Post : autor
-    Usuario "1" *-- "0..*" Storie : autor
-    Usuario "1" *-- "1" StatusUsuario : possui
-    Usuario "1" *-- "0..*" Salvos : salvou
-    Usuario "1" *-- "0..*" Notificacao : recebeu
-
-    Usuario "1" *-- "0..*" Usuario : segue
-    Usuario "1" *-- "0..*" Usuario : seguidoPor
-
-    Post "1" *-- "0..*" Comentario : tem
-    Post "1" *-- "0..*" Curtida : recebeu
-    Post "1" *-- "0..*" Hashtag : marcadoCom
-    Post "1" *-- "0..*" Usuario : marcou
-    Post "1" *-- "0..*" Salvos : salvoEm
-
-    Conversa "1" *-- "1" Usuario : criadoPor
-
-    %% Classes de Suporte
+    %% ==================== ENTIDADES DE SUPORTE ====================
     class Comentario {
+        <<Entity>>
         +Long id
         +String texto
         +Date dataCriacao
@@ -123,22 +109,26 @@ classDiagram
     }
 
     class Curtida {
+        <<Entity>>
         +Long id
         +Date dataCriacao
     }
 
     class Hashtag {
+        <<Entity>>
         +Long id
         +String nome
     }
 
     class Salvos {
+        <<Entity>>
         +Long id
         +Date dataSalvo
         +String colecao
     }
 
     class Notificacao {
+        <<Entity>>
         +Long id
         +TipoNotificacao tipo
         +String conteudo
@@ -147,6 +137,7 @@ classDiagram
     }
 
     class StatusUsuario {
+        <<Value Object>>
         +Long id
         +boolean online
         +Date ultimoAcesso
@@ -154,26 +145,20 @@ classDiagram
     }
 
     class Destaque {
+        <<Entity>>
         +Long id
         +String nome
         +Date dataCriacao
         +List~Storie~ stories
     }
 
-
-    %% Relacionamentos Adicionais
-    Comentario "1" *-- "0..*" Curtida : recebeu
-    Comentario "1" *-- "0..*" Comentario : respostas
-    Storie "1" *-- "0..*" Destaque : emDestaque
-
-    %% Enums
+    %% ==================== ENUMS ====================
     class TipoVisibilidade {
         <<enum>>
         PUBLICO
         PRIVADO
         SOMENTE_SEGUIDORES
     }
-
 
     class TipoNotificacao {
         <<enum>>
@@ -190,9 +175,30 @@ classDiagram
         FOTO_PERFIL
         STORIE
         FOTO_DESTAQUE
-
     }
-```
+
+    %% ==================== RELACIONAMENTOS PRINCIPAIS ====================
+    Usuario ||--o{ Post : "1..* cria"
+    Usuario ||--o{ Storie : "1..* cria"
+    Usuario ||--o{ Usuario : "0..* segue"
+    Usuario ||--|{ StatusUsuario : "1 possui"
+    Usuario ||--o{ Salvos : "0..* salva"
+    Usuario ||--o{ Notificacao : "0..* recebe"
+
+    Post ||--o{ Comentario : "0..* tem"
+    Post ||--o{ Curtida : "0..* recebe"
+    Post ||--o{ Hashtag : "0..* marcado com"
+    Post ||--o{ Usuario : "0..* marca usuários"
+    Post ||--o{ Salvos : "0..* salvo em"
+
+    Storie ||--o{ Destaque : "0..* em destaque"
+    Comentario ||--o{ Curtida : "0..* recebe"
+    Comentario ||--o{ Comentario : "0..* respostas"
+
+    %% ==================== LEGENDA ====================
+    note for Usuario "Entidade central do sistema\ncontendo todos os dados do usuário"
+    note for Post "Conteúdo principal do sistema\ncom controle de visibilidade"
+    note for Storie "Conteúdo temporário\nexpira após 24h"
 
 ## 🛠️ Tecnologias
 
