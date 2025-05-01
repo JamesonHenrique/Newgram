@@ -53,7 +53,7 @@ O Newgram redefine a experiência de compartilhamento de conteúdo, oferecendo:
 
 ```mermaid
 classDiagram
-    %% Entidades Principais
+    %% ================ MAIN ENTITIES ================
     class Usuario {
         +Long id
         +String nome
@@ -94,26 +94,7 @@ classDiagram
         +List~Usuario~ marcacoes
     }
 
-
-
-    %% Relacionamentos Complexos
-    Usuario "1" *-- "0..*" Post : autor
-    Usuario "1" *-- "0..*" Storie : autor
-    Usuario "1" *-- "1" StatusUsuario : possui
-    Usuario "1" *-- "0..*" Salvos : salvou
-    Usuario "1" *-- "0..*" Notificacao : recebeu
-
-    Usuario "1" *-- "0..*" Usuario : segue
-    Usuario "1" *-- "0..*" Usuario : seguidoPor
-
-    Post "1" *-- "0..*" Comentario : tem
-    Post "1" *-- "0..*" Curtida : recebeu
-    Post "1" *-- "0..*" Hashtag : marcadoCom
-    Post "1" *-- "0..*" Usuario : marcou
-    Post "1" *-- "0..*" Salvos : salvoEm
-
-
-    %% Classes de Suporte
+    %% ================ SUPPORT CLASSES ================
     class Comentario {
         +Long id
         +String texto
@@ -159,19 +140,13 @@ classDiagram
         +List~Storie~ stories
     }
 
-
-    %% Relacionamentos Adicionais
-    Comentario "1" *-- "0..*" Comentario : respostas
-    Storie "1" *-- "0..*" Destaque : emDestaque
-
-    %% Enums
+    %% ================ ENUMS ================
     class TipoVisibilidade {
         <<enum>>
         PUBLICO
         PRIVADO
         SOMENTE_SEGUIDORES
     }
-
 
     class TipoNotificacao {
         <<enum>>
@@ -188,8 +163,37 @@ classDiagram
         FOTO_PERFIL
         STORIE
         FOTO_DESTAQUE
-
     }
+
+    %% ================ RELATIONSHIPS ================
+    %% User relationships
+    Usuario "1" *-- "0..*" Post : cria
+    Usuario "1" *-- "0..*" Storie : publica
+    Usuario "1" *-- "1" StatusUsuario : possui
+    Usuario "1" *-- "0..*" Salvos : salva
+    Usuario "1" *-- "0..*" Notificacao : recebe
+    
+    %% User following relationships
+    Usuario "0..*" -- "0..*" Usuario : segue
+    
+    %% Post relationships
+    Post "1" *-- "0..*" Comentario : contém
+    Post "1" *-- "0..*" Curtida : recebe
+    Post "1" *-- "0..*" Hashtag : marcadoCom
+    Post "0..*" -- "0..*" Usuario : marcadoPor
+    Post "1" *-- "0..*" Salvos : salvoEm
+    
+    %% Comment relationships
+    Comentario "1" *-- "0..*" Comentario : respondePara
+    
+    %% Storie relationships
+    Storie "0..*" -- "0..*" Usuario : visualizadoPor
+    Storie "0..*" -- "0..*" Usuario : marcadoPor
+    Storie "0..*" -- "1" Destaque : destacadoEm
+    
+    %% Like relationships
+    Curtida -- Usuario : feitaPor
+    Curtida --|> Comentario : opcional
 ```
 
 ## 🛠️ Tecnologias
