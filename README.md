@@ -300,16 +300,6 @@ A documentação da API está disponível através do Swagger UI:
 http://localhost:8080/swagger-ui.html
 ```
 
-
-
-Principais endpoints:
-
-| Método | Endpoint | Descrição | Exemplo |
-|--------|----------|-----------|---------|
-| `POST` | `/auth/login` | Autenticação | [![Run in Postman](https://run.pstmn.io/button.svg)](https://app.getpostman.com/run-collection/12345) |
-| `GET` | `/content?tags=` | Busca filtrada | `curl -X GET "http://localhost:8080/content?tags=tech"` |
-
-
 ## 🤝 Como Contribuir
 
 Siga nosso fluxo de colaboração:
