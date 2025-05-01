@@ -13,6 +13,16 @@
   [![GitHub last commit](https://img.shields.io/github/last-commit/JamesonHenrique/Newgram?color=9cf&logo=git&logoColor=white)](https://github.com/JamesonHenrique/Newgram/commits/main)
   [![License](https://img.shields.io/badge/license-MIT-blue?logo=creativecommons)](LICENSE)
   [![Open Issues](https://img.shields.io/github/issues-raw/JamesonHenrique/Newgram?color=red&logo=github)](https://github.com/JamesonHenrique/Newgram/issues)
+
+
+[![Demo Newgram](https://img.shields.io/badge/🚀_Acesse_o-FF6B6B?style=for-the-badge&logo=vercel&logoColor=white)](https://newgram-nine.vercel.app/)
+
+<p>Experimente agora mesmo a nova geração de redes sociais!</p>
+
+[![Web Preview](https://img.shields.io/badge/📱_Mobile_Ready-9cf?style=flat-square)]() 
+[![PWA](https://img.shields.io/badge/📲_Instalável_PWA-4285F4?style=flat-square&logo=progressive-web-apps)]() 
+[![Performance](https://img.shields.io/badge/⚡_High_Performance-00C58E?style=flat-square&logo=pagespeed-insights)]()
+
 </div>
 
 ## 🌟 Destaques do Projeto
