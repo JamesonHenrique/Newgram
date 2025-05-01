@@ -81,7 +81,7 @@ export class EditProfileModalComponent {
   }
 
   ngOnChanges() {
-    if (this.userProfile) {
+    if (this.userProfile && this.editForm) { 
       this.editForm.setValue({
         nome: this.userProfile?.nome,
         bio: this.userProfile?.bio,
