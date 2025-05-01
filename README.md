@@ -161,7 +161,6 @@ classDiagram
 
 
     %% Relacionamentos Adicionais
-    Comentario "1" *-- "0..*" Curtida : recebeu
     Comentario "1" *-- "0..*" Comentario : respostas
     Storie "1" *-- "0..*" Destaque : emDestaque
 
