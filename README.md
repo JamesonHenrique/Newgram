@@ -15,7 +15,7 @@
   [![Open Issues](https://img.shields.io/github/issues-raw/JamesonHenrique/Newgram?color=red&logo=github)](https://github.com/JamesonHenrique/Newgram/issues)
 
 
-[![Demo Newgram](https://img.shields.io/badge/🚀_Acesse_o-FF6B6B?style=for-the-badge&logo=vercel&logoColor=white)](https://newgram-nine.vercel.app/)
+[![Demo Newgram](https://img.shields.io/badge/🚀_Acesse_o_Newgram-FF6B6B?style=for-the-badge&logo=vercel&logoColor=white)](https://newgram-nine.vercel.app/)
 
 <p>Experimente agora mesmo a nova geração de redes sociais!</p>
 
