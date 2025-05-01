@@ -20,21 +20,37 @@ export interface AtualizarUsuario$Params {
       body: UsuarioUpdateDto
 }
 
-export function atualizarUsuario(http: HttpClient, rootUrl: string, params: AtualizarUsuario$Params, context?: HttpContext): Observable<StrictHttpResponse<UsuarioResponseDto>> {
+
+export function atualizarUsuario(
+  http: HttpClient,
+  rootUrl: string,
+  params: AtualizarUsuario$Params,
+  context?: HttpContext
+): Observable<StrictHttpResponse<UsuarioResponseDto>> {
   const rb = new RequestBuilder(rootUrl, atualizarUsuario.PATH, 'put');
   if (params) {
+    const formData = new FormData();
+    formData.append('nome', params.body.nome ?? '');
+    formData.append('username', params.body.username ?? '');
+    formData.append('bio', params.body.bio ?? '');
+    if (params.body.fotoPerfil) {
+      formData.append('fotoPerfil', params.body.fotoPerfil);
+    }
     rb.path('id', params.id, {});
-    rb.body(params.body, 'application/json');
+    rb.body(formData);
   }
 
-  return http.request(
-    rb.build({ responseType: 'json', accept: '*/*', context })
-  ).pipe(
-    filter((r: any): r is HttpResponse<any> => r instanceof HttpResponse),
-    map((r: HttpResponse<any>) => {
-      return r as StrictHttpResponse<UsuarioResponseDto>;
-    })
-  );
+  return http
+    .request(
+      rb.build({ responseType: 'json', accept: 'application/json', context })
+    )
+    .pipe(
+      filter((r: any): r is HttpResponse<any> => r instanceof HttpResponse),
+      map((r: HttpResponse<any>) => {
+        return r as StrictHttpResponse<UsuarioResponseDto>;
+      })
+    );
 }
 
 atualizarUsuario.PATH = '/usuarios/{id}';
+

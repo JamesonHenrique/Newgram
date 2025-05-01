@@ -29,17 +29,16 @@ import java.util.function.Function;
 public class JwtService {
     private static final Logger logger = LoggerFactory.getLogger(JwtService.class);
 
-    @Value("${jwt.access.expiration:86400000}") // Padrão: 24 horas
+    @Value("${jwt.access.expiration:86400000}")
     private long accessTokenExpiration;
 
-    @Value("${jwt.refresh.expiration:604800000}") // Padrão: 7 dias
+    @Value("${jwt.refresh.expiration:604800000}")
     private long refreshTokenExpiration;
 
     private PrivateKey privateKey;
     private PublicKey publicKey;
     private final UserDetailsService userDetailsService;
 
-    // Armazenamento para tokens invalidados
     private final Set<String> blacklistedTokens = ConcurrentHashMap.newKeySet();
 
     public JwtService(UserDetailsService userDetailsService) {

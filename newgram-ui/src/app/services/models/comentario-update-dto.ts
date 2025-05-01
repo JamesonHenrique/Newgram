@@ -7,5 +7,9 @@
  * Dados para atualização do comentário
  */
 export interface ComentarioUpdateDto {
+
+  /**
+   * Novo texto do comentário
+   */
   texto?: string;
 }

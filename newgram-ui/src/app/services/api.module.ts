@@ -8,9 +8,12 @@ import { ApiConfiguration, ApiConfigurationParams } from './api-configuration';
 
 import { UsuariosService } from './services/usuarios.service';
 import { PostsService } from './services/posts.service';
+import { DestaquesService } from './services/destaques.service';
 import { ComentariosService } from './services/comentarios.service';
+import { StoriesService } from './services/stories.service';
 import { AutenticacaoService } from './services/autenticacao.service';
-import { ImageCacheService } from './cache/image-cache.service';
+import { SeguidoresService } from './services/seguidores.service';
+import { HashtagsService } from './services/hashtags.service';
 
 /**
  * Module that provides all services and configuration.
@@ -22,10 +25,13 @@ import { ImageCacheService } from './cache/image-cache.service';
   providers: [
     UsuariosService,
     PostsService,
+    DestaquesService,
     ComentariosService,
+    StoriesService,
     AutenticacaoService,
-    ApiConfiguration,
-    ImageCacheService
+    SeguidoresService,
+    HashtagsService,
+    ApiConfiguration
   ],
 })
 export class ApiModule {
@@ -41,7 +47,7 @@ export class ApiModule {
     }
   }
 
-  constructor(
+  constructor( 
     @Optional() @SkipSelf() parentModule: ApiModule,
     @Optional() http: HttpClient
   ) {

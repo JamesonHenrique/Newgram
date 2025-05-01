@@ -7,8 +7,24 @@
  * Dados do post a ser criado
  */
 export interface PostCreateDto {
+
+  /**
+   * Lista de hashtags associadas ao post
+   */
   hashtags?: Array<string>;
+
+  /**
+   * Legenda do post (máximo de 2200 caracteres)
+   */
   legenda?: string;
+
+  /**
+   * Localização associada ao post
+   */
   localizacao?: string;
+
+  /**
+   * Visibilidade do post (padrão: público)
+   */
   visibilidade?: 'PUBLICO' | 'PRIVADO' | 'SOMENTE_SEGUIDORES';
 }

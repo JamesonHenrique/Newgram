@@ -8,7 +8,9 @@ import com.jhcs.newgram.core.domain.repositories.PostRepository;
 import com.jhcs.newgram.infrastructure.exception.ResourceNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -34,7 +36,13 @@ public class HashtagService {
 
     @Transactional(readOnly = true)
     public Page<HashtagSummaryDTO> listarHashtagsPopulares(Pageable pageable) {
-        Page<Object[]> hashtagsPopulares = hashtagRepository.findHashtagsPopulares(pageable);
+
+        Pageable safePageable = PageRequest.of(
+                pageable.getPageNumber(),
+                pageable.getPageSize(),
+                Sort.unsorted()
+        );
+        Page<Object[]> hashtagsPopulares = hashtagRepository.findHashtagsPopulares(safePageable);
 
         return hashtagsPopulares.map(resultado -> {
             HashtagSummaryDTO dto = new HashtagSummaryDTO();
@@ -42,6 +50,14 @@ public class HashtagService {
             dto.setQuantidadePosts(((Number) resultado[1]).longValue());
             return dto;
         });
+    }
+
+    @Transactional(readOnly = true)
+    public List<HashtagSummaryDTO> listarHashtagsPorPostId(Long postId) {
+        List<Hashtag> hashtags = hashtagRepository.findByPostId(postId);
+        return hashtags.stream()
+                .map(this::converterParaSummaryDTO)
+                .collect(Collectors.toList());
     }
 
     @Transactional(readOnly = true)
@@ -55,12 +71,17 @@ public class HashtagService {
 
     @Transactional(readOnly = true)
     public Page<HashtagSummaryDTO> buscarHashtags(String termo, Pageable pageable) {
-        Page<Hashtag> hashtags = hashtagRepository.findByNomeContainingIgnoreCase(termo, pageable);
+        Pageable safePageable = PageRequest.of(
+                pageable.getPageNumber(),
+                pageable.getPageSize(),
+                Sort.unsorted()
+        );
+        Page<Hashtag> hashtags = hashtagRepository.findByNomeContainingIgnoreCase(termo, safePageable);
 
         return hashtags.map(this::converterParaSummaryDTO);
     }
 
-    // Métodos auxiliares
+
 
     private HashtagResponseDTO converterParaResponseDTO(Hashtag hashtag) {
         HashtagResponseDTO dto = new HashtagResponseDTO();

@@ -42,12 +42,16 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
     @Query("SELECT u FROM Usuario u " +
             "LEFT JOIN Seguidor s ON u.id = s.seguido.id " +
             "WHERE u.id NOT IN (SELECT s.seguido.id FROM Seguidor s WHERE s.seguidor.id = :usuarioId) " +
+            "AND u.id <> :usuarioId " +
             "GROUP BY u.id " +
             "ORDER BY COUNT(s) DESC, u.dataCriacao DESC")
     Page<Usuario> findSugestoesUsuarios(@Param("usuarioId") Long usuarioId, Pageable pageable);
     @Query("SELECT u FROM Usuario u " +
             "LEFT JOIN Seguidor s ON u.id = s.seguido.id " +
+            "AND u.id <> :usuarioId " +
             "GROUP BY u.id " +
             "ORDER BY COUNT(s) DESC")
-    Page<Usuario> findUsuariosMaisFamosos(Pageable pageable);
+    Page<Usuario> findUsuariosMaisFamosos(Pageable pageable, @Param("usuarioId") Long usuarioId);
+@Query("SELECT u FROM Usuario u WHERE u.id = :publicId")
+Optional<Usuario>  findByPublicId(@Param("publicId") String receiverId);
 }

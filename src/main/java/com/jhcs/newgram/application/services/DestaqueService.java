@@ -1,20 +1,22 @@
 package com.jhcs.newgram.application.services;
 
-import com.jhcs.newgram.application.dtos.arquivo.ArquivoDTO;
 import com.jhcs.newgram.application.dtos.destaque.DestaqueCreateDTO;
 import com.jhcs.newgram.application.dtos.destaque.DestaqueResponseDTO;
 import com.jhcs.newgram.application.dtos.destaque.DestaqueSummaryDTO;
 import com.jhcs.newgram.application.dtos.destaque.DestaqueUpdateDTO;
 import com.jhcs.newgram.application.dtos.storie.StorieResponseDTO;
-import com.jhcs.newgram.core.domain.entities.Arquivo;
 import com.jhcs.newgram.core.domain.entities.Destaque;
 import com.jhcs.newgram.core.domain.entities.Storie;
 import com.jhcs.newgram.core.domain.entities.Usuario;
+import com.jhcs.newgram.core.domain.enums.TipoArquivo;
 import com.jhcs.newgram.core.domain.repositories.DestaqueRepository;
 import com.jhcs.newgram.core.domain.repositories.StorieRepository;
 import com.jhcs.newgram.core.domain.repositories.UsuarioRepository;
+import com.jhcs.newgram.infrastructure.aws.S3StorageService;
 import com.jhcs.newgram.infrastructure.exception.BusinessException;
 import com.jhcs.newgram.infrastructure.exception.ResourceNotFoundException;
+import com.jhcs.newgram.infrastructure.exception.UnauthorizedException;
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -36,9 +38,10 @@ public class DestaqueService {
 
     @Autowired
     private StorieRepository storieRepository;
-
     @Autowired
     private ArquivoService arquivoService;
+    @Autowired
+    private S3StorageService s3StorageService;
 
     @Transactional
     public DestaqueResponseDTO criarDestaque(DestaqueCreateDTO dto, Long usuarioId) {
@@ -51,13 +54,11 @@ public class DestaqueService {
         destaque.setUsuario(usuario);
         destaque.setStories(new ArrayList<>());
 
-        // Adicionar stories ao destaque, se fornecidos
         if (dto.getStoriesIds() != null && !dto.getStoriesIds().isEmpty()) {
             for (Long storieId : dto.getStoriesIds()) {
                 Storie storie = storieRepository.findById(storieId)
                         .orElseThrow(() -> new ResourceNotFoundException("Storie não encontrado: " + storieId));
 
-                // Verificar se o story pertence ao usuário
                 if (!storie.getAutor().getId().equals(usuarioId)) {
                     throw new BusinessException("Você só pode adicionar seus próprios stories ao destaque");
                 }
@@ -67,7 +68,25 @@ public class DestaqueService {
         }
 
         destaque = destaqueRepository.save(destaque);
+        if (dto.getCapaDeDestaque() != null && !dto.getCapaDeDestaque().isEmpty()) {
+            salvarCapaDeDestaque(destaque.getId(), usuarioId, dto.getCapaDeDestaque());
+        }
+
         return converterParaResponseDTO(destaque, true);
+    }
+
+    @Transactional
+    public void salvarCapaDeDestaque(Long destaqueId, Long usuarioId, MultipartFile file) {
+        Usuario usuario = usuarioRepository.findById(usuarioId)
+                .orElseThrow(() -> new EntityNotFoundException("Nenhum usuario encontrado com o ID: " + usuarioId));
+        Destaque destaque = destaqueRepository.findById(destaqueId)
+                .orElseThrow(() -> new EntityNotFoundException("Nenhum destaque encontrado com o ID: " + destaqueId));
+        if (!destaque.getUsuario().getId().equals(usuarioId)) {
+            throw new UnauthorizedException("Você não tem permissão para adicionar capa a este destaque");
+        }
+        var capaDeDestaque = arquivoService.saveFile(file, usuario.getUsuarioName(), TipoArquivo.FOTO_DESTAQUE);
+        destaque.setDestaqueFotoDeCapaUrl(capaDeDestaque);
+        destaqueRepository.save(destaque);
     }
 
     @Transactional
@@ -87,13 +106,11 @@ public class DestaqueService {
         }
 
 
-        // Adicionar novos stories
         if (dto.getStoriesParaAdicionar() != null && !dto.getStoriesParaAdicionar().isEmpty()) {
             for (Long storieId : dto.getStoriesParaAdicionar()) {
                 Storie storie = storieRepository.findById(storieId)
                         .orElseThrow(() -> new ResourceNotFoundException("Storie não encontrado: " + storieId));
 
-                // Verificar se o story pertence ao usuário
                 if (!storie.getAutor().getId().equals(usuarioId)) {
                     throw new BusinessException("Você só pode adicionar seus próprios stories ao destaque");
                 }
@@ -104,7 +121,6 @@ public class DestaqueService {
             }
         }
 
-        // Remover stories
         if (dto.getStoriesParaRemover() != null && !dto.getStoriesParaRemover().isEmpty()) {
             for (Long storieId : dto.getStoriesParaRemover()) {
                 destaque.getStories().removeIf(storie -> storie.getId().equals(storieId));
@@ -129,14 +145,13 @@ public class DestaqueService {
     }
 
     @Transactional(readOnly = true)
-    public List<DestaqueSummaryDTO> listarDestaquesPorUsuario(Long usuarioId) {
-        if (!usuarioRepository.existsById(usuarioId)) {
-            throw new ResourceNotFoundException("Usuário não encontrado");
-        }
+    public List<DestaqueResponseDTO> listarDestaquesPorUsuario(String username) {
+        Usuario usuario = usuarioRepository.findByUsername(username)
+                .orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado"));
 
-        List<Destaque> destaques = destaqueRepository.findByUsuarioIdOrderByNome(usuarioId);
+        List<Destaque> destaques = destaqueRepository.findByUsuarioIdWithStories(usuario.getId());
         return destaques.stream()
-                .map(this::converterParaSummaryDTO)
+                .map(destaque -> converterParaResponseDTO(destaque, true))
                 .collect(Collectors.toList());
     }
 
@@ -148,7 +163,6 @@ public class DestaqueService {
             throw new ResourceNotFoundException("Destaque não encontrado");
         }
 
-        // Verificar se o usuário tem permissão para ver todos os detalhes (stories)
         boolean mostrarDetalhes = destaque.getUsuario().getId().equals(usuarioLogadoId);
 
         return converterParaResponseDTO(destaque, mostrarDetalhes);
@@ -181,7 +195,6 @@ public class DestaqueService {
         Destaque destaque = destaqueRepository.findById(destaqueId)
                 .orElseThrow(() -> new ResourceNotFoundException("Destaque não encontrado"));
 
-        // Verificar se o usuário tem permissão para ver os stories
         if (!destaque.getUsuario().getId().equals(usuarioLogadoId)) {
             throw new BusinessException("Você não tem permissão para visualizar os stories deste destaque");
         }
@@ -198,11 +211,11 @@ public class DestaqueService {
         dto.setNome(destaque.getNome());
         dto.setDataCriacao(destaque.getDataCriacao());
 
-        // Obter quantidade de stories
-        Long quantidadeStories = destaqueRepository.countStoriesByDestaqueId(destaque.getId());
-        dto.setQuantidadeStories(quantidadeStories.intValue());
 
+        int quantidadeStories = destaque.getStories() != null ?
+                destaque.getStories().size() : 0;
 
+        dto.setQuantidadeStories(quantidadeStories);
 
         return dto;
     }
@@ -214,14 +227,13 @@ public class DestaqueService {
         dto.setDataCriacao(destaque.getDataCriacao());
         dto.setUsuarioId(destaque.getUsuario().getId());
         dto.setUsernameUsuario(destaque.getUsuario().getUsername());
+        int quantidadeStories = destaque.getStories() != null ? destaque.getStories().size() : 0;
+        dto.setQuantidadeStories(quantidadeStories);
+        if (destaque.getDestaqueFotoDeCapaUrl() != null) {
+            dto.setDestaqueFotoDeCapaUrl(s3StorageService.getFileUrl(destaque.getDestaqueFotoDeCapaUrl()));
+        }
 
-        // Obter quantidade de stories
-        Long quantidadeStories = destaqueRepository.countStoriesByDestaqueId(destaque.getId());
-        dto.setQuantidadeStories(quantidadeStories.intValue());
 
-
-
-        // Incluir os stories, se solicitado
         if (incluirStories && destaque.getStories() != null) {
             dto.setStories(destaque.getStories().stream()
                     .map(storie -> converterParaStorieResponseDTO(storie, destaque.getUsuario().getId()))
@@ -237,16 +249,7 @@ public class DestaqueService {
         dto.setDataCriacao(storie.getDataCriacao());
         dto.setDataExpiracao(storie.getDataExpiracao());
         dto.setDestacado(storie.isDestacado());
-
-        // Verificar se o storie foi visualizado pelo usuário
-        boolean visualizado = storie.getVisualizadoPor().stream()
-                .anyMatch(usuario -> usuario.getId().equals(usuarioLogadoId));
-        dto.setVisualizadoPeloUsuario(visualizado);
-
-        // Contagem de visualizações
-        dto.setNumeroVisualizacoes((long) storie.getVisualizadoPor().size());
-
-
+        dto.setStorieImagemUrl(s3StorageService.getFileUrl(storie.getStorieImagemUrl()));
         return dto;
     }
 }

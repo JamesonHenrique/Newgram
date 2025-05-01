@@ -63,11 +63,11 @@
   bottom: -4px;
   background: linear-gradient(
       135deg,
-      #9b71fc,
-      #8860ce,
-      #652fbb,
-      #44168d,
-      #230058
+      #ffffff,
+      #d5bcff,
+      #6200ff,
+      #10002b,
+      #000000
   );
   background-size: 300% 300%;
   animation: gradientRotate 3s ease infinite;

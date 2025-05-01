@@ -190,7 +190,7 @@
                 Voltar
               </button>
               <button type="button" class="btn btn-primary" (click)="nextStep()"
-              [disabled]="authForm.get('senha')?.invalid || authForm.get('confirmacaoSenha')?.invalid || authForm.errors?.['passwordsNotMatch']">
+              [disabled]="authForm.get('senha')?.invalid || authForm.get('confirmacaoSenha')?.invalid || authForm.errors?.['passwordMismatch']">
         Próximo
       </button>
             </div>
@@ -214,7 +214,6 @@
               type="file"
               id="avatarUpload"
               accept="image/*"
-
               (change)="previewSelectedImage($event)"
               style="display: none;"
             />
@@ -238,6 +237,9 @@
               </div>
               <div *ngIf="hasError('username', 'pattern')" class="error-message">
                 Use apenas letras, números e underscores
+              </div>
+              <div *ngIf="hasError('username', 'maxlength')" class="error-message">
+                Nome de usuário deve ter no máximo 15 caracteres
               </div>
             </div>
 

@@ -23,8 +23,6 @@ public interface StorieRepository extends JpaRepository<Storie, Long> {
     @Query("SELECT DISTINCT s.autor FROM Storie s WHERE s.autor.id IN (SELECT seg.seguido.id FROM Seguidor seg WHERE seg.seguidor.id = :usuarioId) AND s.dataExpiracao > :agora")
     List<Usuario> findUsuariosComStoriesAtivos(@Param("usuarioId") Long usuarioId, @Param("agora") Date agora);
 
-    @Query("SELECT s FROM Storie s WHERE s.autor.id = :autorId AND s.dataExpiracao > :agora AND NOT EXISTS (SELECT u FROM s.visualizadoPor u WHERE u.id = :usuarioId)")
-    List<Storie> findStoriesNaoVisualizados(@Param("usuarioId") Long usuarioId, @Param("autorId") Long autorId, @Param("agora") Date agora);
     @Query("SELECT COUNT(s) FROM Storie s WHERE s.autor.id = :usuarioId AND s.dataExpiracao > :agora")
     Long countStoriesAtivosByUsuarioId(@Param("usuarioId") Long usuarioId, @Param("agora") Date agora);
 }

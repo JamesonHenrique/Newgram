@@ -1,0 +1,51 @@
+<div class="story-modal" [class.active]="isOpen">
+  <div class="story-modal-backdrop" (click)="closeModal()"></div>
+
+  <div class="story-modal-content" [class.active]="isOpen">
+    <div class="story-modal-header">
+      <h3 class="story-modal-title">Criar Story</h3>
+      <button class="story-modal-close" (click)="closeModal()">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+
+    <div class="story-modal-body">
+      <div class="story-upload-area"
+           [class.dragover]="isDraggingOver"
+           (click)="fileInput.click()"
+           (dragover)="onDragOver($event)"
+           (dragleave)="onDragLeave($event)"
+           (drop)="onDrop($event)">
+        <div class="story-upload-content">
+          <i class="fas fa-cloud-upload-alt story-upload-icon"></i>
+          <h4 class="story-upload-title">Arraste e solte sua foto aqui</h4>
+          <p class="story-upload-subtitle">ou clique para selecionar</p>
+          <input #fileInput type="file" class="hidden" multiple accept="image/*" (change)="onFilesSelected($event)">
+        </div>
+      </div>
+
+      <div class="story-preview-single" *ngIf="selectedFiles.length > 0">
+        <div class="story-preview-container">
+          <img [src]="getPreview(selectedFiles[0])" alt="Preview" class="story-preview-image">
+          <div class="story-preview-actions">
+            <button class="story-change-photo" (click)="changePhoto()">
+              <i class="fas fa-sync-alt"></i> Trocar foto
+            </button>
+            <button class="story-preview-remove" (click)="removeFile(0)">
+              <i class="fas fa-times"></i> Remover
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="story-modal-footer">
+      <button class="story-modal-cancel" (click)="closeModal()">Cancelar</button>
+      <button class="story-modal-submit"
+              [disabled]="selectedFiles.length === 0"
+              (click)="criarStorie()">
+        Publicar {{selectedFiles.length > 1 ? '(' + selectedFiles.length + ')' : ''}}
+      </button>
+    </div>
+  </div>
+</div>

@@ -1,5 +1,9 @@
 package com.jhcs.newgram.core.domain.entities;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -15,28 +19,15 @@ public class Storie {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
     private Date dataCriacao;
     private Date dataExpiracao;
     private boolean destacado;
-
+    private String storieImagemUrl;
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "autor_id")
+    @JsonIgnoreProperties({"stories", "destaques"})
     private Usuario autor;
 
-    @ManyToMany
-    @JoinTable(
-            name = "storie_visualizacoes",
-            joinColumns = @JoinColumn(name = "storie_id"),
-            inverseJoinColumns = @JoinColumn(name = "usuario_id")
-    )
-    private List<Usuario> visualizadoPor = new ArrayList<>();
 
-    @ManyToMany
-    @JoinTable(
-            name = "storie_marcacoes",
-            joinColumns = @JoinColumn(name = "storie_id"),
-            inverseJoinColumns = @JoinColumn(name = "usuario_id")
-    )
-    private List<Usuario> marcacoes = new ArrayList<>();
+
 }

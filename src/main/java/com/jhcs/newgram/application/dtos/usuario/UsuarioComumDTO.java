@@ -18,4 +18,6 @@ public class UsuarioComumDTO {
     private int commonFollowers;
     @Schema(description = "Foto de perfil do usuário em formato binário", type = "string")
     private String fotoPerfil;
+    @Schema(description = "Indica se o usuário atual está seguindo este usuário", example = "true")
+    private boolean seguindoUsuario;
 }

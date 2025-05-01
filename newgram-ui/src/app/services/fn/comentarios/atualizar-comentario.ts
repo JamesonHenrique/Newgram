@@ -12,33 +12,29 @@ import { ComentarioResponseDto } from '../../models/comentario-response-dto';
 import { ComentarioUpdateDto } from '../../models/comentario-update-dto';
 
 export interface AtualizarComentario$Params {
-  /**
-   * ID do comentário a ser atualizado
-   */
+
+/**
+ * ID do comentário a ser atualizado
+ */
   id: number;
-  body: ComentarioUpdateDto;
+      body: ComentarioUpdateDto
 }
 
-export function atualizarComentario(
-  http: HttpClient,
-  rootUrl: string,
-  params: AtualizarComentario$Params,
-  context?: HttpContext
-): Observable<StrictHttpResponse<ComentarioResponseDto>> {
+export function atualizarComentario(http: HttpClient, rootUrl: string, params: AtualizarComentario$Params, context?: HttpContext): Observable<StrictHttpResponse<ComentarioResponseDto>> {
   const rb = new RequestBuilder(rootUrl, atualizarComentario.PATH, 'put');
   if (params) {
     rb.path('id', params.id, {});
     rb.body(params.body, 'application/json');
   }
 
-  return http
-    .request(rb.build({ responseType: 'json', accept: '*/*', context }))
-    .pipe(
-      filter((r: any): r is HttpResponse<any> => r instanceof HttpResponse),
-      map((r: HttpResponse<any>) => {
-        return r as StrictHttpResponse<ComentarioResponseDto>;
-      })
-    );
+  return http.request(
+    rb.build({ responseType: 'json', accept: '*/*', context })
+  ).pipe(
+    filter((r: any): r is HttpResponse<any> => r instanceof HttpResponse),
+    map((r: HttpResponse<any>) => {
+      return r as StrictHttpResponse<ComentarioResponseDto>;
+    })
+  );
 }
 
 atualizarComentario.PATH = '/comentarios/{id}';

@@ -1,5 +1,6 @@
 package com.jhcs.newgram.core.domain.entities;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -15,15 +16,12 @@ public class Destaque {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
     private String nome;
-
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "usuario_id")
     private Usuario usuario;
-
     private Date dataCriacao;
-
+    private String destaqueFotoDeCapaUrl;
     @ManyToMany
     @JoinTable(
             name = "destaque_storie",

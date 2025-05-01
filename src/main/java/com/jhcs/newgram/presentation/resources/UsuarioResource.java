@@ -145,8 +145,9 @@ public class UsuarioResource {
         Page<UsuarioComumDTO> usuarios = usuarioService.buscarUsuariosPorAmigosEmComum(usuarioLogado.getId(), pageable);
         return ResponseEntity.ok(usuarios);
     }
-    @PutMapping("/{id}")
+    @PutMapping(path = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @Operation(summary = "Atualizar usuário", description = "Atualiza os dados de um usuário existente")
+
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Usuário atualizado com sucesso",
                     content = @Content(schema = @Schema(implementation = UsuarioResponseDTO.class))),
@@ -162,8 +163,7 @@ public class UsuarioResource {
     public ResponseEntity<UsuarioResponseDTO> atualizarUsuario(
             @Parameter(description = "ID do usuário", required = true)
             @PathVariable Long id,
-            @Parameter(description = "Dados para atualização do usuário", required = true)
-            @RequestBody @Valid UsuarioUpdateDTO dto,
+            @Valid @ModelAttribute UsuarioUpdateDTO dto,
             @AuthenticationPrincipal Usuario usuarioLogado) {
 
         if (!usuarioLogado.getId().equals(id)) {

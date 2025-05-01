@@ -24,6 +24,17 @@ import java.util.Map;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
+    @ExceptionHandler(StackOverflowError.class)
+    public ResponseEntity<ApiError> handleStackOverflowError(
+            StackOverflowError ex, HttpServletRequest request) {
+        ApiError apiError = new ApiError(
+                HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                "Erro interno de processamento: referência circular ou recursão infinita detectada",
+                request.getRequestURI(),
+                LocalDateTime.now()
+        );
+        return new ResponseEntity<>(apiError, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
     @ExceptionHandler(ResourceNotFoundException.class)
     public ResponseEntity<ApiError> handleResourceNotFoundException(
             ResourceNotFoundException ex, HttpServletRequest request) {

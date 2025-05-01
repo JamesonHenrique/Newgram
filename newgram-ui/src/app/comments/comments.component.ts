@@ -95,7 +95,13 @@ export class CommentsComponent implements OnChanges {
     this.usuariosService
       .buscarUsuarioPorId({ id: this.tokenService.userId })
       .subscribe((res) => {
-        this.usuarioLogado = res;
+        const usuarioLogado: UsuarioSummaryDto = {
+          ...res,
+          fotoPerfil: res.fotoPerfil instanceof Blob
+            ? URL.createObjectURL(res.fotoPerfil)
+            : res.fotoPerfil
+        };
+        this.usuarioLogado = usuarioLogado;
       });
   }
 }

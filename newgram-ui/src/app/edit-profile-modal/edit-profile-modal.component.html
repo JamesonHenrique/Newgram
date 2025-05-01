@@ -1,0 +1,82 @@
+<div class="modal-overlay" [class.active]="isOpen">
+  <div class="edit-profile-modal animate__fadeIn animate__animated">
+    <div class="modal-header">
+      <h2>Editar Perfil</h2>
+      <button class="close-btn" (click)="closeModal()">&times;</button>
+    </div>
+
+    <div class="modal-content">
+      <div class="avatar-section">
+        <div class="current-avatar">
+          <h4>Foto atual</h4>
+          <img [src]="userProfile?.fotoPerfil || '/icons/profile-placeholder.svg'"
+               alt="Current Avatar"
+               class="avatar-preview">
+        </div>
+
+        <div class="new-avatar" *ngIf="newProfileImage">
+          <h4>Nova foto</h4>
+          <img [src]="newProfileImage"
+               alt="New Avatar"
+               class="avatar-preview">
+        </div>
+
+        <label class="upload-btn">
+          <input type="file"
+                 accept="image/*"
+                 (change)="handleImageUpload($event)"
+                 hidden>
+          <i class="fas fa-camera"></i> Alterar Foto
+        </label>
+
+      </div>
+
+      <form class="profile-form" (submit)="updateProfile()" [formGroup]="editForm">
+        <div class="form-group">
+          <label>Nome</label>
+          <input type="text"
+                 formControlName="nome"
+                 name="nome"
+                 required>
+        </div>
+
+        <div class="form-group">
+          <label>Username</label>
+          <input type="text"
+                 formControlName="username"
+                 name="username"
+                 required>
+        </div>
+
+        <div class="form-group">
+          <label>Bio</label>
+          <textarea
+                 formControlName="bio"
+                    name="bio"
+                    rows="3"></textarea>
+        </div>
+
+        <div class="form-actions">
+          <button type="button"
+                  class="cancel-btn"
+                  (click)="closeModal()">Cancelar</button>
+          <button type="submit"
+                  class="save-btn"
+                  [disabled]="loading || !editForm.value.nome || !editForm.value.username">
+            <span *ngIf="!loading">Salvar Alterações</span>
+            <span *ngIf="loading">Salvando...</span>
+          </button>
+        </div>
+        <div
+        *ngIf="errorMessage"
+        class="mt-6 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg text-red-600 dark:text-red-300"
+      >
+        <div class="flex items-center gap-2">
+          <i class="fas fa-exclamation-circle"></i>
+          <span>{{ errorMessage }}</span>
+        </div>
+      </div>
+      </form>
+    </div>
+  </div>
+</div>

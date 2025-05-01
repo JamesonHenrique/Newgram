@@ -79,28 +79,28 @@ export class UsuariosService extends BaseService {
   static readonly AtualizarUsuarioPath = '/usuarios/{id}';
 
   /**
-   * Atualizar usuário.
+   * Registrar usuário.
    *
-   * Atualiza os dados de um usuário existente
+   * Registra um novo usuário com foto de perfil
    *
    * This method provides access to the full `HttpResponse`, allowing access to response headers.
-   * To access only the response body, use `atualizarUsuario()` instead.
+   * To access only the response body, use `registrar()` instead.
    *
-   * This method sends `application/json` and handles request body of type `application/json`.
+   * This method sends `multipart/form-data` and handles request body of type `multipart/form-data`.
    */
   atualizarUsuario$Response(params: AtualizarUsuario$Params, context?: HttpContext): Observable<StrictHttpResponse<UsuarioResponseDto>> {
     return atualizarUsuario(this.http, this.rootUrl, params, context);
   }
 
   /**
-   * Atualizar usuário.
+   * Registrar usuário.
    *
-   * Atualiza os dados de um usuário existente
+   * Registra um novo usuário com foto de perfil
    *
    * This method provides access only to the response body.
-   * To access the full response (for headers, for example), `atualizarUsuario$Response()` instead.
+   * To access the full response (for headers, for example), `registrar$Response()` instead.
    *
-   * This method sends `application/json` and handles request body of type `application/json`.
+   * This method sends `multipart/form-data` and handles request body of type `multipart/form-data`.
    */
   atualizarUsuario(params: AtualizarUsuario$Params, context?: HttpContext): Observable<UsuarioResponseDto> {
     return this.atualizarUsuario$Response(params, context).pipe(

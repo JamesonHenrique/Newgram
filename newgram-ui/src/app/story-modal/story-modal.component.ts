@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { Component, EventEmitter, Input, OnChanges, Output, SimpleChanges } from '@angular/core';
 
 @Component({
   selector: 'app-story-modal',
@@ -7,7 +7,7 @@ import { Component, EventEmitter, Input, Output } from '@angular/core';
   templateUrl: './story-modal.component.html',
   styleUrl: './story-modal.component.css'
 })
-export class StoryModalComponent {
+export class StoryModalComponent implements OnChanges {
   @Input() isOpen = false;
   @Input() storyTitle = '';
   @Input() storyAvatar = '';
@@ -18,32 +18,57 @@ export class StoryModalComponent {
   currentImageIndex = 0;
   progressValue = 0;
   private progressInterval: any;
-  private timeout: any;
-  private readonly STORY_DURATION = 5000; // 5 seconds per image
+  private readonly STORY_DURATION = 5000; 
+  private animationFrameId: number | null = null;
+  private lastTimestamp: number = 0;
+  private pauseStartTime: number = 0;
+  private remainingTime: number = this.STORY_DURATION;
 
-  ngOnInit() {
-    this.startProgress();
+  ngOnChanges(changes: SimpleChanges) {
+    if (changes['isOpen'] && changes['isOpen'].currentValue) {
+      this.resetProgress();
+      this.startProgress();
+    } else if (changes['isOpen'] && !changes['isOpen'].currentValue) {
+      this.clearTimers();
+    }
   }
 
   ngOnDestroy() {
     this.clearTimers();
   }
 
-  startProgress() {
+  resetProgress() {
+    this.currentImageIndex = 0;
     this.progressValue = 0;
+    this.remainingTime = this.STORY_DURATION;
     this.clearTimers();
+  }
 
-    this.progressInterval = setInterval(() => {
-      this.progressValue += 1;
-      if (this.progressValue >= 100) {
+  startProgress() {
+    this.clearTimers();
+    this.lastTimestamp = performance.now();
+    this.animateProgress();
+  }
+
+  private animateProgress() {
+    this.animationFrameId = requestAnimationFrame((timestamp) => {
+      const delta = timestamp - this.lastTimestamp;
+      this.lastTimestamp = timestamp;
+
+      if (this.remainingTime > 0) {
+        this.progressValue = 100 - (this.remainingTime / this.STORY_DURATION) * 100;
+        this.remainingTime -= delta;
+        this.animateProgress();
+      } else {
         this.nextImage();
       }
-    }, this.STORY_DURATION / 100);
+    });
   }
 
   nextImage() {
     if (this.currentImageIndex < this.storyImages.length - 1) {
       this.currentImageIndex++;
+      this.remainingTime = this.STORY_DURATION;
       this.startProgress();
     } else {
       this.closeModal();
@@ -53,7 +78,22 @@ export class StoryModalComponent {
   prevImage() {
     if (this.currentImageIndex > 0) {
       this.currentImageIndex--;
+      this.remainingTime = this.STORY_DURATION;
       this.startProgress();
+    }
+  }
+
+  pauseProgress() {
+    if (this.animationFrameId) {
+      cancelAnimationFrame(this.animationFrameId);
+      this.animationFrameId = null;
+    }
+  }
+
+  resumeProgress() {
+    if (!this.animationFrameId) {
+      this.lastTimestamp = performance.now();
+      this.animateProgress();
     }
   }
 
@@ -69,11 +109,13 @@ export class StoryModalComponent {
   }
 
   private clearTimers() {
+    if (this.animationFrameId) {
+      cancelAnimationFrame(this.animationFrameId);
+      this.animationFrameId = null;
+    }
     if (this.progressInterval) {
       clearInterval(this.progressInterval);
-    }
-    if (this.timeout) {
-      clearTimeout(this.timeout);
+      this.progressInterval = null;
     }
   }
 }

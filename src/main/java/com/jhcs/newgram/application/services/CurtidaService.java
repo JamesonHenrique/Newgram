@@ -1,10 +1,8 @@
 package com.jhcs.newgram.application.services;
 
-import com.jhcs.newgram.application.dtos.arquivo.ArquivoDTO;
 import com.jhcs.newgram.application.dtos.curtida.CurtidaCreateDTO;
 import com.jhcs.newgram.application.dtos.curtida.CurtidaResponseDTO;
 import com.jhcs.newgram.application.dtos.usuario.UsuarioSummaryDTO;
-import com.jhcs.newgram.core.domain.entities.Arquivo;
 import com.jhcs.newgram.core.domain.entities.Comentario;
 import com.jhcs.newgram.core.domain.entities.Curtida;
 import com.jhcs.newgram.core.domain.entities.Post;
@@ -22,8 +20,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Date;
-import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 public class CurtidaService {
@@ -61,7 +57,6 @@ public class CurtidaService {
         curtida.setUsuario(usuario);
         curtida.setDataCriacao(new Date());
 
-        // Curtida em um post
         if (dto.getPostId() != null) {
             Post post = postRepository.findById(dto.getPostId())
                     .orElseThrow(() -> new ResourceNotFoundException("Post não encontrado"));
@@ -72,7 +67,6 @@ public class CurtidaService {
 
             curtida.setPost(post);
         }
-        // Curtida em um comentário
         else {
             Comentario comentario = comentarioRepository.findById(dto.getComentarioId())
                     .orElseThrow(() -> new ResourceNotFoundException("Comentário não encontrado"));
@@ -149,7 +143,6 @@ public class CurtidaService {
             dto.setComentarioId(curtida.getComentario().getId());
         }
 
-        // Adicionar informações do usuário
         UsuarioSummaryDTO usuarioDTO = new UsuarioSummaryDTO();
         usuarioDTO.setId(curtida.getUsuario().getId());
         usuarioDTO.setNome(curtida.getUsuario().getNome());

@@ -1,6 +1,7 @@
 <div class="content-area overflow-hidden">
   <div
-    class="feed-container custom-scrollbar animate__animated animate__slideInUp"
+    class="feed-container animate__animated animate__slideInUp"
+    #feedContainer
   >
     <h1 class="h1-bold max-w-3xl mx-auto mb-4 mr-1">Feed</h1>
     <div class="flex flex-col max-w-3xl mx-auto mr-1 animate-fadeIn">
@@ -110,12 +111,17 @@
           </label>
         </article>
       </div>
-      <div *ngIf="!hasMorePosts" class="end-of-feed-message text-center py-8 text-light-3">
+      <div *ngIf="loading" class="loading-indicator py-4 text-center">
+        <i class="fas fa-spinner fa-spin text-primary-custom"></i>
+        <span class="ml-2">Carregando mais posts...</span>
+      </div>
+
+      <div
+        *ngIf="!hasMorePosts"
+        class="end-of-feed-message text-center py-8 text-light-3  "
+      >
         {{ endOfPostsMessage }}
       </div>
-    </div>
-    <div *ngIf="!hasMorePosts" class="end-of-feed-message text-center py-8 text-light-3">
-      {{ endOfPostsMessage }}
     </div>
   </div>
   <div
@@ -153,20 +159,21 @@
             &#64;{{ topCreator.username }}
           </p>
           <button
-            class="btn-follow mt-1 lg:mt-2 bg-primary-500 hover:bg-primary-600 text-white text-xs lg:text-sm font-medium py-1 px-3 lg:px-4 rounded-full transition-colors duration-200"
-            (click)="seguir(topCreators, $event)"
+            class="mt-1 lg:mt-2 text-white text-xs lg:text-sm font-medium py-1 px-3 lg:px-4 rounded-full transition-colors duration-200"
+            (click)="toggleFollow(topCreator, $event)"
+            [ngClass]="{
+              'btn-follow': !topCreator.seguindoUsuario,
+              'btn-following': topCreator.seguindoUsuario
+            }"
           >
-            Seguir
+            {{ topCreator.seguindoUsuario ? "Seguindo" : "Seguir" }}
           </button>
         </div>
       </div>
-
-
+    </div>
   </div>
-
-
+  <app-post-details
+    [postSelected]="postSelected"
+    (postSelectedChange)="postSelected = $event"
+  ></app-post-details>
 </div>
-<app-post-details
-[postSelected]="postSelected"
-(postSelectedChange)="postSelected = $event"
-></app-post-details>

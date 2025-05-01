@@ -16,8 +16,9 @@ import { CommonModule } from '@angular/common';
 import { passwordValidator } from './validator/password.validator';
 import { confirmPasswordValidator } from './validator/confirm-password.validator';
 import { AutenticacaoService, UsuariosService } from '../../services/services';
-import { catchError, of, switchMap } from 'rxjs';
+import { catchError, of, switchMap, tap } from 'rxjs';
 import { UsuarioCreateDto } from '../../services/models';
+import { passwordMatchValidator } from './validator/custom-validators';
 
 @Component({
   selector: 'app-register',
@@ -35,7 +36,7 @@ export class RegisterComponent {
   passwordStrength = 0;
   strengthText = '';
   strengthClass = '';
-
+  errorMessage: string | null = null;
   constructor(
     private title: Title,
     private router: Router,
@@ -48,46 +49,59 @@ export class RegisterComponent {
   ngOnInit(): void {
     this.authForm = this.fb.group(
       {
-        nome: ['', [Validators.required, Validators.minLength(3)]],
+        nome: ['', [Validators.required, Validators.minLength(3), Validators.maxLength(15)]],
         email: ['', Validators.required],
         senha: ['', [Validators.required, passwordValidator()]],
         confirmacaoSenha: ['', [Validators.required]],
         username: ['', [Validators.required, Validators.pattern(/^[a-zA-Z0-9_]+$/)]],
         bio: ['', [Validators.maxLength(150), Validators.required]],
       },
-      { validators: confirmPasswordValidator('senha') }
+      { validators: passwordMatchValidator() }
     );
     this.setupPasswordValidation();
   }
 
   errorMsg: Array<string> = [];
   register() {
-    this.errorMsg = [];
-
     if (this.authForm.invalid) {
       return;
     }
+
+    this.errorMessage = null;
+    this.errorMsg = [];
 
     const authRequest: UsuarioCreateDto = {
       ...this.authForm.value,
       fotoPerfil: this.selectedFotoDePerfil || undefined,
     };
 
-    this.authService
-      .registrar({ body: authRequest })
+    this.authService.registrar({ body: authRequest }).pipe(
+      tap(() => {
+        this.router.navigate(['/login']);
+        localStorage.removeItem('token');
+      }),
 
-      .subscribe({
-        next: () => {
-          this.router.navigate(['/login']);
-          localStorage.removeItem('token');
-        },
-        error: (error) => {
-          this.errorMsg = error.error?.validationErrors || [];
-          if (error.error?.error) {
-            this.errorMsg.push(error.error.error);
+      catchError((error) => {
+        if (error.error && typeof error.error === 'object') {
+          if (error.status === 413) {
+            this.errorMessage = error.error.message || 'O arquivo enviado é muito grande';
           }
-        },
-      });
+          else if (error.error.message) {
+            this.errorMessage = error.error.message;
+          }
+          else if (error.error.validationErrors) {
+            this.errorMsg = error.error.validationErrors;
+          }
+        }
+        else {
+          this.errorMessage = 'Erro ao realizar o registro. Tente novamente.';
+        }
+
+        console.error('Erro no registro:', error);
+
+        return of(null);
+      })
+    ).subscribe();
   }
   private setupPasswordValidation(): void {
     const passwordControl = this.authForm.get('senha');

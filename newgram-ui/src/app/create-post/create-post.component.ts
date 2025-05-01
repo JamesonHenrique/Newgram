@@ -9,9 +9,10 @@ import {
   Validators,
 } from '@angular/forms';
 import { DomSanitizer, SafeUrl, Title } from '@angular/platform-browser';
-import { PostsService } from '../services/services';
+import { HashtagsService, PostsService } from '../services/services';
 import { catchError, of, switchMap } from 'rxjs';
 import { ActivatedRoute, Router } from '@angular/router';
+import { Pageable } from '../services/models';
 
 @Component({
   selector: 'app-create-post',
@@ -26,7 +27,8 @@ export class CreatePostComponent {
     private postService: PostsService,
     private router: Router,
     private tokenService: TokenService,
-    private route: ActivatedRoute
+    private route: ActivatedRoute,
+    private hashtagService: HashtagsService
   ) {
     if (this.postId) {
       this.title.setTitle('Editar post');
@@ -39,21 +41,16 @@ export class CreatePostComponent {
   @ViewChild('imagePreview') imagePreview!: ElementRef<HTMLImageElement>;
   @ViewChild('uploadPlaceholder')
   uploadPlaceholder!: ElementRef<HTMLDivElement>;
-
   selectedFoto: any;
   postForm!: FormGroup;
   selectedTags: string[] = [];
   postId: number | null = null;
-  popularTags = [
-    { name: 'fotografia' },
-    { name: 'viagem' },
-    { name: 'natureza' },
-    { name: 'comida' },
-    { name: 'arte' },
-    { name: 'música' },
-    { name: 'tecnologia' },
-  ];
-
+  popularTags:any = [];
+  page: Pageable = {
+    page: 0,
+    size: 7,
+    sort: ['']
+  };
   ngOnInit(): void {
     this.postId = this.route.snapshot.params['id'];
 
@@ -68,8 +65,9 @@ export class CreatePostComponent {
     }
     this.setupDragAndDrop();
     this.setupTagInput();
+    this.findPopularTags();
   }
- 
+
   loadPostData(postId: number): void {
     this.postService.buscarPorId({
       id: postId,
@@ -93,6 +91,18 @@ export class CreatePostComponent {
       error: (err) => {
         console.error('Erro ao carregar post:', err);
         this.router.navigate(['/erro']);
+      }
+    });
+  }
+  findPopularTags(): void {
+    this.hashtagService.listarHashtagsPopulares({
+      pageable: this.page
+    }).subscribe({
+      next: (tags) => {
+        this.popularTags = tags.content || [];
+      },
+      error: (err) => {
+        console.error('Erro ao buscar tags populares:', err);
       }
     });
   }
@@ -227,7 +237,7 @@ export class CreatePostComponent {
             const formData = new FormData();
             formData.append('file', this.selectedFoto);
             return this.postService
-              .salvarFotoDoPost({
+              .uploadImagemPost({
                 id: response.id,
                 body: formData,
               })

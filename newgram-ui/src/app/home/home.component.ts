@@ -1,10 +1,14 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectorRef, Component } from '@angular/core';
+import { ChangeDetectorRef, Component, ElementRef, ViewChild } from '@angular/core';
 import { Router } from '@angular/router';
 import { PostDetailsComponent } from '../post-details/post-details.component';
 import { DomSanitizer, Title } from '@angular/platform-browser';
 import { FormatNumberPipe } from '../format-number.pipe';
-import { PostsService, UsuariosService } from '../services/services';
+import {
+  PostsService,
+  SeguidoresService,
+  UsuariosService,
+} from '../services/services';
 import { Pageable } from '../services/models';
 import { DateFormatPipe } from '../services/pipes/date-format-pipe';
 import { TokenService } from '../services/token/token.service';
@@ -23,7 +27,7 @@ import { takeUntil, catchError, finalize, tap, map } from 'rxjs/operators';
 })
 export class HomeComponent {
   private destroy$ = new Subject<void>();
-  private loading = false;
+   loading = false;
 
   posts: any[] = [];
   topCreators: any[] = [];
@@ -43,48 +47,16 @@ export class HomeComponent {
     size: 4,
     sort: [''],
   };
-  otherUsers = [
-    {
-      id: 1,
-      avatar:
-        'https://br.web.img3.acsta.net/c_310_420/pictures/22/03/17/20/59/0915999.jpg',
-      name: 'Danilo Gentili',
-      username: 'danilo',
-    },
 
-    {
-      id: 2,
-      avatar:
-        'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRV61NGGfrNzInHErojPbfVKVdx_KvNiT_bmg&s',
-      name: 'Felca',
-      username: 'felca',
-    },
-    {
-      id: 3,
-      avatar:
-        'https://blogdohiellevy.com.br/wp-content/uploads/2024/08/WhatsApp-Image-2024-08-27-at-13.22.20-768x1024.jpeg',
-      name: 'Julio Balestrin',
-      username: 'julio',
-    },
-  ];
-  topics = [
-    'fotografia',
-    'esportes',
-    'tecnologia',
-    'musica',
-    'beleza',
-    'moda',
-    'gastronomia',
-  ].filter((item, index, self) => self.indexOf(item) === index);
   hasMorePosts = true;
-  endOfPostsMessage = "Você chegou ao final do feed! 🎉";
+  endOfPostsMessage = 'Você chegou ao final do feed! 🎉';
   constructor(
     private title: Title,
     private postsService: PostsService,
     private usuariosService: UsuariosService,
     private tokenService: TokenService,
     private router: Router,
-    private changeDetector: ChangeDetectorRef
+    private seguidorService: SeguidoresService
   ) {}
 
   ngOnInit(): void {
@@ -92,7 +64,7 @@ export class HomeComponent {
     this.loadInitialData();
     setTimeout(() => this.setupScrollListener(), 1000);
   }
-
+  @ViewChild('feedContainer') feedContainer!: ElementRef;
   ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
@@ -111,51 +83,130 @@ export class HomeComponent {
         finalize(() => (this.loading = false))
       )
       .subscribe();
-  }
-  private setupScrollListener(): void {
+  }private setupScrollListener(): void {
     const feedContainer = document.querySelector('.feed-container');
-    if (feedContainer) {
-      feedContainer.addEventListener('scroll', () => {
-        const { scrollTop, scrollHeight, clientHeight } = feedContainer;
-        const isNearBottom = scrollHeight - (scrollTop + clientHeight) < 100;
+    const isMobile = window.innerWidth <= 1024;
 
-        if (isNearBottom && !this.loading && this.hasMorePosts) {
-          this.loadMorePosts();
-        }
-      });
-    }
+    const target = isMobile ? window : feedContainer;
+    if (!target) return;
+
+    const scrollHandler = () => {
+      if (this.loading || !this.hasMorePosts) return;
+
+      let scrollTop: number, scrollHeight: number, clientHeight: number;
+      const threshold = 200;
+      if (isMobile) {
+        scrollTop = window.pageYOffset;
+        clientHeight = window.innerHeight;
+        scrollHeight = document.documentElement.scrollHeight;
+      } else {
+        const el = feedContainer as HTMLElement;
+        scrollTop = el.scrollTop;
+        clientHeight = el.clientHeight;
+        scrollHeight = el.scrollHeight;
+      }
+
+      if (scrollHeight - (scrollTop + clientHeight) < threshold) {
+        this.loadMorePosts();
+      }
+    };
+
+    const debouncedScrollHandler = this.debounce(scrollHandler, 200);
+    target.addEventListener('scroll', debouncedScrollHandler);
+
+    this.destroy$.subscribe(() => {
+      target.removeEventListener('scroll', debouncedScrollHandler);
+    });
+  }
+
+  private debounce(func: Function, wait: number) {
+    let timeout: any;
+    return (...args: any[]) => {
+      clearTimeout(timeout);
+      timeout = setTimeout(() => func.apply(this, args), wait);
+    };
   }
   private loadMorePosts(): void {
     if (this.loading || !this.hasMorePosts) return;
 
     this.loading = true;
-    this.pageable.size = (this.pageable.size || 0) + 5;
+    this.pageable.page = (this.pageable.page || 0) + 1;
 
-    this.postsService.listarFeed({ pageable: this.pageable })
+    this.postsService
+      .listarFeed({ pageable: this.pageable })
       .pipe(
         takeUntil(this.destroy$),
-        finalize(() => this.loading = false)
+        finalize(() => (this.loading = false))
       )
       .subscribe({
         next: (response) => {
           const newPosts = response.content || [];
 
-          if (newPosts.length <= this.posts.length) {
+          if (newPosts.length === 0) {
             this.hasMorePosts = false;
             return;
           }
 
-          this.posts = newPosts.map((post: any) => ({
-            ...post,
-            isLiked: post.curtidoPeloUsuario,
-            isFavorite: post.salvoPeloUsuario,
-            isAnimating: false,
-            isFavAnimating: false,
-          }));
+          this.posts = [
+            ...this.posts,
+            ...newPosts.map((post: any) => ({
+              ...post,
+              isLiked: post.curtidoPeloUsuario,
+              isFavorite: post.salvoPeloUsuario,
+              isAnimating: false,
+              isFavAnimating: false,
+            }))
+          ];
         },
         error: (error) => {
           console.error('Erro ao carregar mais posts:', error);
-        }
+          this.hasMorePosts = false;
+        },
+      });
+  }
+  toggleFollow(user: any, event: Event) {
+    event.stopPropagation();
+    if (user.seguindoUsuario) {
+      this.deixarDeSeguir(user, event);
+    } else {
+      this.seguir(user, event);
+    }
+  }
+  deixarDeSeguir(user: any, event: Event) {
+    event.stopPropagation();
+
+    this.seguidorService
+      .deixarDeSeguir({ usuarioId: user.id })
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: () => {
+          const index = this.topCreators.findIndex((c) => c.id === user.id);
+          if (index !== -1) {
+            this.topCreators[index].seguindoUsuario = false;
+          }
+        },
+        error: (error) => {
+          console.error('Erro ao deixar de seguir:', error);
+        },
+      });
+  }
+
+  seguir(user: any, event: Event) {
+    event.stopPropagation();
+
+    this.seguidorService
+      .seguirUsuario({ usuarioId: user.id })
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: () => {
+          const index = this.topCreators.findIndex((c) => c.id === user.id);
+          if (index !== -1) {
+            this.topCreators[index].seguindoUsuario = true;
+          }
+        },
+        error: (error) => {
+          console.error('Erro ao seguir:', error);
+        },
       });
   }
   verPerfil(username: string): void {
@@ -182,7 +233,7 @@ export class HomeComponent {
 
     return imagem;
   }
-  handleFotoPerfilError( event: Event): void {
+  handleFotoPerfilError(event: Event): void {
     const imgElement = event.target as HTMLImageElement;
     imgElement.src = '/icons/profile-placeholder.svg';
 
@@ -192,7 +243,6 @@ export class HomeComponent {
   handleImageError(event: Event): void {
     const imgElement = event.target as HTMLImageElement;
     imgElement.src = '/icons/post-placeholder.svg';
-
 
     imgElement.onerror = null;
   }
@@ -248,10 +298,6 @@ export class HomeComponent {
     event.preventDefault();
     this.postSelected = post;
     this.showDetail = true;
-  }
-  seguir(user:any, event:Event) {
-    event.stopPropagation();
-
   }
 
   toggleLike(post: any, event: Event): void {

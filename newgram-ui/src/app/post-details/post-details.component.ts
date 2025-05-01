@@ -13,7 +13,11 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { FormatNumberPipe } from '../format-number.pipe';
 import { DateFormatPipe } from '../services/pipes/date-format-pipe';
 import { Pageable, UsuarioSummaryDto } from '../services/models';
-import { ComentariosService, PostsService, UsuariosService } from '../services/services';
+import {
+  ComentariosService,
+  PostsService,
+  UsuariosService,
+} from '../services/services';
 import { TokenService } from '../services/token/token.service';
 import { CommentsComponent } from '../comments/comments.component';
 import { finalize, Subject, takeUntil } from 'rxjs';
@@ -37,10 +41,16 @@ export class PostDetailsComponent {
   isModalActive = false;
   post: any;
   postService: any;
+
   private postsService = inject(PostsService);
-
-
-toggleLike(post: any, event: Event): void {
+  private tokenService = inject(TokenService);
+  get postPertenceAoUsuarioLogado(): boolean {
+    return this.post?.autorId === this.tokenService.userId;
+  }
+  verPerfil() {
+    this.router.navigate(['/perfil', this.post?.autorId]);
+  }
+  toggleLike(post: any, event: Event): void {
     event.stopPropagation();
     if (post.isAnimating) return;
 

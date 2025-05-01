@@ -29,4 +29,6 @@ public class DestaqueResponseDTO {
 
     @Schema(description = "Lista de stories associadas ao destaque")
     private List<StorieResponseDTO> stories;
+    @Schema(description = "URL da foto de capa do destaque", example = "foto.jpg")
+    private String destaqueFotoDeCapaUrl;
 }

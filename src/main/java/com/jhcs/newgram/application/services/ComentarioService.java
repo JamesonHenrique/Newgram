@@ -1,16 +1,17 @@
 package com.jhcs.newgram.application.services;
 
-import com.jhcs.newgram.application.dtos.arquivo.ArquivoDTO;
 import com.jhcs.newgram.application.dtos.comentario.ComentarioCreateDTO;
 import com.jhcs.newgram.application.dtos.comentario.ComentarioResponseDTO;
 import com.jhcs.newgram.application.dtos.comentario.ComentarioUpdateDTO;
 import com.jhcs.newgram.application.dtos.usuario.UsuarioSummaryDTO;
-import com.jhcs.newgram.core.domain.entities.*;
+import com.jhcs.newgram.core.domain.entities.Comentario;
+import com.jhcs.newgram.core.domain.entities.Curtida;
+import com.jhcs.newgram.core.domain.entities.Post;
+import com.jhcs.newgram.core.domain.entities.Usuario;
 import com.jhcs.newgram.core.domain.repositories.ComentarioRepository;
 import com.jhcs.newgram.core.domain.repositories.CurtidaRepository;
 import com.jhcs.newgram.core.domain.repositories.PostRepository;
 import com.jhcs.newgram.core.domain.repositories.UsuarioRepository;
-import com.jhcs.newgram.core.domain.utils.ArquivoUtils;
 import com.jhcs.newgram.infrastructure.aws.S3StorageService;
 import com.jhcs.newgram.infrastructure.exception.BusinessException;
 import com.jhcs.newgram.infrastructure.exception.ResourceNotFoundException;

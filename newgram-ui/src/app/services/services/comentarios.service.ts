@@ -30,7 +30,7 @@ import { Page } from '../models/page';
 
 
 /**
- * API para gerenciamento de comentários
+ * Gerenciamento de comentários
  */
 @Injectable({ providedIn: 'root' })
 export class ComentariosService extends BaseService {

@@ -4,5 +4,9 @@
 
 export { UsuariosService } from './services/usuarios.service';
 export { PostsService } from './services/posts.service';
+export { DestaquesService } from './services/destaques.service';
 export { ComentariosService } from './services/comentarios.service';
+export { StoriesService } from './services/stories.service';
 export { AutenticacaoService } from './services/autenticacao.service';
+export { SeguidoresService } from './services/seguidores.service';
+export { HashtagsService } from './services/hashtags.service';

@@ -1,5 +1,6 @@
 package com.jhcs.newgram.core.domain.entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Data;
 import org.springframework.security.core.GrantedAuthority;
@@ -40,20 +41,15 @@ public class Usuario implements UserDetails, Principal {
     )
     private List<Usuario> seguindo = new ArrayList<>();
 
+    @OneToMany(mappedBy = "autor")
+    @JsonIgnore
+    private List<Storie> stories = new ArrayList<>();
+
     @OneToMany(mappedBy = "usuario", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Salvos> postsSalvos = new ArrayList<>();
 
     @OneToMany(mappedBy = "destinatario", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Notificacao> notificacoes = new ArrayList<>();
-
-    @OneToMany(mappedBy = "remetente", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Mensagem> mensagensEnviadas = new ArrayList<>();
-
-    @OneToMany(mappedBy = "destinatario", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Mensagem> mensagensRecebidas = new ArrayList<>();
-
-    @ManyToMany(mappedBy = "participantes")
-    private List<Conversa> conversas = new ArrayList<>();
 
     @OneToOne(mappedBy = "usuario", cascade = CascadeType.ALL, orphanRemoval = true)
     private StatusUsuario statusUsuario;

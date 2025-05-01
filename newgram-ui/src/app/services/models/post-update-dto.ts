@@ -7,9 +7,29 @@
  * Dados para atualização do post
  */
 export interface PostUpdateDto {
+
+  /**
+   * Lista de hashtags associadas ao post
+   */
   hashtags?: Array<string>;
+
+  /**
+   * Legenda do post (máximo de 2200 caracteres)
+   */
   legenda?: string;
+
+  /**
+   * Localização associada ao post
+   */
   localizacao?: string;
+
+  /**
+   * Lista de IDs dos usuários marcados no post
+   */
   usuariosMarcados?: Array<number>;
+
+  /**
+   * Visibilidade do post
+   */
   visibilidade?: 'PUBLICO' | 'PRIVADO' | 'SOMENTE_SEGUIDORES';
 }

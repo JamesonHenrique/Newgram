@@ -3,7 +3,6 @@
     <i class="fas fa-times"></i>
   </button>
 
-  <!-- Progress bars for each image -->
   <div class="story-progress-container">
     <div *ngFor="let img of storyImages; let i = index" class="story-progress-background">
       <div class="story-progress" [class.active]="i === currentImageIndex">
@@ -20,7 +19,6 @@
 
     <img [src]="storyImages[currentImageIndex]" alt="Story" class="story-image" />
 
-    <!-- Navigation controls -->
     <div class="story-nav">
       <div class="story-nav-left" (click)="prevImage()"></div>
       <div class="story-nav-right" (click)="nextImage()"></div>

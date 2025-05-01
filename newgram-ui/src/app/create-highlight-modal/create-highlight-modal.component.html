@@ -1,110 +1,123 @@
- <div class="post-modal " [class.active]="isOpen">
-  <div class="post-modal-content" style="max-width: 600px; height: auto">
-    <button class="post-modal-close" (click)="closeModal()">
-      <i class="fas fa-times"></i>
-    </button>
+<div class="modal-overlay" [class.active]="isOpen" (click)="closeModal()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>Criar novo destaque</h3>
+      <button class="close-btn" (click)="closeModal()">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
 
-    <div class="post-modal-info p-6">
-      <!-- Step 1 - Capa e Nome -->
-      <div *ngIf="currentStep === 1">
-        <h2 class="h3-bold mb-4">Criar Novo Destaque</h2>
+    <div class="modal-body">
+      <div class="form-group">
+        <label for="highlight-name">Nome do destaque</label>
+        <input
+          type="text"
+          id="highlight-name"
+          [(ngModel)]="nome"
+          placeholder="Ex: Viagens 2023"
+          maxlength="20"
+          #nameInput="ngModel"
+        />
+        <span class="char-counter">{{ nome.length }}/20</span>
+        <div
+          *ngIf="nameInput.invalid && (nameInput.dirty || nameInput.touched)"
+          class="error-message"
+        >
+          <div *ngIf="nameInput.errors?.['required']">
+            O nome do destaque é obrigatório
+          </div>
+        </div>
+      </div>
 
-        <div class="mb-4">
-          <label class="small-semibold block mb-2">Nome do Destaque</label>
-          <input
-            type="text"
-            [(ngModel)]="highlightName"
-            class="w-full bg-dark-3 rounded-lg p-2 text-light-1"
-            placeholder="Ex: Viagens 2024"
+      <div class="cover-section">
+        <h4>Capa do destaque</h4>
+        <div class="cover-preview" (click)="onFileSelected($event)">
+          <img
+            [src]="getCoverImageUrl()"
+            alt="Preview da capa"
+            *ngIf="getCoverImageUrl()"
+            
           />
+          <div class="cover-edit-hint">
+            <div class="file-upload">
+              <label for="cover-upload">
+                <i class="fas fa-upload"></i>
+                <span>Alterar capa</span>
+                <input
+                  id="cover-upload"
+                  type="file"
+                  accept="image/*"
+                  #coverUpload
+                  (change)="onFileSelected($event)"
+                  style="display: none"
+                />
+              </label>
+
+            </div>
+          </div>
         </div>
 
-        <div class="mb-6">
-          <label class="small-semibold block mb-2">Escolher Capa</label>
-          <div class="flex gap-4 flex-wrap">
-            <div
-              class="highlight-cover-option relative cursor-pointer"
-              *ngFor="let story of availableStories"
-              (click)="selectedCover = story.image"
-            >
-              <img
-                [src]="story.image"
-                class="w-20 h-20 rounded-full object-cover"
-              />
-              <div
-                *ngIf="story.used"
-                class="absolute inset-0 bg-dark-1/80 flex-center rounded-full"
-              >
-                <i class="fas fa-lock small-medium"></i>
-              </div>
-            </div>
-
-            <label class="flex-center flex-col gap-2 cursor-pointer">
-              <div class="w-20 h-20 rounded-full bg-dark-3 flex-center">
-                <i class="fas fa-plus text-light-3"></i>
-              </div>
-              <span class="small-medium">Upload</span>
+        <div class="cover-options" [class.active]="showCoverOptions">
+          <div
+            class="cover-option"
+            (click)="setCoverFromStory(selectedStories[0])"
+          >
+            <span>Usar primeira story</span>
+          </div>
+          <div
+            class="cover-option"
+            *ngFor="let storyId of selectedStories"
+            (click)="setCoverFromStory(storyId)"
+          >
+            <span>Usar story {{ storyId }}</span>
+          </div>
+          <div class="cover-option file-upload">
+            <label for="cover-upload">
+              <i class="fas fa-upload"></i>
+              <span>Enviar imagem</span>
               <input
+                id="cover-upload"
                 type="file"
-                class="hidden"
                 accept="image/*"
-                (change)="handleFileUpload($event)"
+                (change)="onFileSelected($event)"
+                style="display: none"
               />
             </label>
           </div>
         </div>
-
-        <button
-          class="follow-btn w-full"
-          [disabled]="!validateStep1()"
-          (click)="nextStep()"
-        >
-          Próximo
-        </button>
       </div>
 
-      <!-- Step 2 - Selecionar Stories -->
-      <div *ngIf="currentStep === 2">
-        <h2 class="h3-bold mb-4">Selecionar Stories</h2>
-
-        <div
-          class="posts-grid mb-4"
-          style="grid-template-columns: repeat(3, 1fr)"
-        >
+      <div class="stories-selection">
+        <h4>Selecione stories para incluir</h4>
+        <div class="stories-grid">
           <div
-            *ngFor="let story of userStories"
-            [class]="[
-              'post-item',
-              {
-                'selected-story': selectedStories.includes(story.id),
-                'disabled-story': story.inHighlight
-              }
-            ]"
-            (click)="!story.inHighlight && toggleStory(story.id)"
+            *ngFor="let story of availableStories"
+            class="story-item"
+            [class.selected]="isStorySelected(story.id)"
+            (click)="toggleStorySelection(story.id)"
           >
-            <img [src]="story.image" class="post-image" />
-            <div
-              *ngIf="story.inHighlight"
-              class="absolute inset-0 bg-dark-1/80 flex-center"
-            >
-              <i class="fas fa-lock"></i>
+            <img [src]="story.storieImagemUrl" alt="Story" />
+            <div class="selection-check">
+              <i class="fas fa-check"></i>
+            </div>
+            <div class="cover-badge" *ngIf="coverImage === story.id">
+              <i class="fas fa-bookmark"></i>
             </div>
           </div>
         </div>
-
-        <div class="flex-between">
-          <button class="following-btn" (click)="prevStep()">Voltar</button>
-          <button
-            class="follow-btn"
-            [disabled]="
-              selectedStories.length < 1 || selectedStories.length > 5
-            "
-            (click)="createHighlight()"
-          >
-            Criar
-          </button>
-        </div>
       </div>
+    </div>
+
+    <div class="modal-footer">
+      <button
+        class="create-btn"
+        [disabled]="
+          !nome.trim() || selectedStories.length === 0 || coverImage === null || nameInput.invalid
+        "
+        (click)="criarDestaque()"
+      >
+        Criar
+      </button>
     </div>
   </div>
 </div>

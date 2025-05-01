@@ -15,8 +15,9 @@ export class HeaderComponent {
     private tokenService: TokenService,
     private usuarioService: UsuariosService,
     private route: ActivatedRoute,
+    
   ) {}
-  usuarioLogado: UsuarioSummaryDto = {} as UsuarioSummaryDto;
+  usuarioLogado: any;
 
   private __fotoPerfil: string | undefined;
   getFotoPerfil(): string {

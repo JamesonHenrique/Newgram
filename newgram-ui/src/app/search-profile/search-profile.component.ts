@@ -2,7 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
 import { Title } from '@angular/platform-browser';
 import { FormatNumberPipe } from '../format-number.pipe';
-import { UsuariosService } from '../services/services';
+import { SeguidoresService, UsuariosService } from '../services/services';
 import { Pageable } from '../services/models';
 import { FormsModule } from '@angular/forms';
 import { Subject, Observable, of } from 'rxjs';
@@ -39,7 +39,8 @@ export class SearchProfileComponent {
   constructor(
     private title: Title,
     private usuariosService: UsuariosService,
-    private router: Router
+    private router: Router,
+    private seguidorService: SeguidoresService
   ) {
     this.title.setTitle('Buscar pessoas');
   }
@@ -85,7 +86,46 @@ export class SearchProfileComponent {
       error: (err) => console.error('Erro ao carregar cache:', err)
     });
   }
+  toggleFollow(user: any, event: Event) {
+    event.stopPropagation();
+    if (user.seguindoUsuario) {
+      this.deixarDeSeguir(user, event);
+    } else {
+      this.seguir(user, event);
+    }
+  }
 
+  deixarDeSeguir(user: any, event: Event) {
+    event.stopPropagation();
+
+    this.seguidorService
+      .deixarDeSeguir({ usuarioId: user.id })
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: () => {
+          user.seguindoUsuario = false;
+        },
+        error: (error) => {
+          console.error('Erro ao deixar de seguir:', error);
+        },
+      });
+  }
+
+  seguir(user: any, event: Event) {
+    event.stopPropagation();
+    this.seguidorService
+      .seguirUsuario({ usuarioId: user.id })
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: () => {
+          user.seguindoUsuario = true;
+
+        },
+        error: (error) => {
+          console.error('Erro ao seguir:', error);
+        },
+      });
+  }
   onSearchInput(event: Event): void {
     const term = (event.target as HTMLInputElement).value;
     this.searchSubject.next(term);
@@ -134,9 +174,7 @@ export class SearchProfileComponent {
       }
     });
   }
-  toggleFollowing(user:any, event:Event) {
-    event.stopPropagation()
-  }
+
   findAllUsuarios(): void {
     if (this.pesquisando) {
       this.buscarTodosUsuariosPorTermo(this.searchProfiles.trim()).pipe(

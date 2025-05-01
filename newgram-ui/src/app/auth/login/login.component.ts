@@ -82,7 +82,7 @@ export class LoginComponent implements OnInit {
       next: (response) => {
         this.tokenService.token = response.token as string;
 
-        this.router.navigate(['dashboard']);
+        this.router.navigate(['feed']);
       },
       error: (error) => {
         this.handleLoginError(error);

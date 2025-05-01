@@ -12,4 +12,6 @@ public class StorieVisualizacaoDTO {
 
     @Schema(description = "ID do usuário que visualizou a storie")
     private Long usuarioId;
+
+    private String storieImagemUrl;
 }

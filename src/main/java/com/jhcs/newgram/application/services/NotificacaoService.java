@@ -2,8 +2,8 @@ package com.jhcs.newgram.application.services;
 
 import com.jhcs.newgram.application.dtos.notificacao.NotificacaoResponseDTO;
 import com.jhcs.newgram.core.domain.entities.Notificacao;
-import com.jhcs.newgram.core.domain.enums.TipoNotificacao;
 import com.jhcs.newgram.core.domain.entities.Usuario;
+import com.jhcs.newgram.core.domain.enums.TipoNotificacao;
 import com.jhcs.newgram.core.domain.repositories.NotificacaoRepository;
 import com.jhcs.newgram.core.domain.repositories.UsuarioRepository;
 import org.springframework.beans.factory.annotation.Autowired;

@@ -1,12 +1,10 @@
 package com.jhcs.newgram.application.services;
 
-import com.jhcs.newgram.application.dtos.arquivo.ArquivoDTO;
 import com.jhcs.newgram.application.dtos.seguidor.SeguidorResponseDTO;
 import com.jhcs.newgram.application.dtos.usuario.UsuarioSummaryDTO;
-import com.jhcs.newgram.core.domain.entities.Arquivo;
 import com.jhcs.newgram.core.domain.entities.Seguidor;
-import com.jhcs.newgram.core.domain.enums.TipoNotificacao;
 import com.jhcs.newgram.core.domain.entities.Usuario;
+import com.jhcs.newgram.core.domain.enums.TipoNotificacao;
 import com.jhcs.newgram.core.domain.repositories.SeguidorRepository;
 import com.jhcs.newgram.core.domain.repositories.UsuarioRepository;
 import org.springframework.beans.factory.annotation.Autowired;

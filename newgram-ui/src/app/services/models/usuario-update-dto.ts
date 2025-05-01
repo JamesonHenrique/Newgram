@@ -7,6 +7,25 @@
  * Dados para atualização do usuário
  */
 export interface UsuarioUpdateDto {
+
+  /**
+   * Biografia do usuário
+   */
   bio?: string;
+
+  /**
+   * Foto de perfil do usuário
+   */
+  fotoPerfil?: Blob;
+
+  /**
+   * Nome completo do usuário
+   */
   nome?: string;
+
+
+  /**
+   * Nome de usuário único
+   */
+  username?: string;
 }

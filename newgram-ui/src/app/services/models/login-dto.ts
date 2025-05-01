@@ -7,6 +7,14 @@
  * Credenciais de login do usuário
  */
 export interface LoginDto {
+
+  /**
+   * E-mail do usuário
+   */
   email?: string;
+
+  /**
+   * Senha do usuário
+   */
   senha?: string;
 }

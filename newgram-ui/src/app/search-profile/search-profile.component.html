@@ -66,10 +66,14 @@
               &#64;{{ suggestionUser.username }}
             </p>
             <button
-            (click)="toggleFollowing(suggestionUser, $event)"
-              class="follow-btn w-full py-1 px-3 text-xs sm:text-sm bg-primary-500 hover:bg-primary-600 text-white rounded-full transition-colors duration-200"
+            (click)="toggleFollow(suggestionUser, $event)"
+              class=" w-full py-1 px-3 text-xs sm:text-sm bg-primary-500 hover:bg-primary-600 text-white rounded-full transition-colors duration-200"
+              [ngClass]="{
+                'follow-btn': !suggestionUser.seguindoUsuario,
+                'following-btn': suggestionUser.seguindoUsuario
+              }"
             >
-              Seguir
+              {{ suggestionUser.seguindoUsuario ? 'Seguindo' : 'Seguir' }}
             </button>
           </div>
 
@@ -103,7 +107,16 @@
             <p class="connection-username ">&#64;{{ connection.username }}</p>
             <p class="connection-mutual">{{ connection.commonFollowers }} amigos em comum</p>
           </div>
-          <button class="follow-btn">Seguir</button>
+          <button
+          (click)="toggleFollow(connection, $event)"
+          [ngClass]="{
+            'follow-btn': !connection.seguindoUsuario,
+            'following-btn': connection.seguindoUsuario
+          }"
+        >
+          {{ connection.seguindoUsuario ? 'Seguindo' : 'Seguir' }}
+        </button>
+
         </div>
       </div>
     </section>
@@ -144,7 +157,7 @@
                 <span class="stat-label">Seguidores</span>
               </div>
               <div class="stat-item">
-                <span class="stat-value">{{ person.fonumeroSeguindollowing | formatNumber }}</span>
+                <span class="stat-value">{{ person.numeroSeguindo | formatNumber }}</span>
                 <span class="stat-label">Seguindo</span>
               </div>
             </div>
@@ -153,7 +166,15 @@
             >
               {{ person.bio }}
             </p>
-            <button class="follow-btn w-full">Seguir</button>
+            <button
+            (click)="toggleFollow(person, $event)"
+            [ngClass]="{
+              'follow-btn': !person.seguindoUsuario,
+              'following-btn': person.seguindoUsuario
+            }"
+          >
+            {{ person .seguindoUsuario ? 'Seguindo' : 'Seguir' }}
+          </button>
           </div>
 
 

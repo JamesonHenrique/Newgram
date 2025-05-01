@@ -12,12 +12,11 @@ import { AuthGuard } from './services/guard/auth.guard';
 import { UsuarioResolver } from './services/resolver/usuario.resolver';
 import { LoginRedirectGuard } from './services/guard/login-redirect.guard';
 
-
 export const routes: Routes = [
   {
     path: '',
-    canActivate: [LoginRedirectGuard],
-    children: []
+    pathMatch: 'full',
+    redirectTo: 'feed'
   },
   {
     path: 'feed',
@@ -65,6 +64,6 @@ export const routes: Routes = [
   },
   {
     path: '**',
-    redirectTo: ''
+    redirectTo: 'feed'
   }
 ];

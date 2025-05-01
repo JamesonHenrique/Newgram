@@ -59,7 +59,19 @@ public class S3StorageService {
             throw new ArquivoException("Erro ao baixar arquivo do S3: " + e.getMessage());
         }
     }
+    public byte[] downloadFileByUrl(String fileUrl) {
+        try {
+            String filePath = extractFilePathFromUrl(fileUrl);
+            return downloadFile(filePath);
+        } catch (Exception e) {
+            throw new ArquivoException("Erro ao baixar arquivo do S3 por URL: " + e.getMessage());
+        }
+    }
 
+    private String extractFilePathFromUrl(String fileUrl) {
+        String baseUrl = "https://" + bucketName + ".s3.amazonaws.com/";
+        return fileUrl.replace(baseUrl, "").split("\\?")[0];
+    }
     public void deleteFile(String filePath) {
         amazonS3.deleteObject(bucketName, filePath);
         log.info("Arquivo removido do S3: {}", filePath);

@@ -1,6 +1,5 @@
 package com.jhcs.newgram.application.dtos.post;
 
-import com.jhcs.newgram.application.dtos.arquivo.ArquivoDTO;
 import com.jhcs.newgram.application.dtos.usuario.UsuarioSummaryDTO;
 import lombok.Data;
 

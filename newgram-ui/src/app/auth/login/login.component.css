@@ -493,9 +493,7 @@
     order: -1;
   }
 
-  .login-form-section {
-    padding: 2rem;
-  }
+
 }
 
 @media (max-width: 768px) {

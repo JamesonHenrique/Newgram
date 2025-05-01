@@ -7,7 +7,19 @@
  * Dados do comentário a ser criado
  */
 export interface ComentarioCreateDto {
+
+  /**
+   * ID do comentário pai, caso seja uma resposta
+   */
   comentarioPaiId?: number;
+
+  /**
+   * ID do post ao qual o comentário pertence
+   */
   postId?: number;
+
+  /**
+   * Texto do comentário
+   */
   texto?: string;
 }

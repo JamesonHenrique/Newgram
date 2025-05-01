@@ -54,7 +54,7 @@ public class OpenApiConfig {
                         .termsOfService("https://example.com/terms")
                         .contact(new Contact()
                                 .name("Jameson Henrique")
-                                .url("https://github.com/JamesonHenrique")
+                                .url("https://jamesonhenrique-portfolio.vercel.app/")
                                 .email("jamesonhenrique14@gmail.com"))
                         .license(new License()
                                 .name("Apache 2.0")
@@ -94,9 +94,8 @@ public class OpenApiConfig {
                 new Tag().name("Usuários").description("Gerenciamento de usuários"),
                 new Tag().name("Posts").description("Operações com posts"),
                 new Tag().name("Comentários").description("Gerenciamento de comentários"),
-                new Tag().name("Stories").description("Operações com stories"),
-                new Tag().name("Mensagens").description("Sistema de mensagens"),
-                new Tag().name("Arquivos").description("Upload e download de arquivos")
+                new Tag().name("Stories").description("Operações com stories")
+
         );
     }
 

@@ -21,7 +21,7 @@ import { TokenDto } from '../models/token-dto';
 
 
 /**
- * Operações relacionadas à autenticação
+ * API para autenticação e registro de usuários
  */
 @Injectable({ providedIn: 'root' })
 export class AutenticacaoService extends BaseService {
@@ -61,6 +61,7 @@ export class AutenticacaoService extends BaseService {
       map((r: StrictHttpResponse<TokenDto>): TokenDto => r.body)
     );
   }
+
 
   /** Path part for operation `refreshToken()` */
   static readonly RefreshTokenPath = '/auth/refresh-token';

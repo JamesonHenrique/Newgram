@@ -1,6 +1,5 @@
 package com.jhcs.newgram.application.services;
 
-import com.jhcs.newgram.application.dtos.arquivo.ArquivoDTO;
 import com.jhcs.newgram.application.dtos.post.PostCreateDTO;
 import com.jhcs.newgram.application.dtos.post.PostResponseDTO;
 import com.jhcs.newgram.application.dtos.post.PostSummaryDTO;
@@ -8,28 +7,19 @@ import com.jhcs.newgram.application.dtos.post.PostUpdateDTO;
 import com.jhcs.newgram.application.dtos.usuario.UsuarioSummaryDTO;
 import com.jhcs.newgram.core.domain.entities.*;
 import com.jhcs.newgram.core.domain.enums.TipoArquivo;
-import com.jhcs.newgram.core.domain.repositories.ComentarioRepository;
-import com.jhcs.newgram.core.domain.repositories.CurtidaRepository;
-import com.jhcs.newgram.core.domain.repositories.HashtagRepository;
-import com.jhcs.newgram.core.domain.repositories.PostRepository;
-import com.jhcs.newgram.core.domain.repositories.SalvosRepository;
-import com.jhcs.newgram.core.domain.repositories.UsuarioRepository;
-import com.jhcs.newgram.core.domain.utils.ArquivoUtils;
+import com.jhcs.newgram.core.domain.repositories.*;
 import com.jhcs.newgram.infrastructure.aws.S3StorageService;
 import com.jhcs.newgram.infrastructure.exception.BusinessException;
 import com.jhcs.newgram.infrastructure.exception.ResourceNotFoundException;
 import com.jhcs.newgram.infrastructure.exception.UnauthorizedException;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cglib.core.Local;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.sql.Timestamp;
 import java.time.LocalDateTime;
-import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -136,7 +126,6 @@ public class PostService {
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new ResourceNotFoundException("Post não encontrado"));
 
-        // Verificar se o usuário é o autor do post
         if (!post.getAutor().getId().equals(usuarioId)) {
             throw new UnauthorizedException("Você não tem permissão para excluir este post");
         }
@@ -165,7 +154,6 @@ public class PostService {
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new ResourceNotFoundException("Post não encontrado"));
 
-        // Verificar se o usuário é o autor do post
         if (!post.getAutor().getId().equals(usuarioId)) {
             throw new UnauthorizedException("Você não tem permissão para desarquivar este post");
         }

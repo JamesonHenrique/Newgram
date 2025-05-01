@@ -1,6 +1,7 @@
 package com.jhcs.newgram.application.dtos.destaque;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.Builder;
 import lombok.Data;
 
 import java.util.Date;
@@ -18,4 +19,6 @@ public class DestaqueSummaryDTO {
 
     @Schema(description = "Quantidade de stories associadas ao destaque", example = "5")
     private Integer quantidadeStories;
+    @Schema(description = "URL da foto de capa do destaque", example = "foto.jpg")
+    private String destaqueFotoDeCapaUrl;
 }

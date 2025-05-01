@@ -7,9 +7,10 @@ import { PostDetailsComponent } from '../post-details/post-details.component';
 import { PaginationComponent } from '../pagination/pagination.component';
 import { of, Subject } from 'rxjs';
 import { takeUntil, catchError, finalize } from 'rxjs/operators';
+import { RouterLink } from '@angular/router';
 @Component({
   selector: 'app-favorite',
-  imports: [CommonModule, PostDetailsComponent, PaginationComponent],
+  imports: [CommonModule, PostDetailsComponent, PaginationComponent, RouterLink],
   templateUrl: './favorite.component.html',
   styleUrl: './favorite.component.css',
 })

@@ -1,10 +1,22 @@
+import { map } from 'rxjs/operators';
 import { TokenService } from './../services/token/token.service';
-import { Component } from '@angular/core';
+import {
+  ChangeDetectorRef,
+  Component,
+  ElementRef,
+  ViewChild,
+} from '@angular/core';
 import { Title } from '@angular/platform-browser';
 import { PostDetailsComponent } from '../post-details/post-details.component';
 import { CommonModule } from '@angular/common';
 import { FormatNumberPipe } from '../format-number.pipe';
-import { PostsService, UsuariosService } from '../services/services';
+import {
+  DestaquesService,
+  PostsService,
+  SeguidoresService,
+  StoriesService,
+  UsuariosService,
+} from '../services/services';
 import { ActivatedRoute } from '@angular/router';
 import {
   catchError,
@@ -13,27 +25,89 @@ import {
   takeUntil,
   tap,
   throwError,
+  finalize,
+  forkJoin,
+  of,
 } from 'rxjs';
-import { StoryModalComponent } from "../story-modal/story-modal.component";
+import { StoryModalComponent } from '../story-modal/story-modal.component';
+import { CreateHighlightModalComponent } from '../create-highlight-modal/create-highlight-modal.component';
+import { CreateStoryModalComponent } from '../create-story-modal/create-story-modal.component';
+import { DateFormatPipe } from '../services/pipes/date-format-pipe';
+import { EditProfileModalComponent } from '../edit-profile-modal/edit-profile-modal.component';
 
 @Component({
   selector: 'app-profile',
-  imports: [PostDetailsComponent, CommonModule, FormatNumberPipe, StoryModalComponent],
+  standalone: true,
+  imports: [
+    PostDetailsComponent,
+    CommonModule,
+    FormatNumberPipe,
+    CreateHighlightModalComponent,
+    StoryModalComponent,
+    CreateStoryModalComponent,
+    EditProfileModalComponent,
+  ],
   templateUrl: './profile.component.html',
   styleUrl: './profile.component.css',
 })
 export class ProfileComponent {
   private destroy$ = new Subject<void>();
+  loading = false;
+  error: string | null = null;
+
+  userProfile: any = null;
+  username: string = '';
+
+  posts: any[] = [];
+  postSelected: any = null;
+  selectedIndex: number | null = null;
+
+  storiesAtivos: any[] = [];
+  currentStory: any = null;
+  viewedStoriesIds: Set<number> = new Set<number>();
+  lastStoriesCount: number = 0;
+
+  destaque: any[] = [];
+
+  isStoryModalOpen = false;
+  isCreateHighlightModalOpen = false;
+  isCreateStoryModalOpen = false;
+  viewed = false;
+  isEditProfileModalOpen = false;
+  storiesExists = true;
+
   constructor(
     private title: Title,
     private usuariosService: UsuariosService,
     private route: ActivatedRoute,
     private postsService: PostsService,
-    private tokenService: TokenService
+    private tokenService: TokenService,
+    private seguidorService: SeguidoresService,
+    private destaqueService: DestaquesService,
+    private storiesService: StoriesService,
+    private cdr: ChangeDetectorRef
   ) {}
+  @ViewChild('highlightsContainer') highlightsContainer!: ElementRef;
+
+  scrollHighlights(direction: 'left' | 'right') {
+    const container = this.highlightsContainer.nativeElement;
+    const scrollAmount = 200;
+    if (direction === 'left') {
+      container.scrollBy({ left: -scrollAmount, behavior: 'smooth' });
+    } else {
+      container.scrollBy({ left: scrollAmount, behavior: 'smooth' });
+    }
+  }
+
+  shouldShowNavButtons(): boolean {
+    if (!this.highlightsContainer) return false;
+    const container = this.highlightsContainer.nativeElement;
+    return container.scrollWidth > container.clientWidth;
+  }
   ngOnInit(): void {
     this.title.setTitle('Perfil');
     this.loadProfileAndPosts();
+    this.loadViewedStoriesFromStorage();
   }
 
   ngOnDestroy(): void {
@@ -41,210 +115,219 @@ export class ProfileComponent {
     this.destroy$.complete();
   }
 
-  postss = [
-    {
-      id: 1,
-      avatar:
-        'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSjduzTUsXisG5zpKy2-Sjrm6Qstwzhk0x8Ew&s',
-      author: 'Davy Jones - GameplayRJ',
-      time: '2 horas atrás',
-      location: 'Live no Twitch',
-      text: 'Live hoje às 20h testando o novo patch de Elden Ring! Quem vai tá lá? 🎮🔥 #eldenring #gameplayrj #live',
-      image: 'https://i.ytimg.com/vi/wulMWEhnkX4/maxresdefault.jpg',
-      tags: ['#eldenring', '#gameplayrj', '#live', '#fps'],
-      likes: 12500,
-      comments: 870,
-      isLiked: false,
-      isAnimating: false,
-      isFavorite: false,
-    },
-    {
-      id: 2,
-      avatar:
-        'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSjduzTUsXisG5zpKy2-Sjrm6Qstwzhk0x8Ew&s',
-      author: 'Davy Jones - GameplayRJ',
-      time: '1 dia atrás',
-      location: 'Estúdio GameplayRJ',
-      text: 'Review completo do novo God of War Ragnarök Valhalla! Nota 10/10 pra essa DLC GRÁTIS da Santa Monica 🪓🇳🇴 ',
-      image: 'https://i.ytimg.com/vi/lK60hiaHSkE/sddefault.jpg',
-      tags: [' #godofwar', ' #review', ' #ps5', ' #dlc'],
-      likes: 28700,
-      comments: 1540,
-      isLiked: false,
-      isAnimating: false,
-      isFavorite: false,
-    },
-    {
-      id: 3,
-      avatar:
-        'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSjduzTUsXisG5zpKy2-Sjrm6Qstwzhk0x8Ew&s',
-      author: 'Davy Jones - GameplayRJ',
-      time: '3 dias atrás',
-      location: 'Evento GameXP',
-      text: 'Melhores momentos do evento GameXP 2024! O futuro dos jogos tá VINDO com força 💥 Confira o vlog completo no YouTube! #gamexp #evento #gamer',
-      image:
-        'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTTj8vg5aIAgbAodU46pIrWQCKAi3d22JqMUw&s',
-      tags: ['#gamexp', '#evento', '#vlog', '#gamer'],
-      likes: 34200,
-      comments: 2100,
-      isLiked: false,
-      isAnimating: false,
-      isFavorite: false,
-    },
-  ];
-  imageBase =
-    'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSCEIme6O8TwaQL3UJOKZMng381Zjp1q3_pnA&s';
-  userProfilee = [
-    {
-      name: 'Davy Jones - GameplayRJ',
-      username: 'gameplayrj',
-      bio: 'Criador de conteúdo GAMER 🎮 | Notícias, reviews e gameplay dos melhores jogos! 🕹️ | PC, PS5, Xbox e Nintendo | Parcerias: gameplayrj@email.com',
-      avatar:
-        'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSjduzTUsXisG5zpKy2-Sjrm6Qstwzhk0x8Ew&s',
-      followers: 150000,
-      following: 250,
-      followed: false,
-
-      posts: 1240,
-      highlights: [
-        {
-          title: 'Gameplays',
-          images: [
-            'https://st2.depositphotos.com/4744673/8357/i/450/depositphotos_83575466-stock-photo-looking-through-window-airplane.jpg',
-            'https://images.unsplash.com/photo-1598550476439-6847785fcea6?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80',
-            'https://images.unsplash.com/photo-1542751371-adc38448a05e?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80'
-          ]
-        },
-        {
-          title: 'Reviews',
-          images: [
-            'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS4ixlqhwWUSt63c0RXEUFTCd1DVbp4hvxo8Q&s',
-            'https://images.unsplash.com/photo-1493711662062-fa541adb3fc8?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80'
-          ]
-        },
-        {
-          title: 'Dicas',
-          images: [
-            'https://images.unsplash.com/photo-1522542550221-31fd19575a2d?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80',
-            'https://images.unsplash.com/photo-1522542550221-31fd19575a2d?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80'
-          ]
-        },
-        {
-          title: 'Eventos',
-          images: [
-            'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ_VcSIKb_yfIhKVBGf1mWpS6-lfmKe_h7mLw&s',
-            'https://images.unsplash.com/photo-1511578314322-379afb476865?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80'
-          ]
-        },
-        {
-          title: 'Memes',
-          images: [
-            'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQJet3DAVZswBCCgf8qXaSNSscay5LBfmVMNg&s',
-            'https://images.unsplash.com/photo-1605559424843-9e4c228bf1c2?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80'
-          ]
-        }
-      ]
-    },
-  ];
-  postSelected: any = [];
-  selectedIndex: any = [];
-  following: any = this.userProfilee[0].followed;
-  userProfile: any = [];
-  username: string = '';
-  posts: any = [];
-  isStoryModalOpen = false;
-  currentStory: any = null;
-  profileAvatar = 'https://media.istockphoto.com/id/610259354/pt/foto/jovem-mulher-usando-dslr-c%C3%A2mara.jpg?s=612x612&w=0&k=20&c=R1agbbanj4qKfZ6dFERdUovwchDOgIvtlJmEnLEO_XY=';
-  viewed: boolean = false;
-  storiesExists: boolean = true;
-showCreateHighlightModal = false;
-
-openCreateHighlightModal() {
-  this.showCreateHighlightModal = true;
-}
-
-onHighlightCreated(newHighlight: any) {
-
-  console.log('Novo highlight criado:', newHighlight);
-  this.showCreateHighlightModal = false;
-
-}
-  toggleViewed() {
-    this.viewed = !this.viewed;
-
-  }
-
-  checkStories(): void {
-    this.storiesExists = this.userProfilee[0].highlights.length > 0;
-  }
-  openStory(highlight: any) {
-    this.currentStory = highlight;
-    this.isStoryModalOpen = true;
-    document.body.style.overflow = 'hidden';
-  }
-
-  closeStoryModal() {
-    this.isStoryModalOpen = false;
-    document.body.style.overflow = '';
-  }
   private loadProfileAndPosts(): void {
+    this.loading = true;
+    this.error = null;
+
     this.route.params
       .pipe(
-        tap((params) => (this.username = params['username'])),
+        tap((params) => (this.username = params['username'] || '')),
         switchMap(() => this.carregarPerfil()),
-        switchMap(() => this.findAllPostsById()),
-        takeUntil(this.destroy$)
+        switchMap(() =>
+          forkJoin([
+            this.findAllPostsById(),
+            this.findAllDestaquesByUsername(),
+            this.findAllStoriesAtivosByUserId(),
+          ])
+        ),
+        takeUntil(this.destroy$),
+        finalize(() => (this.loading = false))
       )
       .subscribe({
-        error: (err) => console.error('Erro ao carregar perfil e posts:', err),
+        error: (err) => {
+          console.error('Erro ao carregar perfil e posts:', err);
+          this.error = 'Erro ao carregar perfil. Tente novamente mais tarde.';
+        },
       });
   }
-  get isPerfilDoUsuarioLogado(): boolean {
-    return (
-      !!this.userProfile && this.userProfile.id === this.tokenService.userId
-    );
-  }
-  get nomeDoUsuario(): string {
-    return this.userProfile?.nome || '';
-  }
+
   private carregarPerfil() {
     if (!this.username) {
+      this.error = 'Username não definido';
       return throwError(() => new Error('Username não definido'));
     }
 
     return this.usuariosService
       .buscarUsuarioPorUsername({ username: this.username })
       .pipe(
-        tap((usuario) => {
-          this.userProfile = usuario;
-        }),
+        tap((usuario) => (this.userProfile = usuario)),
         catchError((err) => {
           console.error('Erro ao carregar perfil:', err);
+          this.error = 'Usuário não encontrado';
           return throwError(() => err);
         })
       );
   }
-  getFotoPerfil(user: any): string {
-    if (!user.fotoPerfil || user.fotoPerfil.trim() === '') {
-      return '/icons/profile-placeholder.svg';
+
+  private findAllPostsById() {
+    if (!this.userProfile?.id) {
+      this.posts = [];
+      return of([]);
     }
-    if (user.fotoPerfil.includes('post-placeholder.svg')) {
-      return user.fotoPerfil;
+
+    return this.postsService
+      .listarPostsDoUsuario({
+        usuarioId: this.userProfile.id,
+        pageable: { page: 0, size: 1000, sort: [''] },
+      })
+      .pipe(
+        map((posts) => posts.content || []),
+        tap((posts) => {
+          this.posts = posts;
+        }),
+        catchError((err) => {
+          console.error('Erro ao buscar posts:', err);
+          this.posts = [];
+          this.error = 'Erro ao carregar posts';
+          return of([]);
+        })
+      );
+  }
+  private findAllDestaquesByUsername() {
+    return this.destaqueService
+      .listarDestaquesPorUsername({ username: this.username })
+      .pipe(
+        tap((destaques) => (this.destaque = destaques || [])),
+        catchError((err) => {
+          console.error('Erro ao buscar destaques:', err);
+          return throwError(() => err);
+        })
+      );
+  }
+
+  private findAllStoriesAtivosByUserId() {
+    if (!this.userProfile?.id)
+      return throwError(() => new Error('ID do usuário não disponível'));
+
+    return this.storiesService
+      .listarStoriesDoUsuario({ autorId: this.userProfile.id })
+      .pipe(
+        tap((stories) => {
+          if (stories.length !== this.lastStoriesCount) {
+            this.viewed = false;
+            this.lastStoriesCount = stories.length;
+          }
+          this.storiesAtivos = stories || [];
+          this.updateViewedStatus();
+          this.saveViewedStoriesToStorage();
+        }),
+        catchError((err) => {
+          console.error('Erro ao buscar stories:', err);
+          return throwError(() => err);
+        })
+      );
+  }
+
+  openStory(storyData: any) {
+    if (!storyData) return;
+
+    this.currentStory = storyData;
+    this.isStoryModalOpen = true;
+    document.body.style.overflow = 'hidden';
+
+    if (!storyData.stories) {
+      if (Array.isArray(storyData)) {
+        storyData.forEach((story: any) => this.viewedStoriesIds.add(story.id));
+      } else if (storyData.id) {
+        this.viewedStoriesIds.add(storyData.id);
+      }
+      this.updateViewedStatus();
+    }
+  }
+
+  closeStoryModal() {
+    this.isStoryModalOpen = false;
+    document.body.style.overflow = '';
+  }
+
+  getStoryImages(storyData: any): string[] {
+    if (!storyData) return [];
+
+    if (storyData?.stories) {
+      return storyData.stories
+        .map((story: any) => story.storieImagemUrl)
+        .filter(Boolean);
+    }
+
+    if (Array.isArray(storyData)) {
+      return storyData
+        .map((story: any) => story.storieImagemUrl)
+        .filter(Boolean);
+    }
+
+    if (storyData?.storieImagemUrl) {
+      return [storyData.storieImagemUrl];
+    }
+
+    return [];
+  }
+
+  private loadViewedStoriesFromStorage() {
+    const saved = localStorage.getItem('viewedStories');
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        this.viewedStoriesIds = new Set(parsed.ids);
+        this.lastStoriesCount = parsed.count || 0;
+      } catch (e) {
+        console.error('Erro ao ler viewedStories do localStorage', e);
+      }
+    }
+  }
+
+  private saveViewedStoriesToStorage() {
+    localStorage.setItem(
+      'viewedStories',
+      JSON.stringify({
+        ids: Array.from(this.viewedStoriesIds),
+        count: this.lastStoriesCount,
+      })
+    );
+  }
+
+  updateViewedStatus() {
+    this.viewed =
+      this.storiesAtivos.length > 0 &&
+      this.storiesAtivos.every((story: any) =>
+        this.viewedStoriesIds.has(story.id)
+      );
+  }
+
+  get isPerfilDoUsuarioLogado(): boolean {
+    return (
+      !!this.userProfile && this.userProfile.id === this.tokenService.userId
+    );
+  }
+
+  get nomeDoUsuario(): string {
+    return this.userProfile?.nome || '';
+  }
+
+  getFotoPerfil(user: any): string {
+    if (!user?.fotoPerfil || user.fotoPerfil.trim() === '') {
+      return '/icons/profile-placeholder.svg';
     }
     return user.fotoPerfil;
   }
+
   getImagemPost(imagem: string | null | undefined): string {
     if (!imagem || imagem.trim() === '') {
       return '/icons/post-placeholder.svg';
     }
-
-    if (imagem.includes('post-placeholder.svg')) {
-      return imagem;
-    }
-
     return imagem;
   }
-  handleFotoPerfilError( event: Event): void {
+  getDestaqueFotoDeCapa(destaque: any): string {
+    if (!destaque || destaque.trim() === '') {
+      return '/icons/post-placeholder.svg';
+    }
+
+    if (destaque.includes('post-placeholder.svg')) {
+      return destaque;
+    }
+
+    return destaque;
+  }
+  handleFotoPerfilError(event: Event): void {
     const imgElement = event.target as HTMLImageElement;
     imgElement.src = '/icons/profile-placeholder.svg';
     imgElement.onerror = null;
@@ -255,42 +338,82 @@ onHighlightCreated(newHighlight: any) {
     imgElement.src = '/icons/post-placeholder.svg';
     imgElement.onerror = null;
   }
-  private findAllPostsById() {
-    if (!this.userProfile?.id) {
-      return throwError(() => new Error('ID do usuário não disponível'));
-    }
 
-    return this.postsService
-      .listarPostsDoUsuario({
-        usuarioId: this.userProfile.id,
-        pageable: {
-          page: 0,
-          size: 10,
-          sort: [''],
-        },
-      })
-      .pipe(
-        tap((posts) => {
-          this.posts = posts.content;
-        }),
-        catchError((err) => {
-          console.error('Erro ao buscar posts:', err);
-          return throwError(() => err);
-        })
-      );
+  ifVerified(): boolean {
+    return this.userProfile?.numeroSeguidores > 100000;
   }
 
-  follow() {
-    this.following = !this.following;
+  toggleFollow(user: any, event: Event) {
+    event.stopPropagation();
+    user.seguindoUsuario
+      ? this.deixarDeSeguir(user, event)
+      : this.seguir(user, event);
   }
-  ifVerified() {
-    return this.userProfile.numeroSeguidores > 100000;
+
+  private seguir(user: any, event: Event) {
+    event.stopPropagation();
+    this.seguidorService
+      .seguirUsuario({ usuarioId: user.id })
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: () => (user.seguindoUsuario = true),
+        error: (error) => console.error('Erro ao seguir:', error),
+      });
   }
+
+  private deixarDeSeguir(user: any, event: Event) {
+    event.stopPropagation();
+    this.seguidorService
+      .deixarDeSeguir({ usuarioId: user.id })
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: () => (user.seguindoUsuario = false),
+        error: (error) => console.error('Erro ao deixar de seguir:', error),
+      });
+  }
+
+  openCreateHighlightModal() {
+    this.isCreateHighlightModalOpen = true;
+  }
+
+  closeCreateHighlightModal() {
+    this.isCreateHighlightModalOpen = false;
+  }
+  openEditProfileModal() {
+    this.isEditProfileModalOpen = true;
+  }
+
+  onProfileUpdated(updatedUser: any) {
+    this.userProfile = { ...this.userProfile, ...updatedUser };
+    this.carregarPerfil().subscribe();
+  }
+  handleCreateHighlight(event: { name: string; selectedStories: string[] }) {
+    console.log('Criando destaque:', event);
+    this.findAllDestaquesByUsername().subscribe(() => {
+      this.cdr.detectChanges();
+    });
+  }
+  openCreateStoryModal() {
+    this.isCreateStoryModalOpen = true;
+  }
+
+  closeCreateStoryModal() {
+    this.isCreateStoryModalOpen = false;
+  }
+
+  handleCreateStory(files: File[]) {
+    if (!files.length) return;
+
+    this.closeCreateStoryModal();
+  }
+
   openModal(post: any, index: number) {
     this.postSelected = post;
     this.selectedIndex = index;
   }
+
   openPostDetails(post: any, event: Event) {
+    event.stopPropagation();
     this.postSelected = post;
   }
 }

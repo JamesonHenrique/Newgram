@@ -58,6 +58,7 @@ import { SalvarPost$Params } from '../fn/posts/salvar-post';
 import { salvarFotoDoPost, SalvarFotoDoPost$Params } from '../fn/posts/upload-imagem-post';
 
 
+
 /**
  * API para gerenciamento de posts
  */
@@ -208,13 +209,19 @@ export class PostsService extends BaseService {
    *
    * This method sends `multipart/form-data` and handles request body of type `multipart/form-data`.
    */
-  salvarFotoDoPost$Response(params:SalvarFotoDoPost$Params , context?: HttpContext): Observable<StrictHttpResponse<number>> {
+  uploadImagemPost$Response(params: SalvarFotoDoPost$Params, context?: HttpContext): Observable<StrictHttpResponse<number>> {
     return salvarFotoDoPost(this.http, this.rootUrl, params, context);
   }
 
-  salvarFotoDoPost(params: SalvarFotoDoPost$Params, context?: HttpContext): Observable<number> {
-    return this.salvarFotoDoPost$Response(params, context).pipe(
-      map((r: StrictHttpResponse<number>): number => r.body)
+  /**
+   * This method provides access only to the response body.
+   * To access the full response (for headers, for example), `uploadImagemPost$Response()` instead.
+   *
+   * This method sends `multipart/form-data` and handles request body of type `multipart/form-data`.
+   */
+  uploadImagemPost(params: SalvarFotoDoPost$Params, context?: HttpContext): Observable<number> {
+    return this.uploadImagemPost$Response(params, context).pipe(
+      map((r: StrictHttpResponse<number>) => r.body)
     );
   }
 

@@ -2,10 +2,8 @@ package com.jhcs.newgram.application.dtos.comentario;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import com.jhcs.newgram.application.dtos.usuario.UsuarioSummaryDTO;
-import com.jhcs.newgram.application.dtos.arquivo.ArquivoDTO;
 import lombok.Data;
 import java.util.Date;
-import java.util.List;
 
 @Data
 public class ComentarioResponseDTO {

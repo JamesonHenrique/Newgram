@@ -5,6 +5,7 @@ CREATE TABLE storie (
     data_expiracao TIMESTAMP NOT NULL,
     destacado BOOLEAN DEFAULT FALSE,
     autor_id BIGINT NOT NULL,
+    storie_imagem_url VARCHAR(255),
     FOREIGN KEY (autor_id) REFERENCES usuario (id) ON DELETE CASCADE
 );
 
@@ -32,6 +33,8 @@ CREATE TABLE destaque (
     id BIGSERIAL PRIMARY KEY,
     nome VARCHAR(100) NOT NULL,
     usuario_id BIGINT NOT NULL,
+    destaque_foto_de_capa_url VARCHAR(255),
+    data_criacao TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (usuario_id) REFERENCES usuario (id) ON DELETE CASCADE
 );
 

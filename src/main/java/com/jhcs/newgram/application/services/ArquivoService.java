@@ -30,9 +30,6 @@ import static java.io.File.separator;
 @RequiredArgsConstructor
 @Slf4j
 public class ArquivoService {
-
-
-
     @Value("${file.max-size:5242880}")
     private long maxFileSize;
     @Autowired
@@ -49,7 +46,6 @@ public class ArquivoService {
         final String fileUploadSubPath = "usuarios/" + nomeUsuario + "/" + tipoArquivo.getPasta();
         return s3StorageService.uploadFile(sourceFile, fileUploadSubPath);
     }
-
 
 
     private void validarArquivo(MultipartFile arquivo) {

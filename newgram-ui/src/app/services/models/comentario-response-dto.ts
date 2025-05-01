@@ -4,13 +4,49 @@
 
 import { UsuarioSummaryDto } from '../models/usuario-summary-dto';
 export interface ComentarioResponseDto {
+
+  /**
+   * Informações do autor do comentário
+   */
   autor?: UsuarioSummaryDto;
+
+  /**
+   * ID do comentário pai, caso seja uma resposta
+   */
   comentarioPaiId?: number;
+
+  /**
+   * Indica se o comentário foi curtido pelo usuário atual
+   */
   curtidoPeloUsuario?: boolean;
+
+  /**
+   * Data de criação do comentário
+   */
   dataCriacao?: string;
+
+  /**
+   * ID do comentário
+   */
   id?: number;
+
+  /**
+   * Número de curtidas do comentário
+   */
   numeroCurtidas?: number;
+
+  /**
+   * Número de respostas ao comentário
+   */
   numeroRespostas?: number;
+
+  /**
+   * ID do post ao qual o comentário pertence
+   */
   postId?: number;
+
+  /**
+   * Texto do comentário
+   */
   texto?: string;
 }

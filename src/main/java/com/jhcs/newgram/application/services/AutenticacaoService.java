@@ -1,31 +1,22 @@
 package com.jhcs.newgram.application.services;
 
-import com.jhcs.newgram.application.dtos.arquivo.ArquivoDTO;
-import com.jhcs.newgram.application.dtos.arquivo.ArquivoUploadResponseDTO;
 import com.jhcs.newgram.application.dtos.usuario.TokenDTO;
 import com.jhcs.newgram.application.dtos.usuario.UsuarioCreateDTO;
-
 import com.jhcs.newgram.application.dtos.usuario.UsuarioResponseDTO;
-import com.jhcs.newgram.core.domain.entities.Arquivo;
 import com.jhcs.newgram.core.domain.entities.StatusUsuario;
 import com.jhcs.newgram.core.domain.entities.Usuario;
 import com.jhcs.newgram.core.domain.repositories.SeguidorRepository;
 import com.jhcs.newgram.core.domain.repositories.StatusUsuarioRepository;
 import com.jhcs.newgram.core.domain.repositories.UsuarioRepository;
-import com.jhcs.newgram.core.domain.utils.ArquivoUtils;
 import com.jhcs.newgram.infrastructure.security.JwtService;
-
 import lombok.RequiredArgsConstructor;
-import org.flywaydb.core.internal.util.FileUtils;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
 import java.util.Date;
 
 @Service
@@ -38,8 +29,8 @@ public class AutenticacaoService {
     private final AuthenticationManager authenticationManager;
     private final StatusUsuarioRepository statusUsuarioRepository;
     private final SeguidorRepository seguidorRepository;
-    private final ArquivoService arquivoService;
     private final UsuarioService usuarioService;
+
     @Transactional
     public TokenDTO registrar(UsuarioCreateDTO dto) {
         if (!dto.getSenha().equals(dto.getConfirmacaoSenha())) {

@@ -1,3 +1,4 @@
+import { HashtagsService } from './../services/services/hashtags.service';
 import { Pageable } from './../services/models/pageable';
 import { PostsService } from './../services/services/posts.service';
 import { CommonModule } from '@angular/common';
@@ -9,6 +10,7 @@ import { DateFormatPipe } from '../services/pipes/date-format-pipe';
 import { FormsModule } from '@angular/forms';
 import { Observable, Subject, forkJoin, of } from 'rxjs';
 import { takeUntil, catchError, finalize, tap, map } from 'rxjs/operators';
+import { HashtagSummaryDto } from '../services/models';
 
 @Component({
   selector: 'app-explore',
@@ -45,24 +47,11 @@ export class ExploreComponent {
   numberOfElements = 0;
   totalPages = 0;
   totalElements = 0;
-  popularTags = [
-    'Humor',
-    'Esportes',
-    'VidaSaudável',
-    'Música',
-    'Carnaval',
-    'Show',
-    'Família',
-    'Domingão',
-    'Viagem',
-    'Turismo',
-    'RioGrandeDoSul',
-    'Evento',
-    'TV',
-    'Entretenimento',
-  ];
+  popularTags:any = [];
+  tagsByPostId: { [postId: number]: HashtagSummaryDto[] } = {};
+  isLoading = false;
 
-  constructor(private title: Title, private postsService: PostsService) {
+  constructor(private title: Title, private postsService: PostsService, private hashtagsService: HashtagsService) {
     this.title.setTitle('Explore');
   }
 
@@ -79,9 +68,7 @@ export class ExploreComponent {
     return this.termo.trim().length > 0;
   }
 
-  get isLoading(): boolean {
-    return this.loading;
-  }
+
 
   private loadInitialPosts(): void {
     this.loading = true;
@@ -99,6 +86,18 @@ export class ExploreComponent {
       .subscribe();
   }
 
+  findHashtagsByPostId(postId: number) {
+    this.hashtagsService.listarHashtagsPorPostId({ postId: postId })
+      .pipe(
+        takeUntil(this.destroy$)
+      )
+      .subscribe({
+        next: (response) => {
+          this.tagsByPostId[postId] = response || [];
+        },
+        error: (error) => console.error('Erro ao buscar hashtags por post:', error),
+      });
+  }
   openModal(post: any, index: number, postType: string): void {
     this.postSelected = post;
     this.selectedIndex = index;
@@ -169,49 +168,28 @@ export class ExploreComponent {
     this.postSelected = post;
   }
 
-  getModalId(): string {
-    return `modal-${this.selectedPostType}-${this.selectedIndex}`;
-  }
 
-  isUltimaPagina(): boolean {
-    return (this.pageable.page || 0) >= this.totalPages - 1;
+  private processPosts(posts: any[], response: any): any[] {
+    return (response.content || []).map((post: any) => {
+      this.findHashtagsByPostId(post.id);
+      return {
+        ...post,
+        isLiked: post.curtidoPeloUsuario,
+        isFavorite: post.salvoPeloUsuario,
+        isAnimating: false,
+        isFavAnimating: false,
+      };
+    });
   }
-
-  avancarPagina(): void {
-    if (this.isUltimaPagina() || this.numberOfElements === 0) {
-      this.pageable.page = 0;
-    } else {
-      this.pageable.page = (this.pageable.page || 0) + 1;
-    }
-  }
-  carregarMais(tipoDeUsuario: string): void {
-    this.avancarPagina();
-
-    switch (tipoDeUsuario) {
-      case 'followedPeoplePosts':
-        this.listFollowedPeoplePost();
-        break;
-      case 'random':
-        this.listPostRecomendados();
-        break;
-
-        break;
-    }
-  }
-  listPostRecomendados(): Observable<void> {
+  private listPostRecomendados(pageable?: Pageable): Observable<void> {
+    const requestPageable = pageable || this.pageable;
     return this.postsService
-      .listarPostsRecomendados({ pageable: this.pageable })
+      .listarPostsRecomendados({ pageable: requestPageable })
       .pipe(
         tap((response) => {
-          this.postsRecomendados = (response.content || []).map(
-            (post: any) => ({
-              ...post,
-              isLiked: post.curtidoPeloUsuario,
-              isFavorite: post.salvoPeloUsuario,
-              isAnimating: false,
-              isFavAnimating: false,
-            })
-          );
+          const newPosts = this.processPosts([], response);
+          this.postsRecomendados = [...this.postsRecomendados, ...newPosts];
+          this.updatePagination(response);
         }),
         map(() => undefined),
         catchError((error) => {
@@ -220,7 +198,11 @@ export class ExploreComponent {
         })
       );
   }
-
+  private updatePagination(response: any): void {
+    this.numberOfElements = response.numberOfElements || 0;
+    this.totalPages = response.totalPages || 0;
+    this.totalElements = response.totalElements || 0;
+  }
   listPostsByLegenda(): void {
     if (!this.termo.trim()) return;
 
@@ -228,23 +210,23 @@ export class ExploreComponent {
     this.postsService
       .buscarPostsPorLegenda({
         termo: this.termo,
-        pageable: this.pageable,
+        pageable: {
+          page: 0,
+          size: 5,
+          sort: [''],
+        },
       })
       .pipe(
         takeUntil(this.destroy$),
         finalize(() => (this.loading = false))
       )
       .subscribe({
-        next: (response) =>
-          (this.postsPorLegenda = (response.content || []).map((post: any) => ({
-            ...post,
-            isLiked: post.curtidoPeloUsuario,
-            isFavorite: post.salvoPeloUsuario,
-            isAnimating: false,
-            isFavAnimating: false,
-          }))),
-        error: (error) =>
-          console.error('Erro ao buscar posts por legenda:', error),
+        next: (response) => {
+          this.postsPorLegenda = this.processPosts(this.postsPorLegenda, response);
+        },
+        error: (error) => {
+          console.error('Erro ao buscar posts por legenda:', error);
+        }
       });
   }
 
@@ -253,13 +235,7 @@ export class ExploreComponent {
       .listarPostsPopulares({ pageable: this.pageable })
       .pipe(
         tap((response) => {
-          this.celebrityPosts = (response.content || []).map((post: any) => ({
-            ...post,
-            isLiked: post.curtidoPeloUsuario,
-            isFavorite: post.salvoPeloUsuario,
-            isAnimating: false,
-            isFavAnimating: false,
-          }));
+          this.celebrityPosts = this.processPosts(this.celebrityPosts, response);
         }),
         map(() => undefined),
         catchError((error) => {
@@ -274,13 +250,7 @@ export class ExploreComponent {
       .listarPostsTendencias({ pageable: this.pageable })
       .pipe(
         tap((response) => {
-          this.viralPosts = (response.content || []).map((post: any) => ({
-            ...post,
-            isLiked: post.curtidoPeloUsuario,
-            isFavorite: post.salvoPeloUsuario,
-            isAnimating: false,
-            isFavAnimating: false,
-          }));
+          this.viralPosts = this.processPosts(this.viralPosts, response);
         }),
         map(() => undefined),
         catchError((error) => {
@@ -290,20 +260,15 @@ export class ExploreComponent {
       );
   }
 
-  private listFollowedPeoplePost(): Observable<void> {
+  private listFollowedPeoplePost(pageable?: Pageable): Observable<void> {
+    const requestPageable = pageable || this.pageable;
     return this.postsService
-      .listarPostsPopularesSeguidores({ pageable: this.pageable })
+      .listarPostsPopularesSeguidores({ pageable: requestPageable })
       .pipe(
         tap((response) => {
-          this.followedPeoplePosts = (response.content || []).map(
-            (post: any) => ({
-              ...post,
-              isLiked: post.curtidoPeloUsuario,
-              isFavorite: post.salvoPeloUsuario,
-              isAnimating: false,
-              isFavAnimating: false,
-            })
-          );
+          const newPosts = this.processPosts([], response);
+          this.followedPeoplePosts = [...this.followedPeoplePosts, ...newPosts];
+          this.updatePagination(response);
         }),
         map(() => undefined),
         catchError((error) => {

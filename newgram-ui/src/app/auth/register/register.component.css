@@ -920,3 +920,21 @@
   min-height: 100px;
   resize: vertical;
 }
+
+.validation-errors {
+  color: #856404;
+  background-color: #fff3cd;
+  border: 1px solid #ffeeba;
+  padding: 10px 15px;
+  border-radius: 4px;
+  margin-bottom: 15px;
+}
+
+.validation-errors ul {
+  margin-bottom: 0;
+  padding-left: 20px;
+}
+
+.fa-exclamation-circle, .fa-exclamation-triangle {
+  margin-right: 8px;
+}

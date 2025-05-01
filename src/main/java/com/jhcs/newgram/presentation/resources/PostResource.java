@@ -34,7 +34,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/posts")
-@Tag(name = "Posts", description = "API para gerenciamento de posts")
+@Tag(name = "Posts", description = "Operações para gerenciamento de posts")
 public class PostResource {
 
     @Autowired
