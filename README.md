@@ -23,8 +23,8 @@
 |-------------------------|-----------------------|--------------|
 | Angular | Feed Inteligente | JWT Authentication |
 | Spring Boot | Recomendações Personalizadas | Spring Security |
-| Tailwind CSS | Interações em Tempo Real | Data Protection |
-| PostgreSQL | Favoritos Inteligentes | Rate Limiting |
+| Tailwind CSS | Design Incrivel | Dados Seguros |
+| PostgreSQL | Favoritos Inteligentes | Protegido de Ataques |
 
 </div>
 
@@ -67,9 +67,6 @@ classDiagram
         +List~Usuario~ seguindo
         +List~Salvos~ postsSalvos
         +List~Notificacao~ notificacoes
-        +List~Mensagem~ mensagensEnviadas
-        +List~Mensagem~ mensagensRecebidas
-        +List~Conversa~ conversas
         +StatusUsuario statusUsuario
     }
 
@@ -92,19 +89,12 @@ classDiagram
         +Date dataCriacao
         +Date dataExpiracao
         +boolean destacado
+        +String storieImagemUrl
         +List~Usuario~ visualizadoPor
         +List~Usuario~ marcacoes
     }
 
-    class Conversa {
-        +Long id
-        +Date dataCriacao
-        +Date ultimaInteracao
-        +boolean isGrupo
-        +String nomeGrupo
-        +List~Usuario~ participantes
-        +List~Mensagem~ mensagens
-    }
+
 
     %% Relacionamentos Complexos
     Usuario "1" *-- "0..*" Post : autor
@@ -124,7 +114,6 @@ classDiagram
     Post "1" *-- "0..*" Usuario : marcou
     Post "1" *-- "0..*" Salvos : salvoEm
 
-    Conversa "1" *-- "0..*" Mensagem : contém
     Conversa "1" *-- "1" Usuario : criadoPor
 
     %% Classes de Suporte
@@ -159,17 +148,6 @@ classDiagram
         +boolean lida
     }
 
-    class Mensagem {
-        +Long id
-        +String conteudo
-        +boolean deletadaPeloRemetente
-        +Date dataEnvio
-        +boolean visualizada
-        +boolean entregue
-        +TipoMensagem tipo
-        +String urlMidia
-    }
-
     class StatusUsuario {
         +Long id
         +boolean online
@@ -184,26 +162,11 @@ classDiagram
         +List~Storie~ stories
     }
 
-    class Arquivo {
-        +Long id
-        +String nomeOriginal
-        +String nomeArmazenado
-        +String tipo
-        +Long tamanho
-        +Date dataUpload
-        +String caminho
-        +String contentType
-        +TipoEntidadeRelacionada tipoEntidade
-        +Long entidadeId
-    }
 
     %% Relacionamentos Adicionais
     Comentario "1" *-- "0..*" Curtida : recebeu
     Comentario "1" *-- "0..*" Comentario : respostas
     Storie "1" *-- "0..*" Destaque : emDestaque
-    Arquivo "1" --o Post : anexo
-    Arquivo "1" --o Storie : anexo
-    Arquivo "1" --o Mensagem : anexo
 
     %% Enums
     class TipoVisibilidade {
@@ -213,18 +176,6 @@ classDiagram
         SOMENTE_SEGUIDORES
     }
 
-    class TipoMensagem {
-        <<enum>>
-        TEXTO
-        IMAGEM
-        VIDEO
-        AUDIO
-        ARQUIVO
-        LOCALIZACAO
-        CONTATO
-        REACAO
-        SISTEMA
-    }
 
     class TipoNotificacao {
         <<enum>>
@@ -235,15 +186,13 @@ classDiagram
         NOVO_SEGUIDOR
     }
 
-    class TipoEntidadeRelacionada {
+    class TipoArquivo {
         <<enum>>
         POST
+        FOTO_PERFIL
         STORIE
-        PERFIL
-        MENSAGEM
-        COMENTARIO
-        CONVERSA
-        DESTAQUE
+        FOTO_DESTAQUE
+
     }
 ```
 
@@ -261,42 +210,41 @@ classDiagram
 - Maven
 - Swagger
 - JWT Authentication
+- AWS
+- S3
 
 ### Frontend
 
 - TypeScript
 - Angular
 - RxJS
-- Angular Material
+- Animate CSS
 - Tailwind CSS
-- Responsive Design
 - Angular JWT
-- WebSocket para atualizações em tempo real
+- NG-Openapi-Gen
   
 ## 🎯 Funcionalidades
 
 ### 🔑 Autenticação Avançada
-- Fluxo OAuth2 integrado
-- Autenticação multifator
-- Gerenciamento de sessões
+- Token e Refreshs token seguros
+- Gerenciamento de erros
 
 ### 🌍 Exploração de Conteúdo
-- **Feed algorítmico** - Aprende com suas interações
+- **Feed infinito** - Aparece mais posts, até acabar todos
 - **Busca semântica** - Encontre o que realmente importa
-- **Coleções temáticas** - Conteúdo organizado por tópicos
+- **Criar Posts, stories e destaques** - Apresente ao mundo o que deseja
 
 ### ❤️ Sistema de Favoritos
 - Tags inteligentes
 - Organização visual
-- Sincronização cross-device
 
 ## 🚀 Começando
 
 ### 📋 Pré-requisitos
-- Docker (recomendado)
-- Java 17+
-- Node 18+
-- PostgreSQL 15+
+
+- Java
+- Angular
+- PostgreSQL 
 
 ## Instalação
 
@@ -348,6 +296,20 @@ A documentação da API está disponível através do Swagger UI:
 ```
 http://localhost:8080/swagger-ui.html
 ```
+
+## 🌍 Acesse o Projeto
+
+<div align="center">
+
+[![Demo Newgram](https://img.shields.io/badge/🚀_Acesse_a_Demo_Newgram-FF6B6B?style=for-the-badge&logo=vercel&logoColor=white)](https://newgram-nine.vercel.app/)
+
+<p>Experimente agora mesmo a nova geração de redes sociais!</p>
+
+[![Web Preview](https://img.shields.io/badge/📱_Mobile_Ready-9cf?style=flat-square)]() 
+[![PWA](https://img.shields.io/badge/📲_Instalável_PWA-4285F4?style=flat-square&logo=progressive-web-apps)]() 
+[![Performance](https://img.shields.io/badge/⚡_High_Performance-00C58E?style=flat-square&logo=pagespeed-insights)]()
+
+</div>
 
 Principais endpoints:
 
