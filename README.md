@@ -31,7 +31,6 @@
 - [🎯 Funcionalidades](#-funcionalidades)
 - [🚀 Começando](#-começando)
   - [📋 Pré-requisitos](#-pré-requisitos)
-  - [⚙️ Configuração](#️-configuração)
 - [🌐 API](#-api)
 - [🤝 Como Contribuir](#-como-contribuir)
 - [📜 Licença](#-licença)
@@ -314,7 +313,7 @@ MIT License - Veja o arquivo [LICENSE](LICENSE) para detalhes.
 
 **Jameson Henrique**  
 [![LinkedIn](https://img.shields.io/badge/LinkedIn-0077B5?style=flat&logo=linkedin)](https://linkedin.com/in/JamesonHenrique)  
-[![Email](https://img.shields.io/badge/Email-D14836?style=flat&logo=gmail)](mailto:jamesonhenrique14@email.com)
+[![Email](https://img.shields.io/badge/Email-D14836?style=flat&logo=gmail)](mailto:jamesonhenrique14@gmail.com)
 
 ---
 
