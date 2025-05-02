@@ -10,7 +10,7 @@ import {
   SimpleChanges,
 } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { FormatNumberPipe } from '../format-number.pipe';
+import { FormatNumberPipe } from '../services/pipes/format-number.pipe';
 import { DateFormatPipe } from '../services/pipes/date-format-pipe';
 import { Pageable, UsuarioSummaryDto } from '../services/models';
 import {

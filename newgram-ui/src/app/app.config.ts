@@ -5,7 +5,7 @@ import { routes } from './app.routes';
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { provideToastr } from 'ngx-toastr';
 import { provideAnimations } from '@angular/platform-browser/animations';
-import { tokenInterceptor } from './services/interceptor/algamoney-ui/src/app/services/interceptor/http-token.interceptor';
+import { tokenInterceptor } from './services/http-interceptor/http-token.interceptor';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -21,7 +21,7 @@ export const appConfig: ApplicationConfig = {
       positionClass: 'toast-bottom-right',
       preventDuplicates: true,
 
-      toastClass: 'toast-purple', 
+      toastClass: 'toast-purple',
       iconClasses: {
         error: 'toast-error',
         info: 'toast-info',

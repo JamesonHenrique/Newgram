@@ -9,7 +9,7 @@ import {
 import { Title } from '@angular/platform-browser';
 import { PostDetailsComponent } from '../post-details/post-details.component';
 import { CommonModule } from '@angular/common';
-import { FormatNumberPipe } from '../format-number.pipe';
+import { FormatNumberPipe } from '../services/pipes/format-number.pipe';
 import {
   DestaquesService,
   PostsService,

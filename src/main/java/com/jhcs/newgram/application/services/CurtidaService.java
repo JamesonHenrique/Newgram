@@ -44,7 +44,6 @@ public class CurtidaService {
         Usuario usuario = usuarioRepository.findById(usuarioId)
                 .orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado"));
 
-        // Verificar se é uma curtida para post ou comentário
         if (dto.getPostId() != null && dto.getComentarioId() != null) {
             throw new BusinessException("Uma curtida deve ser associada a um post ou a um comentário, não ambos");
         }

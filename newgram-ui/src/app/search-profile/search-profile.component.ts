@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
 import { Title } from '@angular/platform-browser';
-import { FormatNumberPipe } from '../format-number.pipe';
+import { FormatNumberPipe } from '../services/pipes/format-number.pipe';
 import { SeguidoresService, UsuariosService } from '../services/services';
 import { Pageable } from '../services/models';
 import { FormsModule } from '@angular/forms';

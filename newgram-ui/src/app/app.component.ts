@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { NavigationEnd, Router, RouterModule, RouterOutlet } from '@angular/router';
+import { NavigationEnd, Router, RouterOutlet } from '@angular/router';
 import { AsideComponent } from './core/aside/aside.component';
 import { HeaderComponent } from './core/header/header.component';
 import { CommonModule } from '@angular/common';

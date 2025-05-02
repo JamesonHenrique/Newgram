@@ -5,7 +5,7 @@ import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
 import { PostDetailsComponent } from '../post-details/post-details.component';
 import { Title } from '@angular/platform-browser';
-import { FormatNumberPipe } from '../format-number.pipe';
+import { FormatNumberPipe } from '../services/pipes/format-number.pipe';
 import { DateFormatPipe } from '../services/pipes/date-format-pipe';
 import { FormsModule } from '@angular/forms';
 import { Observable, Subject, forkJoin, of } from 'rxjs';

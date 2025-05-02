@@ -3,7 +3,7 @@ import { inject } from '@angular/core';
 
 import { Router } from '@angular/router';
 import { catchError, Observable, switchMap, throwError } from 'rxjs';
-import { TokenService } from '../../../../../../token/token.service';
+import { TokenService } from '../token/token.service';
 
 export const tokenInterceptor: HttpInterceptorFn = (req, next) => {
   const tokenService = inject(TokenService);
@@ -17,7 +17,6 @@ export const tokenInterceptor: HttpInterceptorFn = (req, next) => {
 
   return tokenService.renewTokenIfAboutToExpire().pipe(
     switchMap(renewResponse => {
-      // Adiciona o token à requisição
       const authReq = addTokenToRequest(req, tokenService);
 
       return next(authReq).pipe(
@@ -57,7 +56,6 @@ function handle401Error(
   );
 }
 
-// Função para adicionar token à requisição (mantida igual)
 function addTokenToRequest(request: HttpRequest<unknown>, tokenService: TokenService): HttpRequest<unknown> {
   if (tokenService.token) {
     return request.clone({

@@ -3,7 +3,7 @@ import { ChangeDetectorRef, Component, ElementRef, ViewChild } from '@angular/co
 import { Router } from '@angular/router';
 import { PostDetailsComponent } from '../post-details/post-details.component';
 import { DomSanitizer, Title } from '@angular/platform-browser';
-import { FormatNumberPipe } from '../format-number.pipe';
+import { FormatNumberPipe } from '../services/pipes/format-number.pipe';
 import {
   PostsService,
   SeguidoresService,
