@@ -8,11 +8,8 @@
 
   <p>Conectando pessoas através de conteúdos significativos</p>
 
-  [![GitHub Release](https://img.shields.io/github/v/release/JamesonHenrique/Newgram?include_prereleases&style=for-the-badge&color=ff69b4)](https://github.com/JamesonHenrique/Newgram/releases)
-  [![GitHub stars](https://img.shields.io/github/stars/JamesonHenrique/Newgram?style=social&logo=reverbnation&label=Stars)](https://github.com/JamesonHenrique/Newgram/stargazers)
-  [![GitHub last commit](https://img.shields.io/github/last-commit/JamesonHenrique/Newgram?color=9cf&logo=git&logoColor=white)](https://github.com/JamesonHenrique/Newgram/commits/main)
-  [![License](https://img.shields.io/badge/license-MIT-blue?logo=creativecommons)](LICENSE)
-  [![Open Issues](https://img.shields.io/github/issues-raw/JamesonHenrique/Newgram?color=red&logo=github)](https://github.com/JamesonHenrique/Newgram/issues)
+[![Demo Newgram](https://img.shields.io/badge/🚀_Acesse_o_Newgram-392E9F?style=for-the-badge&logo=vercel&logoColor=white)](https://newgram-nine.vercel.app/)
+
 </div>
 
 ## 🌟 Destaques do Projeto
@@ -23,8 +20,8 @@
 |-------------------------|-----------------------|--------------|
 | Angular | Feed Inteligente | JWT Authentication |
 | Spring Boot | Recomendações Personalizadas | Spring Security |
-| Tailwind CSS | Interações em Tempo Real | Data Protection |
-| PostgreSQL | Favoritos Inteligentes | Rate Limiting |
+| Tailwind CSS | Design Incrivel | Dados Seguros |
+| PostgreSQL | Favoritos Inteligentes | Protegido de Ataques |
 
 </div>
 
@@ -53,7 +50,7 @@ O Newgram redefine a experiência de compartilhamento de conteúdo, oferecendo:
 
 ```mermaid
 classDiagram
-    %% Entidades Principais
+    %% ================ MAIN ENTITIES ================
     class Usuario {
         +Long id
         +String nome
@@ -67,9 +64,6 @@ classDiagram
         +List~Usuario~ seguindo
         +List~Salvos~ postsSalvos
         +List~Notificacao~ notificacoes
-        +List~Mensagem~ mensagensEnviadas
-        +List~Mensagem~ mensagensRecebidas
-        +List~Conversa~ conversas
         +StatusUsuario statusUsuario
     }
 
@@ -92,42 +86,12 @@ classDiagram
         +Date dataCriacao
         +Date dataExpiracao
         +boolean destacado
+        +String storieImagemUrl
         +List~Usuario~ visualizadoPor
         +List~Usuario~ marcacoes
     }
 
-    class Conversa {
-        +Long id
-        +Date dataCriacao
-        +Date ultimaInteracao
-        +boolean isGrupo
-        +String nomeGrupo
-        +List~Usuario~ participantes
-        +List~Mensagem~ mensagens
-    }
-
-    %% Relacionamentos Complexos
-    Usuario "1" *-- "0..*" Post : autor
-    Usuario "1" *-- "0..*" Storie : autor
-    Usuario "1" *-- "1" StatusUsuario : possui
-    Usuario "1" *-- "0..*" Salvos : salvou
-    Usuario "1" *-- "0..*" Notificacao : recebeu
-    Usuario "1" *-- "0..*" Mensagem : enviou
-    Usuario "1" *-- "0..*" Mensagem : recebeu
-    Usuario "1" *-- "0..*" Conversa : participa
-    Usuario "1" *-- "0..*" Usuario : segue
-    Usuario "1" *-- "0..*" Usuario : seguidoPor
-
-    Post "1" *-- "0..*" Comentario : tem
-    Post "1" *-- "0..*" Curtida : recebeu
-    Post "1" *-- "0..*" Hashtag : marcadoCom
-    Post "1" *-- "0..*" Usuario : marcou
-    Post "1" *-- "0..*" Salvos : salvoEm
-
-    Conversa "1" *-- "0..*" Mensagem : contém
-    Conversa "1" *-- "1" Usuario : criadoPor
-
-    %% Classes de Suporte
+    %% ================ SUPPORT CLASSES ================
     class Comentario {
         +Long id
         +String texto
@@ -159,17 +123,6 @@ classDiagram
         +boolean lida
     }
 
-    class Mensagem {
-        +Long id
-        +String conteudo
-        +boolean deletadaPeloRemetente
-        +Date dataEnvio
-        +boolean visualizada
-        +boolean entregue
-        +TipoMensagem tipo
-        +String urlMidia
-    }
-
     class StatusUsuario {
         +Long id
         +boolean online
@@ -184,46 +137,12 @@ classDiagram
         +List~Storie~ stories
     }
 
-    class Arquivo {
-        +Long id
-        +String nomeOriginal
-        +String nomeArmazenado
-        +String tipo
-        +Long tamanho
-        +Date dataUpload
-        +String caminho
-        +String contentType
-        +TipoEntidadeRelacionada tipoEntidade
-        +Long entidadeId
-    }
-
-    %% Relacionamentos Adicionais
-    Comentario "1" *-- "0..*" Curtida : recebeu
-    Comentario "1" *-- "0..*" Comentario : respostas
-    Storie "1" *-- "0..*" Destaque : emDestaque
-    Arquivo "1" --o Post : anexo
-    Arquivo "1" --o Storie : anexo
-    Arquivo "1" --o Mensagem : anexo
-
-    %% Enums
+    %% ================ ENUMS ================
     class TipoVisibilidade {
         <<enum>>
         PUBLICO
         PRIVADO
         SOMENTE_SEGUIDORES
-    }
-
-    class TipoMensagem {
-        <<enum>>
-        TEXTO
-        IMAGEM
-        VIDEO
-        AUDIO
-        ARQUIVO
-        LOCALIZACAO
-        CONTATO
-        REACAO
-        SISTEMA
     }
 
     class TipoNotificacao {
@@ -235,16 +154,43 @@ classDiagram
         NOVO_SEGUIDOR
     }
 
-    class TipoEntidadeRelacionada {
+    class TipoArquivo {
         <<enum>>
         POST
+        FOTO_PERFIL
         STORIE
-        PERFIL
-        MENSAGEM
-        COMENTARIO
-        CONVERSA
-        DESTAQUE
+        FOTO_DESTAQUE
     }
+
+    %% ================ RELATIONSHIPS ================
+    %% User relationships
+    Usuario "1" *-- "0..*" Post : cria
+    Usuario "1" *-- "0..*" Storie : publica
+    Usuario "1" *-- "1" StatusUsuario : possui
+    Usuario "1" *-- "0..*" Salvos : salva
+    Usuario "1" *-- "0..*" Notificacao : recebe
+    
+    %% User following relationships
+    Usuario "0..*" -- "0..*" Usuario : segue
+    
+    %% Post relationships
+    Post "1" *-- "0..*" Comentario : contém
+    Post "1" *-- "0..*" Curtida : recebe
+    Post "1" *-- "0..*" Hashtag : marcadoCom
+    Post "0..*" -- "0..*" Usuario : marcadoPor
+    Post "1" *-- "0..*" Salvos : salvoEm
+    
+    %% Comment relationships
+    Comentario "1" *-- "0..*" Comentario : respondePara
+    
+    %% Storie relationships
+    Storie "0..*" -- "0..*" Usuario : visualizadoPor
+    Storie "0..*" -- "0..*" Usuario : marcadoPor
+    Storie "0..*" -- "1" Destaque : destacadoEm
+    
+    %% Like relationships
+    Curtida -- Usuario : feitaPor
+    Curtida --|> Comentario : opcional
 ```
 
 ## 🛠️ Tecnologias
@@ -261,42 +207,41 @@ classDiagram
 - Maven
 - Swagger
 - JWT Authentication
+- AWS
+- S3
 
 ### Frontend
 
 - TypeScript
 - Angular
 - RxJS
-- Angular Material
+- Animate CSS
 - Tailwind CSS
-- Responsive Design
 - Angular JWT
-- WebSocket para atualizações em tempo real
+- NG-Openapi-Gen
   
 ## 🎯 Funcionalidades
 
 ### 🔑 Autenticação Avançada
-- Fluxo OAuth2 integrado
-- Autenticação multifator
-- Gerenciamento de sessões
+- Token e Refreshs token seguros
+- Gerenciamento de erros
 
 ### 🌍 Exploração de Conteúdo
-- **Feed algorítmico** - Aprende com suas interações
+- **Feed infinito** - Aparece mais posts, até acabar todos
 - **Busca semântica** - Encontre o que realmente importa
-- **Coleções temáticas** - Conteúdo organizado por tópicos
+- **Criar Posts, stories e destaques** - Apresente ao mundo o que deseja
 
 ### ❤️ Sistema de Favoritos
 - Tags inteligentes
 - Organização visual
-- Sincronização cross-device
 
 ## 🚀 Começando
 
 ### 📋 Pré-requisitos
-- Docker (recomendado)
-- Java 17+
-- Node 18+
-- PostgreSQL 15+
+
+- Java
+- Angular
+- PostgreSQL 
 
 ## Instalação
 
@@ -348,14 +293,6 @@ A documentação da API está disponível através do Swagger UI:
 ```
 http://localhost:8080/swagger-ui.html
 ```
-
-Principais endpoints:
-
-| Método | Endpoint | Descrição | Exemplo |
-|--------|----------|-----------|---------|
-| `POST` | `/auth/login` | Autenticação | [![Run in Postman](https://run.pstmn.io/button.svg)](https://app.getpostman.com/run-collection/12345) |
-| `GET` | `/content?tags=` | Busca filtrada | `curl -X GET "http://localhost:8080/content?tags=tech"` |
-
 
 ## 🤝 Como Contribuir
 
