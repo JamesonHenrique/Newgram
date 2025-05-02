@@ -31,7 +31,6 @@
 - [🎯 Funcionalidades](#-funcionalidades)
 - [🚀 Começando](#-começando)
   - [📋 Pré-requisitos](#-pré-requisitos)
-  - [⚙️ Configuração](#️-configuração)
 - [🌐 API](#-api)
 - [🤝 Como Contribuir](#-como-contribuir)
 - [📜 Licença](#-licença)
