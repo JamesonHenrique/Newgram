@@ -14,9 +14,9 @@ import { LoginRedirectGuard } from './services/guard/login-redirect.guard';
 
 export const routes: Routes = [
   {
-    path: '',
+    path: 'login',
     pathMatch: 'full',
-    redirectTo: 'feed'
+    redirectTo: 'login'
   },
   {
     path: 'feed',
