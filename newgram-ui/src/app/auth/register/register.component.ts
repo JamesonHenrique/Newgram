@@ -49,7 +49,7 @@ export class RegisterComponent {
   ngOnInit(): void {
     this.authForm = this.fb.group(
       {
-        nome: ['', [Validators.required, Validators.minLength(3), Validators.maxLength(15)]],
+        nome: ['', [Validators.required, Validators.minLength(3), Validators.maxLength(50)]],
         email: ['', Validators.required],
         senha: ['', [Validators.required, passwordValidator()]],
         confirmacaoSenha: ['', [Validators.required]],
