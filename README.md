@@ -1,327 +1,264 @@
-# ✨ Newgram - Uma Plataforma Moderna de Compartilhamento e Conexão
-
-<div align="center">
-  <picture>
-    <source  srcset="newgram-ui/public/images/logo.png">
-    <img src="newgram-ui/public/images/logo.png" height="60px" alt="Logo Newgram">
-  </picture>
-
-  <p>Conectando pessoas através de conteúdos significativos</p>
-
-[![Demo Newgram](https://img.shields.io/badge/🚀_Acesse_o_Newgram-392E9F?style=for-the-badge&logo=vercel&logoColor=white)](https://newgram-nine.vercel.app/)
-
-</div>
-
-## 🌟 Destaques do Projeto
 
 <div align="center">
 
-| 🚀 Tecnologias Avançadas | 💡 Recursos Inovadores | 🛡️ Segurança |
-|-------------------------|-----------------------|--------------|
-| Angular | Feed Inteligente | JWT Authentication |
-| Spring Boot | Recomendações Personalizadas | Spring Security |
-| Tailwind CSS | Design Incrivel | Dados Seguros |
-| PostgreSQL | Favoritos Inteligentes | Protegido de Ataques |
+<img src="newgram-ui/public/images/logo.png" alt="Logo Newgram" width="120" />
+
+# ✨ Newgram
+
+**Rede social full stack — feed, stories, seguidores e descoberta de conteúdo.**
+
+[![Demo](https://img.shields.io/badge/🚀_Acesse_a_Demo-392E9F?style=for-the-badge&logo=vercel&logoColor=white)](https://newgram-nine.vercel.app/)
+
+![Java](https://img.shields.io/badge/Java-17-ED8B00?style=flat-square&logo=openjdk&logoColor=white)
+![Spring Boot](https://img.shields.io/badge/Spring_Boot-3.4.4-6DB33F?style=flat-square&logo=springboot&logoColor=white)
+![Angular](https://img.shields.io/badge/Angular-19-DD0031?style=flat-square&logo=angular&logoColor=white)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-204E78?style=flat-square&logo=postgresql&logoColor=white)
+![AWS S3](https://img.shields.io/badge/AWS_S3-569A31?style=flat-square&logo=amazons3&logoColor=white)
+![JWT](https://img.shields.io/badge/JWT-000000?style=flat-square&logo=jsonwebtokens&logoColor=white)
+![License](https://img.shields.io/badge/License-MIT-yellow?style=flat-square)
 
 </div>
 
-## 📑 Índice Rápido
-- [✨ Visão Geral](#-visão-geral)
-- [🛠️ Tecnologias](#️-tecnologias)
-- [🎯 Funcionalidades](#-funcionalidades)
-- [🚀 Começando](#-começando)
-  - [📋 Pré-requisitos](#-pré-requisitos)
-- [🌐 API](#-api)
-- [🤝 Como Contribuir](#-como-contribuir)
-- [📜 Licença](#-licença)
-- [📬 Contato](#-contato)
+---
 
-## ✨ Visão Geral
+## 📑 Índice
 
-O Newgram redefine a experiência de compartilhamento de conteúdo, oferecendo:
+- [Sobre](#-sobre)
+- [Funcionalidades](#-funcionalidades)
+- [Arquitetura](#️-arquitetura)
+- [Stack](#️-stack)
+- [API](#-api)
+- [Começando](#-começando)
+- [Licença](#-licença)
+- [Contato](#-contato)
 
-- **Conexões autênticas** baseadas em interesses compartilhados
-- **Descoberta inteligente** com algoritmos de recomendação
-- **Performance excepcional** graças à arquitetura moderna
-- **Experiência fluida** em qualquer dispositivo
+---
 
-### 🎯 Diagrama de Classes
+## ✨ Sobre
+
+O **Newgram** é uma rede social inspirada no Instagram, construída como um projeto full stack completo — de um back-end em **Spring Boot** com arquitetura em camadas a um front-end **Angular** que consome uma API gerada a partir do contrato OpenAPI.
+
+A ideia foi ir além do CRUD: modelar um domínio social real (posts, stories, destaques, seguidores, curtidas, comentários, hashtags, notificações e coleções de salvos), com autenticação segura, upload de mídia em nuvem e um feed com diferentes estratégias de descoberta.
+
+---
+
+## 🎯 Funcionalidades
+
+- **Autenticação JWT** com *access token* e *refresh token*, filtros de segurança próprios e tratamento de acesso negado / não autenticado.
+- **Feed e descoberta de conteúdo:** posts de quem você segue, populares, em alta (tendências), recomendados e por localização.
+- **Busca:** posts por legenda e usuários por nome/username, com paginação.
+- **Posts:** criação com mídia, curtir/descurtir, salvar em **coleções**, arquivar/desarquivar, filtro por hashtag.
+- **Stories e Destaques:** publicação temporária e organização de stories em destaques no perfil.
+- **Grafo social:** seguir/deixar de seguir, listas de seguidores/seguidos, **sugestões de quem seguir** (perfis mais populares e seguidos em comum).
+- **Comentários, curtidas e hashtags.**
+- **Notificações** de interações (seguidor, curtida, comentário).
+- **Upload de mídia na AWS S3** com entrega por *presigned URLs* de expiração configurável.
+- **Perfis de usuário** com status (online / último acesso) e bio.
+- **Documentação da API** via Swagger (OpenAPI 3).
+
+---
+
+## 🏗️ Arquitetura
+
+O back-end segue uma separação em camadas para isolar regra de negócio de framework e infraestrutura:
+
+```
+com.jhcs.newgram
+├── presentation   → Resources REST (controllers) — a borda HTTP
+├── application    → Services + DTOs — orquestração de casos de uso
+├── core.domain    → Entities, Enums e Repositories — o coração do domínio
+└── infrastructure → Security (JWT), AWS S3, config, exception handling
+```
+
+<details>
+<summary>📐 Diagrama de classes do domínio</summary>
 
 ```mermaid
 classDiagram
-    %% ================ MAIN ENTITIES ================
     class Usuario {
         +Long id
         +String nome
         +String username
         +String email
-        +String senha
         +String bio
-        +Date dataCriacao
+        +StatusUsuario statusUsuario
         +List~Post~ posts
         +List~Usuario~ seguidores
         +List~Usuario~ seguindo
-        +List~Salvos~ postsSalvos
-        +List~Notificacao~ notificacoes
-        +StatusUsuario statusUsuario
     }
-
     class Post {
         +Long id
         +String legenda
-        +Date dataCriacao
         +String localizacao
         +boolean arquivado
         +TipoVisibilidade visibilidade
         +List~Comentario~ comentarios
         +List~Curtida~ curtidas
         +List~Hashtag~ hashtags
-        +List~Usuario~ marcacoes
-        +List~Salvos~ salvosPor
     }
-
     class Storie {
         +Long id
-        +Date dataCriacao
         +Date dataExpiracao
         +boolean destacado
-        +String storieImagemUrl
-        +List~Usuario~ visualizadoPor
-        +List~Usuario~ marcacoes
     }
-
-    %% ================ SUPPORT CLASSES ================
     class Comentario {
         +Long id
         +String texto
-        +Date dataCriacao
-        +List~Curtida~ curtidas
     }
-
-    class Curtida {
-        +Long id
-        +Date dataCriacao
-    }
-
-    class Hashtag {
-        +Long id
-        +String nome
-    }
-
+    class Curtida
+    class Hashtag
     class Salvos {
-        +Long id
-        +Date dataSalvo
         +String colecao
     }
-
     class Notificacao {
-        +Long id
         +TipoNotificacao tipo
-        +String conteudo
-        +Date dataCriacao
         +boolean lida
     }
-
-    class StatusUsuario {
-        +Long id
-        +boolean online
-        +Date ultimoAcesso
-        +String statusPersonalizado
-    }
-
     class Destaque {
-        +Long id
         +String nome
-        +Date dataCriacao
-        +List~Storie~ stories
     }
-
-    %% ================ ENUMS ================
     class TipoVisibilidade {
         <<enum>>
         PUBLICO
         PRIVADO
         SOMENTE_SEGUIDORES
     }
-
     class TipoNotificacao {
         <<enum>>
         SEGUIDOR
         COMENTARIO
         CURTIDA
         MENSAGEM
-        NOVO_SEGUIDOR
     }
 
-    class TipoArquivo {
-        <<enum>>
-        POST
-        FOTO_PERFIL
-        STORIE
-        FOTO_DESTAQUE
-    }
-
-    %% ================ RELATIONSHIPS ================
-    %% User relationships
     Usuario "1" *-- "0..*" Post : cria
     Usuario "1" *-- "0..*" Storie : publica
     Usuario "1" *-- "1" StatusUsuario : possui
-    Usuario "1" *-- "0..*" Salvos : salva
-    Usuario "1" *-- "0..*" Notificacao : recebe
-    
-    %% User following relationships
     Usuario "0..*" -- "0..*" Usuario : segue
-    
-    %% Post relationships
     Post "1" *-- "0..*" Comentario : contém
     Post "1" *-- "0..*" Curtida : recebe
     Post "1" *-- "0..*" Hashtag : marcadoCom
-    Post "0..*" -- "0..*" Usuario : marcadoPor
     Post "1" *-- "0..*" Salvos : salvoEm
-    
-    %% Comment relationships
-    Comentario "1" *-- "0..*" Comentario : respondePara
-    
-    %% Storie relationships
-    Storie "0..*" -- "0..*" Usuario : visualizadoPor
-    Storie "0..*" -- "0..*" Usuario : marcadoPor
     Storie "0..*" -- "1" Destaque : destacadoEm
-    
-    %% Like relationships
-    Curtida -- Usuario : feitaPor
-    Curtida --|> Comentario : opcional
 ```
 
-## 🛠️ Tecnologias
-
-
-### Backend
-
-- Java 17
-- Spring Boot
-- Spring Security
-- Spring Data JPA
-- PostgreSQL
-- Flyway
-- Maven
-- Swagger
-- JWT Authentication
-- AWS
-- S3
-
-### Frontend
-
-- TypeScript
-- Angular
-- RxJS
-- Animate CSS
-- Tailwind CSS
-- Angular JWT
-- NG-Openapi-Gen
-  
-## 🎯 Funcionalidades
-
-### 🔑 Autenticação Avançada
-- Token e Refreshs token seguros
-- Gerenciamento de erros
-
-### 🌍 Exploração de Conteúdo
-- **Feed infinito** - Aparece mais posts, até acabar todos
-- **Busca semântica** - Encontre o que realmente importa
-- **Criar Posts, stories e destaques** - Apresente ao mundo o que deseja
-
-### ❤️ Sistema de Favoritos
-- Tags inteligentes
-- Organização visual
-
-## 🚀 Começando
-
-### 📋 Pré-requisitos
-
-- Java
-- Angular
-- PostgreSQL 
-
-## Instalação
-
-### Backend
-
-1. Clone o repositório:
-
-```bash
-git clone https://github.com/JamesonHenrique/Newgram.git
-cd newgram
-```
-
-2. Configure o banco de dados PostgreSQL no arquivo `src/main/resources/application.properties`
-
-3. Execute o backend:
-
-```bash
-mvn spring-boot:run
-```
-
-O servidor estará disponível em `http://localhost:8080`
-
-### Frontend
-
-1. Navegue até a pasta do frontend:
-
-```bash
-cd newgram-ui
-```
-
-2. Instale as dependências:
-
-```bash
-npm install
-```
-
-3. Execute o frontend:
-
-```bash
-ng serve
-```
-
-A aplicação estará disponível em `http://localhost:4200`
-
-## 🌐 API
-
-A documentação da API está disponível através do Swagger UI:
-
-```
-http://localhost:8080/swagger-ui.html
-```
-
-## 🤝 Como Contribuir
-
-Siga nosso fluxo de colaboração:
-
-1. Crie uma issue descrevendo sua proposta
-2. Faça fork do projeto
-3. Crie um branch descritivo (`feat/new-auth-flow`)
-4. Envie seu PR com:
-   - Descrição clara
-   - Screenshots (se aplicável)
-   - Testes atualizados
-
-## 📜 Licença
-
-MIT License - Veja o arquivo [LICENSE](LICENSE) para detalhes.
-
-## 📬 Contato
-
-**Jameson Henrique**  
-[![LinkedIn](https://img.shields.io/badge/LinkedIn-0077B5?style=flat&logo=linkedin)](https://linkedin.com/in/JamesonHenrique)  
-[![Email](https://img.shields.io/badge/Email-D14836?style=flat&logo=gmail)](mailto:jamesonhenrique14@gmail.com)
+</details>
 
 ---
 
+## 🛠️ Stack
+
+**Back-end**
+- Java 17 · Spring Boot 3.4.4
+- Spring Web · Spring Data JPA · Spring Security
+- Autenticação JWT (JJWT — access + refresh)
+- PostgreSQL · Flyway (migrations versionadas)
+- AWS SDK S3 (upload + presigned URLs)
+- springdoc-openapi (Swagger UI) · Lombok
+- Pool Hikari e batch inserts JPA ajustados
+- Docker (build multi-stage: Maven → Temurin JRE Alpine)
+
+**Front-end**
+- Angular 19 · TypeScript · RxJS
+- `ng-openapi-gen` (client TS gerado do OpenAPI)
+- `@auth0/angular-jwt` · Tailwind CSS · animate.css · ngx-toastr
+
+---
+
+## 🔌 API
+
+Base de recursos REST (documentação completa e testável no **Swagger UI**):
+
+| Recurso | Base | Destaques |
+| --- | --- | --- |
+| Autenticação | `/auth` | login, refresh token |
+| Usuários | `/usuarios` | perfil, busca, sugestões, mais populares |
+| Posts | `/posts` | feed, populares, recomendados, tendências, busca, salvos/coleções, curtir, arquivar |
+| Stories | `/stories` | publicação e visualização |
+| Destaques | `/destaques` | organização de stories no perfil |
+| Comentários | `/comentarios` | comentar e curtir comentários |
+| Seguidores | `/seguidores` | seguir, listar, sugerir |
+| Hashtags | `/hashtags` | busca e navegação por tag |
+
+```
+Swagger UI → http://localhost:8080/swagger-ui.html
+```
+
+---
+
+## 🚀 Começando
+
+### Pré-requisitos
+- Java 17+ e Maven
+- Node.js + npm e Angular CLI
+- PostgreSQL
+- Um bucket AWS S3 (para upload de mídia)
+
+### Variáveis de ambiente (back-end)
+
+Configure em `src/main/resources/application.properties` (ou via variáveis de ambiente):
+
+```properties
+spring.datasource.url=jdbc:postgresql://localhost:5432/newgram
+spring.datasource.username=SEU_USUARIO
+spring.datasource.password=SUA_SENHA
+
+jwt.access.expiration=900000
+jwt.refresh.expiration=604800000
+
+aws.accessKeyId=SUA_ACCESS_KEY
+aws.secretKey=SUA_SECRET_KEY
+aws.region=us-east-1
+aws.s3.bucket-name=seu-bucket
+aws.s3.presigned-url-expiration-minutes=10
+```
+
+> As migrations do Flyway criam o schema e populam dados de exemplo automaticamente na primeira execução.
+
+### Back-end
+
+```bash
+# via Maven
+./mvnw spring-boot:run
+
+# ou via Docker
+docker build -t newgram .
+docker run -p 8080:8080 newgram
+```
+Servidor em `http://localhost:8080`.
+
+### Front-end
+
+```bash
+cd newgram-ui
+npm install
+
+# gera o client TypeScript a partir do OpenAPI do back-end (precisa dele no ar)
+npx ng-openapi-gen
+
+ng serve
+```
+Aplicação em `http://localhost:4200`.
+
+---
+
+## 📜 Licença
+
+Distribuído sob a licença **MIT**. Veja [LICENSE](LICENSE).
+
+---
+
+## 📬 Contato
+
+**Jameson Henrique**
+
+[![LinkedIn](https://img.shields.io/badge/LinkedIn-0077B5?style=flat&logo=linkedin&logoColor=white)](https://linkedin.com/in/JamesonHenrique)
+[![Email](https://img.shields.io/badge/Email-D14836?style=flat&logo=gmail&logoColor=white)](mailto:jameson.henrique.dev@gmail.com)
+
+
 
 <div align="center">
-  <p>Gostou do projeto? Deixe uma ⭐ no repositório!</p>
 
-  <a href="#-newgram---uma-plataforma-moderna-de-compartilhamento-e-conexão">
-    <img src="https://img.shields.io/badge/-Voltar_ao_Topo-9cf?style=for-the-badge&logo=arrow-up&logoColor=white" alt="Voltar ao topo">
-  </a>
+Gostou? Deixa uma ⭐
+
 </div>
