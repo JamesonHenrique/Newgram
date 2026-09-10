@@ -41,4 +41,7 @@ public class UsuarioResponseDTO {
 
     @Schema(description = "Indica se o usuário atual está seguindo este usuário", example = "true")
     private boolean seguindoUsuario;
+
+    @Schema(description = "Indica se a conta é privada", example = "false")
+    private boolean privado;
 }

@@ -1,5 +1,8 @@
 package com.jhcs.newgram.application.services;
 
+import com.jhcs.newgram.core.domain.entities.Usuario;
+import com.jhcs.newgram.core.domain.enums.StatusSeguimento;
+import com.jhcs.newgram.core.domain.repositories.SeguidorRepository;
 import com.jhcs.newgram.infrastructure.exception.UnauthorizedException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -74,5 +77,25 @@ public final class Support {
     /** Garante limite 1..50 para parâmetros de limite crus (ex.: "limite" em query nativa). */
     public static int safeLimit(int limite) {
         return Math.min(Math.max(limite, 1), MAX_PAGE_SIZE);
+    }
+
+    /**
+     * Conteúdo visível? Dono sempre vê; conta pública todos veem;
+     * conta privada só seguidor aceito.
+     */
+    public static boolean conteudoVisivelPara(
+            Usuario alvo, Long viewerId, SeguidorRepository seguidorRepository) {
+        if (alvo == null) {
+            return false;
+        }
+        if (!alvo.isPrivado()) {
+            return true;
+        }
+        if (viewerId != null && viewerId.equals(alvo.getId())) {
+            return true;
+        }
+        return viewerId != null
+                && seguidorRepository.existsBySeguidorIdAndSeguidoIdAndStatus(
+                        viewerId, alvo.getId(), StatusSeguimento.ACEITO);
     }
 }

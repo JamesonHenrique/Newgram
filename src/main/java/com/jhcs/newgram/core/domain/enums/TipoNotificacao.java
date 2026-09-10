@@ -8,5 +8,6 @@ public enum TipoNotificacao {
     COMENTARIO,
     CURTIDA,
     MENSAGEM,
-    NOVO_SEGUIDOR
+    NOVO_SEGUIDOR,
+    SOLICITACAO_SEGUIMENTO
 }

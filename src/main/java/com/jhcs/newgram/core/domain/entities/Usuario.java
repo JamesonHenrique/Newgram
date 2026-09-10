@@ -43,6 +43,10 @@ public class Usuario implements UserDetails {
     @Column(length = 500)
     private String bio;
 
+    /** Conta privada: posts e stories visíveis só para seguidores aceitos. */
+    @Column(nullable = false)
+    private boolean privado = false;
+
     @CreationTimestamp
     @Column(name = "data_criacao", nullable = false, updatable = false)
     private LocalDateTime dataCriacao;

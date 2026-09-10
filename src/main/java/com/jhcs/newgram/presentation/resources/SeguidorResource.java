@@ -28,6 +28,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/seguidores")
@@ -51,7 +52,9 @@ public class SeguidorResource {
 
         VerificarSeguimentoDTO dto = new VerificarSeguimentoDTO();
         dto.setSeguindo(seguidorService.verificarSeguimento(usuario.getId(), usuarioId));
+        dto.setSolicitacaoPendente(seguidorService.verificarSolicitacaoPendente(usuario.getId(), usuarioId));
         return ResponseEntity.ok(dto);
+    }
     }
 
     @GetMapping("/seguidores/{usuarioId:\\d+}")
@@ -172,5 +175,62 @@ public class SeguidorResource {
 
         List<UsuarioSummaryDTO> seguidosAleatorios = seguidorService.buscarSeguidosAleatorios(usuario.getId(), limite);
         return ResponseEntity.ok(seguidosAleatorios);
+    }
+
+    @GetMapping("/solicitacoes")
+    @Operation(summary = "Listar solicitações de seguimento", description = "Solicitações pendentes para contas privadas")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Solicitações listadas com sucesso"),
+            @ApiResponse(responseCode = "401", description = "Não autorizado", content = @Content)
+    })
+    public ResponseEntity<Page<SeguidorResponseDTO>> listarSolicitacoes(
+            @AuthenticationPrincipal Usuario usuario,
+            @Parameter(description = "Parâmetros de paginação (page=0, size=20)")
+            @PageableDefault(page = 0, size = 20) Pageable pageable) {
+
+        return ResponseEntity.ok(seguidorService.listarSolicitacoesRecebidas(usuario.getId(), pageable));
+    }
+
+    @GetMapping("/solicitacoes/contagem")
+    @Operation(summary = "Contar solicitações pendentes", description = "Badge de solicitações de seguimento")
+    public ResponseEntity<Map<String, Long>> contarSolicitacoes(
+            @AuthenticationPrincipal Usuario usuario) {
+
+        return ResponseEntity.ok(Map.of(
+                "pendentes", seguidorService.contarSolicitacoesRecebidas(usuario.getId())));
+    }
+
+    @PostMapping("/solicitacoes/{id:\\d+}/aceitar")
+    @Operation(summary = "Aceitar solicitação", description = "Aceita uma solicitação de seguimento pendente")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Solicitação aceita",
+                    content = @Content(schema = @Schema(implementation = SeguidorResponseDTO.class))),
+            @ApiResponse(responseCode = "400", description = "Solicitação já respondida",
+                    content = @Content),
+            @ApiResponse(responseCode = "404", description = "Solicitação não encontrada",
+                    content = @Content)
+    })
+    public ResponseEntity<SeguidorResponseDTO> aceitarSolicitacao(
+            @Parameter(description = "ID da solicitação", required = true)
+            @PathVariable Long id,
+            @AuthenticationPrincipal Usuario usuario) {
+
+        return ResponseEntity.ok(seguidorService.aceitarSolicitacao(id, usuario.getId()));
+    }
+
+    @DeleteMapping("/solicitacoes/{id:\\d+}")
+    @Operation(summary = "Rejeitar solicitação", description = "Rejeita uma solicitação de seguimento pendente")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "204", description = "Solicitação rejeitada"),
+            @ApiResponse(responseCode = "404", description = "Solicitação não encontrada",
+                    content = @Content)
+    })
+    public ResponseEntity<Void> rejeitarSolicitacao(
+            @Parameter(description = "ID da solicitação", required = true)
+            @PathVariable Long id,
+            @AuthenticationPrincipal Usuario usuario) {
+
+        seguidorService.rejeitarSolicitacao(id, usuario.getId());
+        return ResponseEntity.noContent().build();
     }
 }

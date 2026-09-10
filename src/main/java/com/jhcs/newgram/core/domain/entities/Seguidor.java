@@ -1,5 +1,6 @@
 package com.jhcs.newgram.core.domain.entities;
 
+import com.jhcs.newgram.core.domain.enums.StatusSeguimento;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 import lombok.EqualsAndHashCode;
@@ -28,6 +29,10 @@ public class Seguidor {
     private LocalDateTime dataCriacao;
 
     private boolean notificacoesAtivadas;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 20)
+    private StatusSeguimento status = StatusSeguimento.ACEITO;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "seguidor_id", nullable = false)

@@ -5,6 +5,7 @@ import com.jhcs.newgram.application.dtos.usuario.UsuarioResponseDTO;
 import com.jhcs.newgram.application.dtos.usuario.UsuarioSummaryDTO;
 import com.jhcs.newgram.application.dtos.usuario.UsuarioUpdateDTO;
 import com.jhcs.newgram.core.domain.entities.Usuario;
+import com.jhcs.newgram.core.domain.enums.StatusSeguimento;
 import com.jhcs.newgram.core.domain.enums.TipoArquivo;
 import com.jhcs.newgram.core.domain.repositories.PostRepository;
 import com.jhcs.newgram.core.domain.repositories.SeguidorRepository;
@@ -91,7 +92,7 @@ public class UsuarioService {
     public Page<UsuarioSummaryDTO> buscarSeguidores(Long usuarioId, Pageable pageable, Long usuarioLogadoId) {
         Sort sort = Sort.by(Sort.Direction.DESC, "dataCriacao");
         Pageable safePageable = Support.safePage(pageable, sort);
-        return usuarioRepository.findSeguidoresByUsuarioId(usuarioId, safePageable)
+        return usuarioRepository.findSeguidoresByUsuarioId(usuarioId, StatusSeguimento.ACEITO, safePageable)
                 .map(usuario -> converterParaUsuarioSummaryDTO(usuario, usuarioLogadoId));
     }
 
@@ -99,7 +100,7 @@ public class UsuarioService {
     public Page<UsuarioSummaryDTO> buscarSeguidos(Long usuarioId, Pageable pageable, Long usuarioLogadoId) {
         Sort sort = Sort.by(Sort.Direction.DESC, "dataCriacao");
         Pageable safePageable = Support.safePage(pageable, sort);
-        return usuarioRepository.findSeguidosByUsuarioId(usuarioId, safePageable)
+        return usuarioRepository.findSeguidosByUsuarioId(usuarioId, StatusSeguimento.ACEITO, safePageable)
                 .map(usuario -> converterParaUsuarioSummaryDTO(usuario, usuarioLogadoId));
     }
 
@@ -107,7 +108,8 @@ public class UsuarioService {
     public Page<UsuarioSummaryDTO> buscarSugestoesUsuarios(Long usuarioId, Pageable pageable) {
         Sort sort = Sort.by(Sort.Direction.DESC, "dataCriacao");
         Pageable safePageable = Support.safePage(pageable, sort);
-        Page<Usuario> sugestoes = usuarioRepository.findSugestoesUsuarios(usuarioId, safePageable);
+        Page<Usuario> sugestoes =
+                usuarioRepository.findSugestoesUsuarios(usuarioId, StatusSeguimento.ACEITO, safePageable);
         return sugestoes.map(usuario -> converterParaUsuarioSummaryDTO(usuario, usuarioId));
     }
 
@@ -115,7 +117,8 @@ public class UsuarioService {
     public Page<UsuarioSummaryDTO> buscarUsuariosMaisFamosos(Long usuarioId, Pageable pageable) {
         Sort sort = Sort.by(Sort.Direction.DESC, "dataCriacao");
         Pageable safePageable = Support.safePage(pageable, sort);
-        Page<Usuario> famosos = usuarioRepository.findUsuariosMaisFamosos(safePageable, usuarioId);
+        Page<Usuario> famosos =
+                usuarioRepository.findUsuariosMaisFamosos(safePageable, usuarioId, StatusSeguimento.ACEITO);
         return famosos.map(usuario -> converterParaUsuarioSummaryDTO(usuario, usuarioId));
     }
 
@@ -123,7 +126,8 @@ public class UsuarioService {
     public Page<UsuarioComumDTO> buscarUsuariosPorAmigosEmComum(Long usuarioId, Pageable pageable) {
         Sort sort = Sort.by(Sort.Direction.DESC, "dataCriacao");
         Pageable safePageable = Support.safePage(pageable, sort);
-        Page<Object[]> results = usuarioRepository.findUsuariosPorAmigosEmComum(usuarioId, safePageable);
+        Page<Object[]> results = usuarioRepository.findUsuariosPorAmigosEmComum(
+                usuarioId, StatusSeguimento.ACEITO, safePageable);
         return results.map(result -> {
             Usuario usuario = (Usuario) result[0];
             Long commonFollowers = (Long) result[1];
@@ -140,8 +144,18 @@ public class UsuarioService {
         usuarioRepository.save(usuario);
     }
 
+    @Transactional
+    public UsuarioResponseDTO atualizarPrivado(Long id, boolean privado, Long usuarioLogadoId) {
+        Support.requireOwner(id, usuarioLogadoId, "Você só pode alterar a própria conta");
+        Usuario usuario = usuarioRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado"));
+        usuario.setPrivado(privado);
+        return converterParaUsuarioResponseDTO(usuarioRepository.save(usuario), id);
+    }
+
     private boolean segue(Long usuarioLogadoId, Long alvoId) {
-        return usuarioLogadoId != null && seguidorRepository.existsBySeguidorIdAndSeguidoId(usuarioLogadoId, alvoId);
+        return usuarioLogadoId != null && seguidorRepository.existsBySeguidorIdAndSeguidoIdAndStatus(
+                usuarioLogadoId, alvoId, StatusSeguimento.ACEITO);
     }
 
     private UsuarioComumDTO converterParaUsuarioComumDTO(Usuario usuario, int commonFollowers, Long usuarioLogadoId) {
@@ -166,10 +180,11 @@ public class UsuarioService {
         dto.setDataCadastro(usuario.getDataCriacao());
 
         dto.setFotoPerfil(s3StorageService.getFileUrl(usuario.getFotoPerfil()));
-        dto.setNumeroSeguidores(seguidorRepository.countSeguidoresByUsuarioId(usuario.getId()));
-        dto.setNumeroSeguindo(seguidorRepository.countSeguidosByUsuarioId(usuario.getId()));
+        dto.setNumeroSeguidores(seguidorRepository.countSeguidoresByUsuarioId(usuario.getId(), StatusSeguimento.ACEITO));
+        dto.setNumeroSeguindo(seguidorRepository.countSeguidosByUsuarioId(usuario.getId(), StatusSeguimento.ACEITO));
         dto.setNumeroPosts(postRepository.countPostsByUsuarioId(usuario.getId()));
         dto.setSeguindoUsuario(segue(usuarioLogadoId, usuario.getId()));
+        dto.setPrivado(usuario.isPrivado());
         return dto;
     }
 
@@ -178,12 +193,13 @@ public class UsuarioService {
         dto.setId(usuario.getId());
         dto.setNome(usuario.getNome());
         dto.setUsername(usuario.getUsuarioName());
-        dto.setNumeroSeguidores(seguidorRepository.countSeguidoresByUsuarioId(usuario.getId()));
-        dto.setNumeroSeguindo(seguidorRepository.countSeguidosByUsuarioId(usuario.getId()));
+        dto.setNumeroSeguidores(seguidorRepository.countSeguidoresByUsuarioId(usuario.getId(), StatusSeguimento.ACEITO));
+        dto.setNumeroSeguindo(seguidorRepository.countSeguidosByUsuarioId(usuario.getId(), StatusSeguimento.ACEITO));
         dto.setNumeroPosts(postRepository.countPostsByUsuarioId(usuario.getId()));
 
         dto.setFotoPerfil(s3StorageService.getFileUrl(usuario.getFotoPerfil()));
         dto.setSeguindoUsuario(segue(usuarioLogadoId, usuario.getId()));
+        dto.setPrivado(usuario.isPrivado());
 
         return dto;
     }

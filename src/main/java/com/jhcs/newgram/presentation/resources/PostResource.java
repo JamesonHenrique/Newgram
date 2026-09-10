@@ -5,6 +5,7 @@ import com.jhcs.newgram.application.dtos.post.PostResponseDTO;
 import com.jhcs.newgram.application.dtos.post.PostSummaryDTO;
 import com.jhcs.newgram.application.dtos.post.PostUpdateDTO;
 import com.jhcs.newgram.application.services.PostService;
+import com.jhcs.newgram.application.services.SalvosService;
 import com.jhcs.newgram.core.domain.entities.Usuario;
 import com.jhcs.newgram.infrastructure.exception.ResourceNotFoundException;
 import io.swagger.v3.oas.annotations.Operation;
@@ -27,6 +28,8 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/posts")
 @Tag(name = "Posts", description = "Operações para gerenciamento de posts")
@@ -34,6 +37,8 @@ public class PostResource {
 
     @Autowired
     private PostService postService;
+    @Autowired
+    private SalvosService salvosService;
 
     @PostMapping
     @Operation(summary = "Criar novo post", description = "Cria um novo post")
@@ -270,6 +275,14 @@ public class PostResource {
 
         Page<PostSummaryDTO> posts = postService.listarPostsSalvosPorColecao(usuario.getId(), colecao, pageable);
         return ResponseEntity.ok(posts);
+    }
+
+    @GetMapping("/salvos/colecoes")
+    @Operation(summary = "Listar coleções de salvos", description = "Nomes das coleções do usuário autenticado")
+    public ResponseEntity<List<String>> listarColecoes(
+            @AuthenticationPrincipal Usuario usuario) {
+
+        return ResponseEntity.ok(salvosService.listarColecoesPorUsuario(usuario.getId()));
     }
 
     @GetMapping("/{id:\\d+}")

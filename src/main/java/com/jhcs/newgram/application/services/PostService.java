@@ -48,6 +48,12 @@ public class PostService {
     private SalvosRepository salvosRepository;
 
     @Autowired
+    private SeguidorRepository seguidorRepository;
+
+    @Autowired
+    private com.jhcs.newgram.core.domain.repositories.BloqueioRepository bloqueioRepository;
+
+    @Autowired
     private ArquivoService arquivoService;
     @Autowired
     private S3StorageService s3StorageService;
@@ -179,11 +185,20 @@ public class PostService {
     public Page<PostSummaryDTO> listarPostsPorLegenda(String termo, Pageable pageable, Long usuarioId) {
         Sort sort = Sort.by(Sort.Direction.DESC, "dataCriacao");
         Pageable safePageable = Support.safePage(pageable, sort);
-        Page<Post> posts = postRepository.buscarPostsPorLegenda(termo, safePageable);
+        Page<Post> posts = postRepository.buscarPostsPorLegenda(termo, usuarioId, safePageable);
         return posts.map(post -> converterParaSummaryDTO(post, usuarioId));
     }
     @Transactional(readOnly = true)
     public Page<PostSummaryDTO> listarPostsDoUsuario(Long usuarioId, Pageable pageable, Long usuarioLogadoId) {
+        Usuario alvo = usuarioRepository.findById(usuarioId)
+                .orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado"));
+        // Conta privada ou bloqueio: viewer sem vínculo recebe página vazia.
+        if (!Support.conteudoVisivelPara(alvo, usuarioLogadoId, seguidorRepository)) {
+            return Page.empty(pageable);
+        }
+        if (usuarioLogadoId != null && bloqueioRepository.existsBloqueioEntre(usuarioLogadoId, usuarioId)) {
+            return Page.empty(pageable);
+        }
         Sort sort = Sort.by(Sort.Direction.DESC, "dataCriacao");
         Pageable safePageable = Support.safePage(pageable, sort);
         Page<Post> posts = postRepository.findByAutorId(usuarioId, safePageable);
@@ -201,7 +216,7 @@ public class PostService {
     public Page<PostSummaryDTO> listarPostsPopulares(Pageable pageable, Long usuarioId) {
 
         Pageable safePageable = Support.safePage(pageable, Sort.unsorted());
-        Page<Post> posts = postRepository.findPostsPopulares(safePageable);
+        Page<Post> posts = postRepository.findPostsPopulares(usuarioId, safePageable);
         return posts.map(post -> converterParaSummaryDTO(post, usuarioId));
     }
     @Transactional(readOnly = true)
@@ -212,6 +227,7 @@ public class PostService {
         Page<Post> posts = postRepository.findPostsTendencias(
                 dataCorte,
                 minimoInteracoes,
+                usuarioId,
                 Support.safePage(pageable, Sort.unsorted()));
 
         return posts.map(post -> converterParaSummaryDTO(post, usuarioId));
@@ -228,7 +244,7 @@ public class PostService {
     public Page<PostSummaryDTO> listarPostsPorHashtag(String hashtag, Pageable pageable, Long usuarioId) {
         Sort sort = Sort.by(Sort.Direction.DESC, "dataCriacao");
         Pageable safePageable = Support.safePage(pageable, sort);
-        Page<Post> posts = postRepository.findByHashtag(hashtag, safePageable);
+        Page<Post> posts = postRepository.findByHashtag(hashtag, usuarioId, safePageable);
         return posts.map(post -> converterParaSummaryDTO(post, usuarioId));
     }
 
@@ -236,7 +252,7 @@ public class PostService {
     public Page<PostSummaryDTO> listarPostsPorLocalizacao(String localizacao, Pageable pageable, Long usuarioId) {
         Sort sort = Sort.by(Sort.Direction.DESC, "dataCriacao");
         Pageable safePageable = Support.safePage(pageable, sort);
-        Page<Post> posts = postRepository.findByLocalizacao(localizacao, safePageable);
+        Page<Post> posts = postRepository.findByLocalizacao(localizacao, usuarioId, safePageable);
         return posts.map(post -> converterParaSummaryDTO(post, usuarioId));
     }
 

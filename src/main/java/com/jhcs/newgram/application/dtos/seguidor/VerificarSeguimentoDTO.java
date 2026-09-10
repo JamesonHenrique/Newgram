@@ -11,4 +11,7 @@ import lombok.NoArgsConstructor;
 public class VerificarSeguimentoDTO {
     @Schema(description = "Indica se o usuário autenticado segue o usuário informado", example = "true")
     private boolean seguindo;
+
+    @Schema(description = "Indica se há solicitação de seguimento pendente (conta privada)", example = "false")
+    private boolean solicitacaoPendente;
 }

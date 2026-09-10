@@ -165,6 +165,26 @@ public class UsuarioResource {
         return ResponseEntity.ok(usuarioAtualizado);
     }
 
+    @PatchMapping("/{id:\\d+}/privado")
+    @Operation(summary = "Alternar conta privada", description = "Ativa ou desativa a privacidade da conta")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Privacidade atualizada",
+                    content = @Content(schema = @Schema(implementation = UsuarioResponseDTO.class))),
+            @ApiResponse(responseCode = "403", description = "Só o próprio perfil",
+                    content = @Content),
+            @ApiResponse(responseCode = "404", description = "Usuário não encontrado",
+                    content = @Content)
+    })
+    public ResponseEntity<UsuarioResponseDTO> atualizarPrivado(
+            @Parameter(description = "ID do usuário", required = true)
+            @PathVariable Long id,
+            @Parameter(description = "Conta privada?", required = true)
+            @RequestParam boolean privado,
+            @AuthenticationPrincipal Usuario usuarioLogado) {
+
+        return ResponseEntity.ok(usuarioService.atualizarPrivado(id, privado, usuarioLogado.getId()));
+    }
+
     @GetMapping("/{id:\\d+}/seguidores")
     @Operation(summary = "Listar seguidores", description = "Retorna os usuários que seguem um usuário específico")
     @ApiResponses(value = {

@@ -4,6 +4,7 @@ import com.jhcs.newgram.application.dtos.seguidor.SeguidorResponseDTO;
 import com.jhcs.newgram.application.dtos.usuario.UsuarioSummaryDTO;
 import com.jhcs.newgram.core.domain.entities.Seguidor;
 import com.jhcs.newgram.core.domain.entities.Usuario;
+import com.jhcs.newgram.core.domain.enums.StatusSeguimento;
 import com.jhcs.newgram.core.domain.enums.TipoNotificacao;
 import com.jhcs.newgram.core.domain.repositories.SeguidorRepository;
 import com.jhcs.newgram.core.domain.repositories.UsuarioRepository;
@@ -32,7 +33,8 @@ public class SeguidorService {
 
     @Transactional(readOnly = true)
     public Page<SeguidorResponseDTO> listarSeguidores(Long usuarioId, Pageable pageable) {
-        return seguidorRepository.findSeguidoresByUsuarioId(usuarioId, Support.safePage(pageable))
+        return seguidorRepository
+                .findSeguidoresByUsuarioId(usuarioId, StatusSeguimento.ACEITO, Support.safePage(pageable))
                 .map(seguidor -> {
                     Optional<Seguidor> relacao =
                             seguidorRepository.findBySeguidorIdAndSeguidoId(seguidor.getId(), usuarioId);
@@ -52,7 +54,8 @@ public class SeguidorService {
 
     @Transactional(readOnly = true)
     public Page<SeguidorResponseDTO> listarSeguidos(Long usuarioId, Pageable pageable) {
-        return seguidorRepository.findSeguidosByUsuarioId(usuarioId, Support.safePage(pageable))
+        return seguidorRepository
+                .findSeguidosByUsuarioId(usuarioId, StatusSeguimento.ACEITO, Support.safePage(pageable))
                 .map(seguido -> {
                     Optional<Seguidor> relacao =
                             seguidorRepository.findBySeguidorIdAndSeguidoId(usuarioId, seguido.getId());
@@ -72,17 +75,35 @@ public class SeguidorService {
 
     @Transactional(readOnly = true)
     public Long contarSeguidores(Long usuarioId) {
-        return seguidorRepository.countSeguidoresByUsuarioId(usuarioId);
+        return seguidorRepository.countSeguidoresByUsuarioId(usuarioId, StatusSeguimento.ACEITO);
     }
 
     @Transactional(readOnly = true)
     public Long contarSeguidos(Long usuarioId) {
-        return seguidorRepository.countSeguidosByUsuarioId(usuarioId);
+        return seguidorRepository.countSeguidosByUsuarioId(usuarioId, StatusSeguimento.ACEITO);
     }
 
     @Transactional(readOnly = true)
     public boolean verificarSeguimento(Long seguidorId, Long seguidoId) {
-        return seguidorRepository.existsBySeguidorIdAndSeguidoId(seguidorId, seguidoId);
+        return seguidorRepository.existsBySeguidorIdAndSeguidoIdAndStatus(
+                seguidorId, seguidoId, StatusSeguimento.ACEITO);
+    }
+
+    @Transactional(readOnly = true)
+    public boolean verificarSolicitacaoPendente(Long seguidorId, Long seguidoId) {
+        return seguidorRepository.existsBySeguidorIdAndSeguidoIdAndStatus(
+                seguidorId, seguidoId, StatusSeguimento.PENDENTE);
+    }
+
+    @Transactional(readOnly = true)
+    public Page<SeguidorResponseDTO> listarSolicitacoesRecebidas(Long usuarioId, Pageable pageable) {
+        return seguidorRepository.findSolicitacoesRecebidas(usuarioId, Support.safePage(pageable))
+                .map(this::converterParaDTO);
+    }
+
+    @Transactional(readOnly = true)
+    public long contarSolicitacoesRecebidas(Long usuarioId) {
+        return seguidorRepository.countSolicitacoesRecebidas(usuarioId);
     }
 
     @Transactional
@@ -102,6 +123,10 @@ public class SeguidorService {
         relacao.setDataCriacao(LocalDateTime.now());
         relacao.setNotificacoesAtivadas(true);
 
+        // Conta privada: vira solicitacao pendente de aceite.
+        boolean privada = seguido.isPrivado();
+        relacao.setStatus(privada ? StatusSeguimento.PENDENTE : StatusSeguimento.ACEITO);
+
         try {
             relacao = seguidorRepository.saveAndFlush(relacao);
         } catch (DataIntegrityViolationException e) {
@@ -113,13 +138,40 @@ public class SeguidorService {
             notificacaoService.criarNotificacao(
                     seguidoId,
                     seguidorId,
-                    TipoNotificacao.NOVO_SEGUIDOR,
-                    seguidor.getUsername() + " começou a seguir você");
+                    privada ? TipoNotificacao.SOLICITACAO_SEGUIMENTO : TipoNotificacao.NOVO_SEGUIDOR,
+                    privada
+                            ? seguidor.getUsername() + " quer seguir você"
+                            : seguidor.getUsername() + " começou a seguir você");
         } catch (RuntimeException e) {
             log.warn("Follow {}->{} salvo, mas notificacao falhou", seguidorId, seguidoId, e);
         }
 
         return converterParaDTO(relacao);
+    }
+
+    @Transactional
+    public SeguidorResponseDTO aceitarSolicitacao(Long solicitacaoId, Long usuarioId) {
+        Seguidor relacao = seguidorRepository.findById(solicitacaoId)
+                .orElseThrow(() -> new ResourceNotFoundException("Solicitação não encontrada"));
+        Support.requireOwner(relacao.getSeguido().getId(), usuarioId,
+                "Você não tem permissão para aceitar esta solicitação");
+        if (relacao.getStatus() != StatusSeguimento.PENDENTE) {
+            throw new BusinessException("Solicitação já foi respondida");
+        }
+        relacao.setStatus(StatusSeguimento.ACEITO);
+        return converterParaDTO(seguidorRepository.save(relacao));
+    }
+
+    @Transactional
+    public void rejeitarSolicitacao(Long solicitacaoId, Long usuarioId) {
+        Seguidor relacao = seguidorRepository.findById(solicitacaoId)
+                .orElseThrow(() -> new ResourceNotFoundException("Solicitação não encontrada"));
+        Support.requireOwner(relacao.getSeguido().getId(), usuarioId,
+                "Você não tem permissão para rejeitar esta solicitação");
+        if (relacao.getStatus() != StatusSeguimento.PENDENTE) {
+            throw new BusinessException("Solicitação já foi respondida");
+        }
+        seguidorRepository.delete(relacao);
     }
 
     @Transactional

@@ -9,7 +9,6 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
 public interface PostRepository extends JpaRepository<Post, Long> {
 
@@ -17,54 +16,85 @@ public interface PostRepository extends JpaRepository<Post, Long> {
 
     @Query(value = "SELECT p.* FROM post p " +
             "LEFT JOIN (" +
-            "SELECT s.seguido_id FROM seguidor s WHERE s.seguidor_id = :usuarioId" +
+            "SELECT s.seguido_id FROM seguidor s WHERE s.seguidor_id = :usuarioId AND s.status = 'ACEITO'" +
             ") f ON p.autor_id = f.seguido_id " +
             "WHERE p.arquivado = false " +
+            "AND NOT EXISTS (SELECT 1 FROM bloqueio b WHERE (b.bloqueador_id = :usuarioId AND b.bloqueado_id = p.autor_id) OR (b.bloqueador_id = p.autor_id AND b.bloqueado_id = :usuarioId)) " +
+            "AND (p.autor_id = :usuarioId " +
+            "OR f.seguido_id IS NOT NULL " +
+            "OR ((p.visibilidade IS NULL OR p.visibilidade <> 'PRIVADO') " +
+            "AND (SELECT u.privado FROM usuario u WHERE u.id = p.autor_id) = false)) " +
             "ORDER BY " +
             "CASE WHEN f.seguido_id IS NOT NULL THEN 1 ELSE 0 END DESC, " +  // Prioritize followed content
             "(SELECT COUNT(*) FROM curtida c WHERE c.post_id = p.id) * 0.6 + " +  // Weight by popularity
             "(SELECT COUNT(*) FROM comentario cm WHERE cm.post_id = p.id) * 0.4 DESC, " +
             "p.data_criacao DESC",
-            countQuery = "SELECT COUNT(*) FROM post p WHERE p.arquivado = false",
+            countQuery = "SELECT COUNT(*) FROM post p WHERE p.arquivado = false " +
+                    "AND NOT EXISTS (SELECT 1 FROM bloqueio b WHERE (b.bloqueador_id = :usuarioId AND b.bloqueado_id = p.autor_id) OR (b.bloqueador_id = p.autor_id AND b.bloqueado_id = :usuarioId)) " +
+                    "AND (p.autor_id = :usuarioId " +
+                    "OR EXISTS (SELECT 1 FROM seguidor s WHERE s.seguidor_id = :usuarioId AND s.seguido_id = p.autor_id AND s.status = 'ACEITO') " +
+                    "OR ((p.visibilidade IS NULL OR p.visibilidade <> 'PRIVADO') " +
+                    "AND (SELECT u.privado FROM usuario u WHERE u.id = p.autor_id) = false))",
             nativeQuery = true)
     Page<Post> findFeedByUsuarioId(@Param("usuarioId") Long usuarioId, Pageable pageable);
-    @Query("SELECT p FROM Post p WHERE p.arquivado = false ORDER BY SIZE(p.curtidas) DESC")
-    Page<Post> findPostsPopulares(Pageable pageable);
+
+    @Query("SELECT p FROM Post p WHERE p.arquivado = false " +
+            "AND NOT EXISTS (SELECT 1 FROM Bloqueio b WHERE (b.bloqueador.id = :usuarioId AND b.bloqueado.id = p.autor.id) OR (b.bloqueador.id = p.autor.id AND b.bloqueado.id = :usuarioId)) " +
+            "AND (p.autor.id = :usuarioId " +
+            "OR EXISTS (SELECT 1 FROM Seguidor s WHERE s.seguidor.id = :usuarioId AND s.seguido.id = p.autor.id AND s.status = com.jhcs.newgram.core.domain.enums.StatusSeguimento.ACEITO) " +
+            "OR ((p.visibilidade IS NULL OR p.visibilidade <> com.jhcs.newgram.core.domain.enums.TipoVisibilidade.PRIVADO) AND p.autor.privado = false)) " +
+            "ORDER BY SIZE(p.curtidas) DESC")
+    Page<Post> findPostsPopulares(@Param("usuarioId") Long usuarioId, Pageable pageable);
     @Query(value = "SELECT p.* FROM post p " +
             "WHERE p.arquivado = false " +
             "AND p.data_criacao > :dataCorte " +
+            "AND NOT EXISTS (SELECT 1 FROM bloqueio b WHERE (b.bloqueador_id = :usuarioId AND b.bloqueado_id = p.autor_id) OR (b.bloqueador_id = p.autor_id AND b.bloqueado_id = :usuarioId)) " +
             "AND (SELECT COUNT(*) FROM curtida c WHERE c.post_id = p.id) >= :minimoInteracoes " +
+            "AND (p.autor_id = :usuarioId " +
+            "OR EXISTS (SELECT 1 FROM seguidor s WHERE s.seguidor_id = :usuarioId AND s.seguido_id = p.autor_id AND s.status = 'ACEITO') " +
+            "OR ((p.visibilidade IS NULL OR p.visibilidade <> 'PRIVADO') " +
+            "AND (SELECT u.privado FROM usuario u WHERE u.id = p.autor_id) = false)) " +
             "ORDER BY ((SELECT COUNT(*) FROM curtida c WHERE c.post_id = p.id) + " +
             "(SELECT COUNT(*) FROM comentario cm WHERE cm.post_id = p.id)) DESC, " +
             "p.data_criacao DESC",
             countQuery = "SELECT COUNT(*) FROM post p " +
                     "WHERE p.arquivado = false " +
                     "AND p.data_criacao > :dataCorte " +
-                    "AND (SELECT COUNT(*) FROM curtida c WHERE c.post_id = p.id) >= :minimoInteracoes",
+                    "AND NOT EXISTS (SELECT 1 FROM bloqueio b WHERE (b.bloqueador_id = :usuarioId AND b.bloqueado_id = p.autor_id) OR (b.bloqueador_id = p.autor_id AND b.bloqueado_id = :usuarioId)) " +
+                    "AND (SELECT COUNT(*) FROM curtida c WHERE c.post_id = p.id) >= :minimoInteracoes " +
+                    "AND (p.autor_id = :usuarioId " +
+                    "OR EXISTS (SELECT 1 FROM seguidor s WHERE s.seguidor_id = :usuarioId AND s.seguido_id = p.autor_id AND s.status = 'ACEITO') " +
+                    "OR ((p.visibilidade IS NULL OR p.visibilidade <> 'PRIVADO') " +
+                    "AND (SELECT u.privado FROM usuario u WHERE u.id = p.autor_id) = false))",
             nativeQuery = true)
     Page<Post> findPostsTendencias(
             @Param("dataCorte") LocalDateTime dataCorte,
             @Param("minimoInteracoes") int minimoInteracoes,
+            @Param("usuarioId") Long usuarioId,
             Pageable pageable);
 
-    @Query(value = "SELECT COUNT(*) FROM post p " +
-            "WHERE p.arquivado = false " +
-            "AND p.data_criacao > :dataCorte " +
-            "AND (SELECT COUNT(*) FROM curtida c WHERE c.post_id = p.id) >= :minimoInteracoes",
-            nativeQuery = true)
-    long countPostsTendencias(
-            @Param("dataCorte") LocalDateTime dataCorte,
-            @Param("minimoInteracoes") int minimoInteracoes);
     @Query("SELECT p FROM Post p " +
-            "WHERE p.autor.id IN (SELECT s.seguido.id FROM Seguidor s WHERE s.seguidor.id = :usuarioId) " +
+            "WHERE p.autor.id IN (SELECT s.seguido.id FROM Seguidor s WHERE s.seguidor.id = :usuarioId AND s.status = com.jhcs.newgram.core.domain.enums.StatusSeguimento.ACEITO) " +
+            "AND NOT EXISTS (SELECT 1 FROM Bloqueio b WHERE (b.bloqueador.id = :usuarioId AND b.bloqueado.id = p.autor.id) OR (b.bloqueador.id = p.autor.id AND b.bloqueado.id = :usuarioId)) " +
             "AND p.arquivado = false AND SIZE(p.curtidas) > 0 " +
             "ORDER BY SIZE(p.curtidas) * 0.7 + SIZE(p.comentarios) * 0.3 DESC, p.dataCriacao DESC")
     Page<Post> findPopularPostsFromFollowing(@Param("usuarioId") Long usuarioId, Pageable pageable);
-    @Query("SELECT p FROM Post p JOIN p.hashtags h WHERE h.nome = :hashtag")
-    Page<Post> findByHashtag(@Param("hashtag") String hashtag, Pageable pageable);
 
-    @Query("SELECT p FROM Post p WHERE p.localizacao LIKE %:localizacao% AND p.arquivado = false")
-    Page<Post> findByLocalizacao(@Param("localizacao") String localizacao, Pageable pageable);
+    @Query("SELECT p FROM Post p JOIN p.hashtags h WHERE h.nome = :hashtag " +
+            "AND NOT EXISTS (SELECT 1 FROM Bloqueio b WHERE (b.bloqueador.id = :usuarioId AND b.bloqueado.id = p.autor.id) OR (b.bloqueador.id = p.autor.id AND b.bloqueado.id = :usuarioId)) " +
+            "AND (p.autor.id = :usuarioId " +
+            "OR EXISTS (SELECT 1 FROM Seguidor s WHERE s.seguidor.id = :usuarioId AND s.seguido.id = p.autor.id AND s.status = com.jhcs.newgram.core.domain.enums.StatusSeguimento.ACEITO) " +
+            "OR ((p.visibilidade IS NULL OR p.visibilidade <> com.jhcs.newgram.core.domain.enums.TipoVisibilidade.PRIVADO) AND p.autor.privado = false))")
+    Page<Post> findByHashtag(
+            @Param("hashtag") String hashtag, @Param("usuarioId") Long usuarioId, Pageable pageable);
+
+    @Query("SELECT p FROM Post p WHERE p.localizacao LIKE %:localizacao% AND p.arquivado = false " +
+            "AND NOT EXISTS (SELECT 1 FROM Bloqueio b WHERE (b.bloqueador.id = :usuarioId AND b.bloqueado.id = p.autor.id) OR (b.bloqueador.id = p.autor.id AND b.bloqueado.id = :usuarioId)) " +
+            "AND (p.autor.id = :usuarioId " +
+            "OR EXISTS (SELECT 1 FROM Seguidor s WHERE s.seguidor.id = :usuarioId AND s.seguido.id = p.autor.id AND s.status = com.jhcs.newgram.core.domain.enums.StatusSeguimento.ACEITO) " +
+            "OR ((p.visibilidade IS NULL OR p.visibilidade <> com.jhcs.newgram.core.domain.enums.TipoVisibilidade.PRIVADO) AND p.autor.privado = false))")
+    Page<Post> findByLocalizacao(
+            @Param("localizacao") String localizacao, @Param("usuarioId") Long usuarioId, Pageable pageable);
 
     @Query("SELECT COUNT(p) FROM Post p WHERE p.autor.id = :usuarioId AND p.arquivado = false")
     Long countPostsByUsuarioId(@Param("usuarioId") Long usuarioId);
@@ -78,17 +108,27 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     @Query(value = "SELECT p.* FROM post p " +
             "JOIN curtida c ON p.id = c.post_id " +
             "WHERE p.arquivado = false " +
+            "AND NOT EXISTS (SELECT 1 FROM bloqueio b WHERE (b.bloqueador_id = :usuarioId AND b.bloqueado_id = p.autor_id) OR (b.bloqueador_id = p.autor_id AND b.bloqueado_id = :usuarioId)) " +
+            "AND (p.autor_id = :usuarioId " +
+            "OR EXISTS (SELECT 1 FROM seguidor s WHERE s.seguidor_id = :usuarioId AND s.seguido_id = p.autor_id AND s.status = 'ACEITO') " +
+            "OR ((p.visibilidade IS NULL OR p.visibilidade <> 'PRIVADO') " +
+            "AND (SELECT u.privado FROM usuario u WHERE u.id = p.autor_id) = false)) " +
             "GROUP BY p.id " +
             "ORDER BY COUNT(c.id) DESC, p.data_criacao DESC",
             countQuery = "SELECT COUNT(DISTINCT p.id) FROM post p " +
-                    "JOIN curtida c ON p.id = c.post_id WHERE p.arquivado = false",
+                    "JOIN curtida c ON p.id = c.post_id WHERE p.arquivado = false " +
+                    "AND NOT EXISTS (SELECT 1 FROM bloqueio b WHERE (b.bloqueador_id = :usuarioId AND b.bloqueado_id = p.autor_id) OR (b.bloqueador_id = p.autor_id AND b.bloqueado_id = :usuarioId)) " +
+                    "AND (p.autor_id = :usuarioId " +
+                    "OR EXISTS (SELECT 1 FROM seguidor s WHERE s.seguidor_id = :usuarioId AND s.seguido_id = p.autor_id AND s.status = 'ACEITO') " +
+                    "OR ((p.visibilidade IS NULL OR p.visibilidade <> 'PRIVADO') " +
+                    "AND (SELECT u.privado FROM usuario u WHERE u.id = p.autor_id) = false))",
             nativeQuery = true)
-    Page<Post> findTopPostsByLikes(Pageable pageable);
+    Page<Post> findTopPostsByLikes(@Param("usuarioId") Long usuarioId, Pageable pageable);
 
-    /** @deprecated use {@link #buscarPostsPorLegenda(String, Pageable)} */
+    /** @deprecated use {@link #buscarPostsPorLegenda(String, Long, Pageable)} */
     @Deprecated
-    default Page<Post> searchPostsByContent(String termo, Pageable pageable) {
-        return buscarPostsPorLegenda(termo, pageable);
+    default Page<Post> searchPostsByContent(String termo, Long usuarioId, Pageable pageable) {
+        return buscarPostsPorLegenda(termo, usuarioId, pageable);
     }
 
 
@@ -96,11 +136,22 @@ public interface PostRepository extends JpaRepository<Post, Long> {
 
     @Query("SELECT COUNT(p) FROM Post p JOIN p.hashtags h WHERE h.id = :hashtagId")
     Long countByHashtagId(@Param("hashtagId") Long hashtagId);
-    @Query("SELECT p FROM Post p WHERE LOWER(p.legenda) LIKE LOWER(CONCAT('%', :termo, '%')) AND p.arquivado = false")
-    Page<Post> buscarPostsPorLegenda(@Param("termo") String termo, Pageable pageable);
+
+    @Query("SELECT p FROM Post p WHERE LOWER(p.legenda) LIKE LOWER(CONCAT('%', :termo, '%')) AND p.arquivado = false " +
+            "AND NOT EXISTS (SELECT 1 FROM Bloqueio b WHERE (b.bloqueador.id = :usuarioId AND b.bloqueado.id = p.autor.id) OR (b.bloqueador.id = p.autor.id AND b.bloqueado.id = :usuarioId)) " +
+            "AND (p.autor.id = :usuarioId " +
+            "OR EXISTS (SELECT 1 FROM Seguidor s WHERE s.seguidor.id = :usuarioId AND s.seguido.id = p.autor.id AND s.status = com.jhcs.newgram.core.domain.enums.StatusSeguimento.ACEITO) " +
+            "OR ((p.visibilidade IS NULL OR p.visibilidade <> com.jhcs.newgram.core.domain.enums.TipoVisibilidade.PRIVADO) AND p.autor.privado = false))")
+    Page<Post> buscarPostsPorLegenda(
+            @Param("termo") String termo, @Param("usuarioId") Long usuarioId, Pageable pageable);
     @Query(value = "SELECT p.* FROM post p " +
             "WHERE p.arquivado = false " +
             "AND p.autor_id != :usuarioId " +
+            "AND NOT EXISTS (SELECT 1 FROM bloqueio b WHERE (b.bloqueador_id = :usuarioId AND b.bloqueado_id = p.autor_id) OR (b.bloqueador_id = p.autor_id AND b.bloqueado_id = :usuarioId)) " +
+            "AND (p.autor_id = :usuarioId " +
+            "OR EXISTS (SELECT 1 FROM seguidor s WHERE s.seguidor_id = :usuarioId AND s.seguido_id = p.autor_id AND s.status = 'ACEITO') " +
+            "OR ((p.visibilidade IS NULL OR p.visibilidade <> 'PRIVADO') " +
+            "AND (SELECT u.privado FROM usuario u WHERE u.id = p.autor_id) = false)) " +
             "AND p.id NOT IN (SELECT c.post_id FROM curtida c WHERE c.usuario_id = :usuarioId) " +
             "AND p.id NOT IN (SELECT cm.post_id FROM comentario cm WHERE cm.autor_id = :usuarioId) " +
             "AND (" +
@@ -140,6 +191,11 @@ public interface PostRepository extends JpaRepository<Post, Long> {
             countQuery = "SELECT COUNT(*) FROM post p " +
                     "WHERE p.arquivado = false " +
                     "AND p.autor_id != :usuarioId " +
+                    "AND NOT EXISTS (SELECT 1 FROM bloqueio b WHERE (b.bloqueador_id = :usuarioId AND b.bloqueado_id = p.autor_id) OR (b.bloqueador_id = p.autor_id AND b.bloqueado_id = :usuarioId)) " +
+                    "AND (p.autor_id = :usuarioId " +
+                    "OR EXISTS (SELECT 1 FROM seguidor s WHERE s.seguidor_id = :usuarioId AND s.seguido_id = p.autor_id AND s.status = 'ACEITO') " +
+                    "OR ((p.visibilidade IS NULL OR p.visibilidade <> 'PRIVADO') " +
+                    "AND (SELECT u.privado FROM usuario u WHERE u.id = p.autor_id) = false)) " +
                     "AND p.id NOT IN (SELECT c.post_id FROM curtida c WHERE c.usuario_id = :usuarioId) " +
                     "AND p.id NOT IN (SELECT cm.post_id FROM comentario cm WHERE cm.autor_id = :usuarioId) " +
                     "AND (" +

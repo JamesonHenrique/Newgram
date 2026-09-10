@@ -6,7 +6,9 @@ import com.jhcs.newgram.core.domain.entities.Destaque;
 import com.jhcs.newgram.core.domain.entities.Storie;
 import com.jhcs.newgram.core.domain.entities.Usuario;
 import com.jhcs.newgram.core.domain.enums.TipoArquivo;
+import com.jhcs.newgram.core.domain.repositories.BloqueioRepository;
 import com.jhcs.newgram.core.domain.repositories.DestaqueRepository;
+import com.jhcs.newgram.core.domain.repositories.SeguidorRepository;
 import com.jhcs.newgram.core.domain.repositories.StorieRepository;
 import com.jhcs.newgram.core.domain.repositories.UsuarioRepository;
 import com.jhcs.newgram.infrastructure.aws.S3StorageService;
@@ -35,6 +37,12 @@ public class StorieService {
 
     @Autowired
     private DestaqueRepository destaqueRepository;
+
+    @Autowired
+    private SeguidorRepository seguidorRepository;
+
+    @Autowired
+    private BloqueioRepository bloqueioRepository;
 
     @Autowired
     private ArquivoService arquivoService;
@@ -134,6 +142,14 @@ public class StorieService {
 
     @Transactional(readOnly = true)
     public Page<StorieResponseDTO> listarStoriesDoUsuario(Long autorId, Long usuarioLogadoId, Pageable pageable) {
+        Usuario autor = usuarioRepository.findById(autorId)
+                .orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado"));
+        if (!Support.conteudoVisivelPara(autor, usuarioLogadoId, seguidorRepository)) {
+            return Page.empty(pageable);
+        }
+        if (usuarioLogadoId != null && bloqueioRepository.existsBloqueioEntre(usuarioLogadoId, autorId)) {
+            return Page.empty(pageable);
+        }
         LocalDateTime agora = LocalDateTime.now();
         List<Storie> stories =
                 storieRepository.findByAutorIdAndDataExpiracaoAfterOrderByDataCriacaoDesc(autorId, agora);

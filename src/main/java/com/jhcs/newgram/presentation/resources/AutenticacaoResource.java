@@ -1,10 +1,13 @@
 package com.jhcs.newgram.presentation.resources;
 
 import com.jhcs.newgram.application.dtos.usuario.LoginDTO;
+import com.jhcs.newgram.application.dtos.usuario.RecuperarSenhaDTO;
+import com.jhcs.newgram.application.dtos.usuario.RedefinirSenhaDTO;
 import com.jhcs.newgram.application.dtos.usuario.RefreshTokenDTO;
 import com.jhcs.newgram.application.dtos.usuario.TokenDTO;
 import com.jhcs.newgram.application.dtos.usuario.UsuarioCreateDTO;
 import com.jhcs.newgram.application.services.AutenticacaoService;
+import com.jhcs.newgram.application.services.RecuperacaoSenhaService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -25,6 +28,7 @@ import org.springframework.web.bind.annotation.*;
 @Tag(name = "Autenticação", description = "API para autenticação e registro de usuários")
 public class AutenticacaoResource {
     private final AutenticacaoService autenticacaoService;
+    private final RecuperacaoSenhaService recuperacaoSenhaService;
     @PostMapping(path = "/register", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @Operation(summary = "Registrar usuário", description = "Registra um novo usuário com foto de perfil")
     public ResponseEntity<TokenDTO> registrar(
@@ -65,6 +69,35 @@ public class AutenticacaoResource {
             @RequestBody @Valid RefreshTokenDTO dto) {
         TokenDTO tokenDTO = autenticacaoService.renovarToken(dto.getRefreshToken());
         return ResponseEntity.ok(tokenDTO);
+    }
+
+    @PostMapping(path = "/recuperar-senha")
+    @Operation(summary = "Solicitar recuperação de senha",
+            description = "Resposta sempre genérica para não revelar se o e-mail existe")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "202", description = "Solicitação aceita"),
+            @ApiResponse(responseCode = "400", description = "E-mail inválido",
+                    content = @Content)
+    })
+    public ResponseEntity<Void> recuperarSenha(
+            @Parameter(description = "E-mail da conta", required = true)
+            @RequestBody @Valid RecuperarSenhaDTO dto) {
+        recuperacaoSenhaService.solicitar(dto.getEmail());
+        return ResponseEntity.accepted().build();
+    }
+
+    @PostMapping(path = "/redefinir-senha")
+    @Operation(summary = "Redefinir senha", description = "Troca a senha com token single-use de 1h")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "204", description = "Senha redefinida"),
+            @ApiResponse(responseCode = "400", description = "Token inválido/expirado ou senhas divergentes",
+                    content = @Content)
+    })
+    public ResponseEntity<Void> redefinirSenha(
+            @Parameter(description = "Token e nova senha", required = true)
+            @RequestBody @Valid RedefinirSenhaDTO dto) {
+        recuperacaoSenhaService.redefinir(dto);
+        return ResponseEntity.noContent().build();
     }
 
 }

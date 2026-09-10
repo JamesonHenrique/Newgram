@@ -17,6 +17,9 @@ public class UsuarioSummaryDTO {
     @Schema(description = "Indica se o usuário atual está seguindo este usuário", example = "true")
     private boolean seguindoUsuario;
 
+    @Schema(description = "Indica se a conta é privada", example = "false")
+    private boolean privado;
+
     @Schema(description = "Número de seguidores do usuário", example = "100")
     private Long numeroSeguidores;
 
