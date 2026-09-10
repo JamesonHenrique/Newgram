@@ -22,7 +22,7 @@ public class ArquivoService {
     private static final Set<String> CONTENT_TYPES_PERMITIDOS =
             Set.of("image/jpeg", "image/png", "image/gif", "image/webp", "video/mp4");
 
-    @Value("${file.max-size:2097152}")
+    @Value("${file.max-size:33554432}")
     private long maxFileSize;
 
     private final S3StorageService s3StorageService;

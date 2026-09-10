@@ -1,6 +1,7 @@
 package com.jhcs.newgram.application.services;
 
 import com.jhcs.newgram.application.dtos.usuario.TokenDTO;
+import com.jhcs.newgram.application.dtos.usuario.TwoFactorLoginDTO;
 import com.jhcs.newgram.application.dtos.usuario.UsuarioCreateDTO;
 import com.jhcs.newgram.core.domain.entities.StatusUsuario;
 import com.jhcs.newgram.core.domain.entities.Usuario;
@@ -8,7 +9,9 @@ import com.jhcs.newgram.core.domain.enums.TipoArquivo;
 import com.jhcs.newgram.core.domain.repositories.StatusUsuarioRepository;
 import com.jhcs.newgram.core.domain.repositories.UsuarioRepository;
 import com.jhcs.newgram.infrastructure.exception.BusinessException;
+import com.jhcs.newgram.infrastructure.exception.ResourceNotFoundException;
 import com.jhcs.newgram.infrastructure.security.JwtService;
+import com.jhcs.newgram.infrastructure.security.TotpService;
 import java.time.LocalDateTime;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
@@ -27,6 +30,7 @@ public class AutenticacaoService {
     private final PasswordEncoder passwordEncoder;
     private final UsuarioRepository usuarioRepository;
     private final JwtService jwtService;
+    private final TotpService totpService;
     private final AuthenticationManager authenticationManager;
     private final StatusUsuarioRepository statusUsuarioRepository;
     private final ArquivoService arquivoService;
@@ -82,10 +86,68 @@ public class AutenticacaoService {
         var usuario = usuarioRepository.findByEmail(email)
                 .orElseThrow(() -> new UsernameNotFoundException("Usuário não encontrado"));
 
+        // 2FA ativo: login parcial, front pede o código em seguida.
+        if (usuario.isTwoFactorEnabled()) {
+            TokenDTO parcial = new TokenDTO();
+            parcial.setTwoFactorRequired(true);
+            return parcial;
+        }
+
         var token = jwtService.generateToken(usuario);
         var refreshToken = jwtService.generateRefreshToken(usuario);
 
         return criarTokenDTO(token, refreshToken);
+    }
+
+    /** Segunda etapa do login com 2FA (senha já validada na etapa anterior). */
+    public TokenDTO verificarTwoFactor(TwoFactorLoginDTO dto) {
+        var usuario = usuarioRepository.findByEmail(dto.getEmail())
+                .orElseThrow(() -> new UsernameNotFoundException("Usuário não encontrado"));
+        if (!usuario.isTwoFactorEnabled()) {
+            throw new BusinessException("Conta sem autenticação em dois fatores");
+        }
+        if (!totpService.verificar(usuario.getTotpSecret(), dto.getCodigo())) {
+            throw new BusinessException("Código inválido");
+        }
+        return criarTokenDTO(jwtService.generateToken(usuario), jwtService.generateRefreshToken(usuario));
+    }
+
+    /** Etapa 1 da ativação: gera segredo (só persiste após confirmação). */
+    @Transactional
+    public Map<String, String> iniciarAtivacaoTwoFactor(Long usuarioId) {
+        Usuario usuario = usuarioRepository.findById(usuarioId)
+                .orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado"));
+        if (usuario.isTwoFactorEnabled()) {
+            throw new BusinessException("2FA já está ativo");
+        }
+        String segredo = totpService.generarSegredo();
+        usuario.setTotpSecret(segredo);
+        usuarioRepository.save(usuario);
+        return Map.of(
+                "segredo", segredo,
+                "uri", totpService.uriProvisionamento("Newgram", usuario.getEmail(), segredo));
+    }
+
+    /** Etapa 2: confirma o código e ativa. */
+    @Transactional
+    public void confirmarAtivacaoTwoFactor(Long usuarioId, String codigo) {
+        Usuario usuario = usuarioRepository.findById(usuarioId)
+                .orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado"));
+        if (usuario.getTotpSecret() == null
+                || !totpService.verificar(usuario.getTotpSecret(), codigo)) {
+            throw new BusinessException("Código inválido");
+        }
+        usuario.setTwoFactorEnabled(true);
+        usuarioRepository.save(usuario);
+    }
+
+    @Transactional
+    public void desativarTwoFactor(Long usuarioId) {
+        Usuario usuario = usuarioRepository.findById(usuarioId)
+                .orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado"));
+        usuario.setTwoFactorEnabled(false);
+        usuario.setTotpSecret(null);
+        usuarioRepository.save(usuario);
     }
 
     /** Rotaciona o par: refresh antigo invalidado, par novo emitido. */

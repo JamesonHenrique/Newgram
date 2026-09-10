@@ -1,5 +1,6 @@
 package com.jhcs.newgram.presentation.resources;
 
+import com.jhcs.newgram.application.dtos.usuario.AnalyticsDTO;
 import com.jhcs.newgram.application.dtos.usuario.UsuarioComumDTO;
 import com.jhcs.newgram.application.dtos.usuario.UsuarioResponseDTO;
 import com.jhcs.newgram.application.dtos.usuario.UsuarioSummaryDTO;
@@ -7,6 +8,7 @@ import com.jhcs.newgram.application.dtos.usuario.UsuarioUpdateDTO;
 import com.jhcs.newgram.application.services.ArquivoService;
 import com.jhcs.newgram.application.services.UsuarioService;
 import com.jhcs.newgram.core.domain.entities.Usuario;
+import com.jhcs.newgram.core.domain.enums.TipoConta;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -24,6 +26,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.Map;
 
 @RestController
 @RequestMapping("/usuarios")
@@ -225,6 +229,67 @@ public class UsuarioResource {
 
         Page<UsuarioSummaryDTO> seguidos = usuarioService.buscarSeguidos(id, pageable, usuarioLogado.getId());
         return ResponseEntity.ok(seguidos);
+    }
+
+    @PostMapping("/eu/solicitar-verificacao")
+    @Operation(summary = "Solicitar selo de verificação", description = "Entra na fila de moderação")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "202", description = "Solicitação registrada"),
+            @ApiResponse(responseCode = "400", description = "Já verificada ou já solicitada",
+                    content = @Content)
+    })
+    public ResponseEntity<Void> solicitarVerificacao(@AuthenticationPrincipal Usuario usuarioLogado) {
+
+        usuarioService.solicitarVerificacao(usuarioLogado.getId());
+        return ResponseEntity.accepted().build();
+    }
+
+    @GetMapping("/eu/exportar")
+    @Operation(summary = "Exportar meus dados (LGPD)", description = "JSON com perfil, contagens e posts")
+    public ResponseEntity<java.util.Map<String, Object>> exportarDados(
+            @AuthenticationPrincipal Usuario usuarioLogado) {
+
+        return ResponseEntity.ok(usuarioService.exportarDados(usuarioLogado.getId()));
+    }
+
+    @DeleteMapping("/eu")
+    @Operation(summary = "Excluir minha conta (LGPD)", description = "Anonimiza a conta; ação irreversível")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "204", description = "Conta anonimizada"),
+            @ApiResponse(responseCode = "401", description = "Não autorizado",
+                    content = @Content)
+    })
+    public ResponseEntity<Void> excluirConta(@AuthenticationPrincipal Usuario usuarioLogado) {
+
+        usuarioService.excluirConta(usuarioLogado.getId());
+        return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/eu/analytics")
+    @Operation(summary = "Analytics da conta", description = "Views, alcance e seguidores")
+    public ResponseEntity<AnalyticsDTO> analytics(
+            @AuthenticationPrincipal Usuario usuarioLogado) {
+
+        return ResponseEntity.ok(usuarioService.analytics(usuarioLogado.getId()));
+    }
+
+    @PatchMapping("/eu/pix")
+    @Operation(summary = "Definir chave Pix", description = "Vazia remove; exibida no perfil")
+    public ResponseEntity<UsuarioResponseDTO> atualizarChavePix(
+            @RequestBody Map<String, String> body,
+            @AuthenticationPrincipal Usuario usuarioLogado) {
+
+        return ResponseEntity.ok(usuarioService.atualizarChavePix(usuarioLogado.getId(), body.get("chavePix")));
+    }
+
+    @PatchMapping("/eu/tipo-conta")
+    @Operation(summary = "Definir tipo de conta", description = "PESSOAL, CRIADOR ou NEGOCIOS")
+    public ResponseEntity<UsuarioResponseDTO> atualizarTipoConta(
+            @Parameter(description = "Tipo de conta", required = true)
+            @RequestParam TipoConta tipoConta,
+            @AuthenticationPrincipal Usuario usuarioLogado) {
+
+        return ResponseEntity.ok(usuarioService.atualizarTipoConta(usuarioLogado.getId(), tipoConta));
     }
 
 

@@ -10,4 +10,7 @@ public class TokenDTO {
 
     @Schema(description = "Token de atualização do usuário", example = "dGhpcyBpcyBhIHJlZnJlc2g...")
     private String refreshToken;
+
+    @Schema(description = "Login parcial: falta o código 2FA", example = "false")
+    private boolean twoFactorRequired = false;
 }

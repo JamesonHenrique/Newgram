@@ -19,6 +19,11 @@ public interface StatusUsuarioRepository extends JpaRepository<StatusUsuario, Lo
     @Query("SELECT s FROM StatusUsuario s WHERE s.ultimoAcesso > :data AND s.usuario.id IN :usuariosIds")
     List<StatusUsuario> findUsuariosRecentementeAtivos(@Param("data") LocalDateTime data, @Param("usuariosIds") List<Long> usuariosIds);
 
+    @Query("SELECT s FROM StatusUsuario s WHERE s.usuario.id IN :usuariosIds " +
+            "AND s.statusPersonalizado IS NOT NULL AND s.ultimoAcesso > :desde ORDER BY s.ultimoAcesso DESC")
+    List<StatusUsuario> findNotasRecentes(
+            @Param("usuariosIds") List<Long> usuariosIds, @Param("desde") LocalDateTime desde);
+
     @Query("SELECT s.usuario.id FROM StatusUsuario s WHERE s.online = true")
     List<Long> findAllUsuariosOnlineIds();
 }

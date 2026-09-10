@@ -11,7 +11,11 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 
 import java.util.Collections;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Utilidades compartilhadas pelos services: paginação defensiva,
@@ -97,5 +101,20 @@ public final class Support {
         return viewerId != null
                 && seguidorRepository.existsBySeguidorIdAndSeguidoIdAndStatus(
                         viewerId, alvo.getId(), StatusSeguimento.ACEITO);
+    }
+
+    private static final Pattern MENCAO = Pattern.compile("@([A-Za-z0-9._-]{3,30})");
+
+    /** Usernames mencionados com @ (ordem de aparição, sem duplicar). */
+    public static Set<String> extrairMencoes(String texto) {
+        Set<String> mencoes = new LinkedHashSet<>();
+        if (texto == null || texto.isBlank()) {
+            return mencoes;
+        }
+        Matcher matcher = MENCAO.matcher(texto);
+        while (matcher.find()) {
+            mencoes.add(matcher.group(1));
+        }
+        return mencoes;
     }
 }

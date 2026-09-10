@@ -19,6 +19,7 @@ import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -36,6 +37,7 @@ public class ConversaService {
     private final BloqueioRepository bloqueioRepository;
     private final NotificacaoService notificacaoService;
     private final S3StorageService s3StorageService;
+    private final SimpMessagingTemplate messagingTemplate;
 
     @Transactional
     public ConversaResponseDTO iniciarOuObter(Long outroId, Long euId) {
@@ -101,6 +103,16 @@ public class ConversaService {
 
         conversa.setDataAtualizacao(LocalDateTime.now());
         conversaRepository.save(conversa);
+
+        MensagemResponseDTO resposta = converterMensagem(mensagem, euId);
+
+        // Tempo real para quem estiver com a conversa aberta (polling continua de fallback).
+        try {
+            messagingTemplate.convertAndSend("/topic/conversas." + conversa.getId(), resposta);
+        } catch (RuntimeException e) {
+            org.slf4j.LoggerFactory.getLogger(ConversaService.class)
+                    .warn("Mensagem {} salva, broadcast falhou", mensagem.getId(), e);
+        }
 
         // Notifica o outro participante (desacoplada: nao desfaz o envio).
         conversa.getParticipantes().stream()

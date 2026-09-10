@@ -37,7 +37,7 @@ public class S3StorageService {
 
     private static final Set<String> IMAGE_TYPES = Set.of("image/jpeg", "image/png", "image/gif", "image/webp");
     private static final Set<String> VIDEO_TYPES = Set.of("video/mp4", "video/webm");
-    private static final long MAX_BYTES = 2L * 1024 * 1024;
+    private static final long MAX_BYTES = 32L * 1024 * 1024;
 
     private final S3Client s3Client;
     private final S3Presigner s3Presigner;
@@ -74,7 +74,7 @@ public class S3StorageService {
             throw new ArquivoException("Arquivo vazio ou ausente");
         }
         if (file.getSize() > MAX_BYTES) {
-            throw new ArquivoException("Arquivo excede o limite de 2MB");
+            throw new ArquivoException("Arquivo excede o limite de 32MB");
         }
         String contentType = Objects.toString(file.getContentType(), "");
         if (!IMAGE_TYPES.contains(contentType) && !VIDEO_TYPES.contains(contentType)) {

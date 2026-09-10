@@ -20,6 +20,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -29,6 +30,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 import org.springframework.dao.DataIntegrityViolationException;
 
+@Slf4j
 @Service
 public class ComentarioService {
 
@@ -45,6 +47,9 @@ public class ComentarioService {
     private CurtidaRepository curtidaRepository;
     @Autowired
     private S3StorageService s3StorageService;
+
+    @Autowired
+    private NotificacaoService notificacaoService;
 
     @Transactional
     public ComentarioResponseDTO criarComentario(ComentarioCreateDTO dto, Long usuarioId) {
@@ -83,7 +88,28 @@ public class ComentarioService {
         //     notificacaoService.criarNotificacaoRespostaComentario(autor, comentario.getComentarioPai());
         // }
 
+        notificarMencoes(dto.getTexto(), autor, "num comentário");
+
         return converterParaResponseDTO(comentario, usuarioId);
+    }
+
+    /** Notifica usuários @mencionados (desacoplado: falha não desfaz o comentário). */
+    private void notificarMencoes(String texto, Usuario autor, String contexto) {
+        for (String username : Support.extrairMencoes(texto)) {
+            try {
+                usuarioRepository.findByUsername(username).ifPresent(mencionado -> {
+                    if (!mencionado.getId().equals(autor.getId())) {
+                        notificacaoService.criarNotificacao(
+                                mencionado.getId(),
+                                autor.getId(),
+                                com.jhcs.newgram.core.domain.enums.TipoNotificacao.MENCAO,
+                                autor.getUsername() + " mencionou você " + contexto);
+                    }
+                });
+            } catch (RuntimeException e) {
+                log.warn("Falha ao notificar mencao @{}", username, e);
+            }
+        }
     }
 
     @Transactional

@@ -9,12 +9,15 @@ import com.jhcs.newgram.core.domain.repositories.UsuarioRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.jhcs.newgram.infrastructure.exception.ResourceNotFoundException;
 import java.time.LocalDateTime;
 
+@Slf4j
 @Service
 public class NotificacaoService {
 
@@ -23,6 +26,12 @@ public class NotificacaoService {
 
     @Autowired
     private UsuarioRepository usuarioRepository;
+
+    @Autowired
+    private SimpMessagingTemplate messagingTemplate;
+
+    @Autowired
+    private PushNotificationService pushService;
 
     @Transactional(readOnly = true)
     public Page<NotificacaoResponseDTO> listarNotificacoesPorUsuario(Long usuarioId, Pageable pageable) {
@@ -73,7 +82,16 @@ public class NotificacaoService {
         notificacao.setDataCriacao(LocalDateTime.now());
         notificacao.setLida(false);
 
-        notificacaoRepository.save(notificacao);
+        notificacao = notificacaoRepository.save(notificacao);
+
+        // Fan-out em tempo real + push (desacoplados: falha não desfaz o save).
+        try {
+            NotificacaoResponseDTO dto = converterParaNotificacaoResponseDTO(notificacao);
+            messagingTemplate.convertAndSend("/topic/notificacoes." + destinatarioId, dto);
+            pushService.enviarParaUsuario(destinatarioId, "Newgram", conteudo);
+        } catch (RuntimeException e) {
+            log.warn("Notificacao {} salva, mas fan-out falhou", notificacao.getId(), e);
+        }
     }
 
     @Transactional

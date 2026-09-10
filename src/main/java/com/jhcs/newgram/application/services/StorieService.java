@@ -8,6 +8,7 @@ import com.jhcs.newgram.core.domain.entities.Usuario;
 import com.jhcs.newgram.core.domain.enums.TipoArquivo;
 import com.jhcs.newgram.core.domain.repositories.BloqueioRepository;
 import com.jhcs.newgram.core.domain.repositories.DestaqueRepository;
+import com.jhcs.newgram.core.domain.repositories.PollRepository;
 import com.jhcs.newgram.core.domain.repositories.SeguidorRepository;
 import com.jhcs.newgram.core.domain.repositories.StorieRepository;
 import com.jhcs.newgram.core.domain.repositories.UsuarioRepository;
@@ -43,6 +44,12 @@ public class StorieService {
 
     @Autowired
     private BloqueioRepository bloqueioRepository;
+
+    @Autowired
+    private PollRepository pollRepository;
+
+    @Autowired
+    private PollService pollService;
 
     @Autowired
     private ArquivoService arquivoService;
@@ -227,6 +234,8 @@ public class StorieService {
         dto.setStorieImagemUrl(s3StorageService.getFileUrl(storie.getStorieImagemUrl()));
         dto.setAutorId(storie.getAutor().getId());
         dto.setAutorUsername(storie.getAutor().getUsername());
+        pollRepository.findByStorieId(storie.getId())
+                .ifPresent(enquete -> dto.setEnquete(pollService.converter(enquete, usuarioLogadoId)));
 
         return dto;
     }

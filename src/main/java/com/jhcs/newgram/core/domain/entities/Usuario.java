@@ -1,6 +1,7 @@
 package com.jhcs.newgram.core.domain.entities;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.jhcs.newgram.core.domain.enums.TipoConta;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -46,6 +47,29 @@ public class Usuario implements UserDetails {
     /** Conta privada: posts e stories visíveis só para seguidores aceitos. */
     @Column(nullable = false)
     private boolean privado = false;
+
+    /** Selo de verificação (critério/aprovação pela moderação). */
+    @Column(nullable = false)
+    private boolean verificado = false;
+
+    @Column(name = "email_verificado", nullable = false)
+    private boolean emailVerificado = false;
+
+    @Column(name = "two_factor_enabled", nullable = false)
+    private boolean twoFactorEnabled = false;
+
+    /** Segredo TOTP em Base32 (tratar como credencial: nunca expor). */
+    @JsonIgnore
+    @Column(name = "totp_secret", length = 64)
+    private String totpSecret;
+
+    /** Chave Pix para gorjetas (exibida no perfil). */
+    @Column(name = "chave_pix", length = 100)
+    private String chavePix;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "tipo_conta", nullable = false, length = 20)
+    private TipoConta tipoConta = TipoConta.PESSOAL;
 
     @CreationTimestamp
     @Column(name = "data_criacao", nullable = false, updatable = false)

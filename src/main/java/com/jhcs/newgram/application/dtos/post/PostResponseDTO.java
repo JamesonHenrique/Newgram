@@ -4,6 +4,8 @@ import com.jhcs.newgram.application.dtos.usuario.UsuarioSummaryDTO;
 import com.jhcs.newgram.core.domain.enums.TipoVisibilidade;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
+import com.jhcs.newgram.application.dtos.enquete.PollResponseDTO;
+import com.jhcs.newgram.core.domain.enums.TipoMidia;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -22,6 +24,8 @@ public class PostResponseDTO {
 
     @Schema(description = "Localização associada ao post")
     private String localizacao;
+    private TipoMidia tipoMidia;
+    private PollResponseDTO enquete;
 
     @Schema(description = "Visibilidade do post")
     private TipoVisibilidade visibilidade;

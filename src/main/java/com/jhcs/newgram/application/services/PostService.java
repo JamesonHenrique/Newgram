@@ -7,6 +7,7 @@ import com.jhcs.newgram.application.dtos.post.PostUpdateDTO;
 import com.jhcs.newgram.application.dtos.usuario.UsuarioSummaryDTO;
 import com.jhcs.newgram.core.domain.entities.*;
 import com.jhcs.newgram.core.domain.enums.TipoArquivo;
+import com.jhcs.newgram.core.domain.enums.TipoMidia;
 import com.jhcs.newgram.core.domain.repositories.*;
 import com.jhcs.newgram.infrastructure.aws.S3StorageService;
 import com.jhcs.newgram.infrastructure.exception.BusinessException;
@@ -19,6 +20,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -51,12 +53,24 @@ public class PostService {
     private SeguidorRepository seguidorRepository;
 
     @Autowired
-    private com.jhcs.newgram.core.domain.repositories.BloqueioRepository bloqueioRepository;
+    private BloqueioRepository bloqueioRepository;
+
+    @Autowired
+    private PollRepository pollRepository;
+
+    @Autowired
+    private PollService pollService;
+
+    @Autowired
+    private VisualizacaoPostRepository visualizacaoRepository;
 
     @Autowired
     private ArquivoService arquivoService;
     @Autowired
     private S3StorageService s3StorageService;
+
+    @Autowired
+    private NotificacaoService notificacaoService;
     @Transactional
     public PostResponseDTO criarPost(PostCreateDTO dto, Long usuarioId) {
         Usuario autor = usuarioRepository.findById(usuarioId)
@@ -80,7 +94,29 @@ public class PostService {
 
         post = postRepository.save(post);
 
+        notificarMencoes(dto.getLegenda(), autor, "na legenda");
+
         return converterParaResponseDTO(post, usuarioId);
+    }
+
+    /** Notifica usuários @mencionados (desacoplado: falha não desfaz o post). */
+    private void notificarMencoes(String texto, Usuario autor, String contexto) {
+        for (String username : Support.extrairMencoes(texto)) {
+            try {
+                usuarioRepository.findByUsername(username).ifPresent(mencionado -> {
+                    if (!mencionado.getId().equals(autor.getId())) {
+                        notificacaoService.criarNotificacao(
+                                mencionado.getId(),
+                                autor.getId(),
+                                com.jhcs.newgram.core.domain.enums.TipoNotificacao.MENCAO,
+                                autor.getUsername() + " mencionou você " + contexto);
+                    }
+                });
+            } catch (RuntimeException e) {
+                org.slf4j.LoggerFactory.getLogger(PostService.class)
+                        .warn("Falha ao notificar mencao @{}", username, e);
+            }
+        }
     }
 
     @Transactional
@@ -361,8 +397,45 @@ public class PostService {
 
         var imagemPost = arquivoService.saveFile(file, usuario.getUsuarioName(), TipoArquivo.POST);
         post.setImagemUrl(imagemPost);
+        String contentType = file.getContentType() == null ? "" : file.getContentType();
+        post.setTipoMidia(contentType.startsWith("video/") ? TipoMidia.VIDEO : TipoMidia.IMAGEM);
 
         postRepository.save(post);
+    }
+
+    @Transactional(readOnly = true)
+    public Page<PostSummaryDTO> listarReels(Pageable pageable, Long usuarioId) {
+        Sort sort = Sort.by(Sort.Direction.DESC, "dataCriacao");
+        Pageable safePageable = Support.safePage(pageable, sort);
+        return postRepository.findReelsByUsuarioId(usuarioId, safePageable)
+                .map(post -> converterParaSummaryDTO(post, usuarioId));
+    }
+
+    /**
+     * Registra view dedupeada por usuário+dia (anônimo sempre insere).
+     * Idempotente: duplicada é ignorada em silêncio.
+     */
+    @Transactional
+    public void registrarVisualizacao(Long postId, Long viewerId) {
+        if (!postRepository.existsById(postId)) {
+            throw new ResourceNotFoundException("Post não encontrado");
+        }
+        LocalDate hoje = LocalDate.now();
+        if (viewerId != null && visualizacaoRepository.existsByPostIdAndUsuarioIdAndDia(postId, viewerId, hoje)) {
+            return;
+        }
+        VisualizacaoPost view = new VisualizacaoPost();
+        view.setPost(postRepository.getReferenceById(postId));
+        if (viewerId != null) {
+            view.setUsuario(usuarioRepository.getReferenceById(viewerId));
+        }
+        view.setDia(hoje);
+        view.setDataCriacao(LocalDateTime.now());
+        try {
+            visualizacaoRepository.saveAndFlush(view);
+        } catch (DataIntegrityViolationException e) {
+            // Corrida: outro request registrou primeiro — ignora.
+        }
     }
     private void processarHashtags(Post post, List<String> hashtags) {
         List<Hashtag> hashtagEntities = new ArrayList<>();
@@ -418,8 +491,11 @@ public class PostService {
         dto.setLegenda(post.getLegenda());
         dto.setDataCriacao(post.getDataCriacao());
         dto.setLocalizacao(post.getLocalizacao());
+        dto.setTipoMidia(post.getTipoMidia());
         dto.setVisibilidade(post.getVisibilidade());
         dto.setArquivado(post.isArquivado());
+        pollRepository.findByPostId(post.getId())
+                .ifPresent(enquete -> dto.setEnquete(pollService.converter(enquete, usuarioLogadoId)));
 
         UsuarioSummaryDTO autorDTO = new UsuarioSummaryDTO();
         autorDTO.setId(post.getAutor().getId());
@@ -460,6 +536,9 @@ public class PostService {
         dto.setId(post.getId());
         dto.setImagem(s3StorageService.getFileUrl(post.getImagemUrl()));
         dto.setDataCriacao(post.getDataCriacao());
+        dto.setTipoMidia(post.getTipoMidia());
+        pollRepository.findByPostId(post.getId())
+                .ifPresent(enquete -> dto.setEnquete(pollService.converter(enquete, usuarioLogadoId)));
         UsuarioSummaryDTO autorDTO = new UsuarioSummaryDTO();
         autorDTO.setId(post.getAutor().getId());
         autorDTO.setNome(post.getAutor().getNome());

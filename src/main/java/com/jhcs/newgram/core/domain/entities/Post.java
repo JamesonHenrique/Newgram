@@ -1,6 +1,7 @@
 package com.jhcs.newgram.core.domain.entities;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.jhcs.newgram.core.domain.enums.TipoMidia;
 import com.jhcs.newgram.core.domain.enums.TipoVisibilidade;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
@@ -37,6 +38,10 @@ public class Post {
 
     private boolean arquivado;
     private String imagemUrl;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "tipo_midia", nullable = false, length = 10)
+    private TipoMidia tipoMidia = TipoMidia.IMAGEM;
 
     @Enumerated(EnumType.STRING)
     @Column(length = 20)

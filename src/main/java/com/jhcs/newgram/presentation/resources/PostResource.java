@@ -285,6 +285,22 @@ public class PostResource {
         return ResponseEntity.ok(salvosService.listarColecoesPorUsuario(usuario.getId()));
     }
 
+    @GetMapping("/reels")
+    @Operation(summary = "Listar reels", description = "Posts em vídeo respeitando privacidade e bloqueios")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Reels listados com sucesso",
+                    content = @Content(schema = @Schema(implementation = Page.class))),
+            @ApiResponse(responseCode = "401", description = "Não autorizado",
+                    content = @Content)
+    })
+    public ResponseEntity<Page<PostSummaryDTO>> listarReels(
+            @AuthenticationPrincipal Usuario usuario,
+            @Parameter(description = "Parâmetros de paginação (page=0, size=10)")
+            @PageableDefault(page = 0, size = 10) Pageable pageable) {
+
+        return ResponseEntity.ok(postService.listarReels(pageable, usuario.getId()));
+    }
+
     @GetMapping("/{id:\\d+}")
     @Operation(summary = "Buscar post por ID", description = "Retorna os detalhes de um post específico")
     @ApiResponses(value = {
@@ -469,6 +485,22 @@ public class PostResource {
             @AuthenticationPrincipal Usuario usuario) {
 
         postService.desarquivarPost(id, usuario.getId());
+        return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/{id:\\d+}/views")
+    @Operation(summary = "Registrar visualização", description = "Dedupeada por usuário+dia; 204 sempre")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "204", description = "View registrada"),
+            @ApiResponse(responseCode = "404", description = "Post não encontrado",
+                    content = @Content)
+    })
+    public ResponseEntity<Void> registrarVisualizacao(
+            @Parameter(description = "ID do post", required = true)
+            @PathVariable Long id,
+            @AuthenticationPrincipal Usuario usuario) {
+
+        postService.registrarVisualizacao(id, usuario.getId());
         return ResponseEntity.noContent().build();
     }
 }

@@ -44,4 +44,16 @@ public class UsuarioResponseDTO {
 
     @Schema(description = "Indica se a conta é privada", example = "false")
     private boolean privado;
+
+    @Schema(description = "Selo de verificação", example = "false")
+    private boolean verificado;
+
+    @Schema(description = "E-mail verificado", example = "false")
+    private boolean emailVerificado;
+
+    @Schema(description = "Chave Pix para gorjetas")
+    private String chavePix;
+
+    @Schema(description = "Tipo da conta", example = "PESSOAL")
+    private com.jhcs.newgram.core.domain.enums.TipoConta tipoConta;
 }

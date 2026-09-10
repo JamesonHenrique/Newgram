@@ -132,6 +132,14 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     }
 
 
+    @Query("SELECT p FROM Post p WHERE p.tipoMidia = com.jhcs.newgram.core.domain.enums.TipoMidia.VIDEO " +
+            "AND p.arquivado = false " +
+            "AND NOT EXISTS (SELECT 1 FROM Bloqueio b WHERE (b.bloqueador.id = :usuarioId AND b.bloqueado.id = p.autor.id) OR (b.bloqueador.id = p.autor.id AND b.bloqueado.id = :usuarioId)) " +
+            "AND (p.autor.id = :usuarioId " +
+            "OR EXISTS (SELECT 1 FROM Seguidor s WHERE s.seguidor.id = :usuarioId AND s.seguido.id = p.autor.id AND s.status = com.jhcs.newgram.core.domain.enums.StatusSeguimento.ACEITO) " +
+            "OR ((p.visibilidade IS NULL OR p.visibilidade <> com.jhcs.newgram.core.domain.enums.TipoVisibilidade.PRIVADO) AND p.autor.privado = false))")
+    Page<Post> findReelsByUsuarioId(@Param("usuarioId") Long usuarioId, Pageable pageable);
+
     Page<Post> findByVisibilidadeAndArquivadoFalse(TipoVisibilidade visibilidade, Pageable pageable);
 
     @Query("SELECT COUNT(p) FROM Post p JOIN p.hashtags h WHERE h.id = :hashtagId")

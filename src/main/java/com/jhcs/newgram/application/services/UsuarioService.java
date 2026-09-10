@@ -4,13 +4,20 @@ import com.jhcs.newgram.application.dtos.usuario.UsuarioComumDTO;
 import com.jhcs.newgram.application.dtos.usuario.UsuarioResponseDTO;
 import com.jhcs.newgram.application.dtos.usuario.UsuarioSummaryDTO;
 import com.jhcs.newgram.application.dtos.usuario.UsuarioUpdateDTO;
+import com.jhcs.newgram.core.domain.entities.Denuncia;
 import com.jhcs.newgram.core.domain.entities.Usuario;
+import com.jhcs.newgram.core.domain.enums.AlvoDenuncia;
+import com.jhcs.newgram.core.domain.enums.StatusDenuncia;
 import com.jhcs.newgram.core.domain.enums.StatusSeguimento;
 import com.jhcs.newgram.core.domain.enums.TipoArquivo;
+import com.jhcs.newgram.core.domain.enums.TipoConta;
+import com.jhcs.newgram.core.domain.repositories.DenunciaRepository;
 import com.jhcs.newgram.core.domain.repositories.PostRepository;
 import com.jhcs.newgram.core.domain.repositories.SeguidorRepository;
 import com.jhcs.newgram.core.domain.repositories.UsuarioRepository;
+import com.jhcs.newgram.core.domain.repositories.VisualizacaoPostRepository;
 import com.jhcs.newgram.infrastructure.aws.S3StorageService;
+import com.jhcs.newgram.infrastructure.exception.BusinessException;
 import com.jhcs.newgram.infrastructure.exception.ResourceNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -38,6 +45,12 @@ public class UsuarioService {
 
     @Autowired
     private S3StorageService s3StorageService;
+
+    @Autowired
+    private DenunciaRepository denunciaRepository;
+
+    @Autowired
+    private VisualizacaoPostRepository visualizacaoPostRepository;
 
 
     @Transactional(readOnly = true)
@@ -153,6 +166,120 @@ public class UsuarioService {
         return converterParaUsuarioResponseDTO(usuarioRepository.save(usuario), id);
     }
 
+    /** Solicita o selo de verificação (entra na fila de moderação). */
+    @Transactional
+    public void solicitarVerificacao(Long usuarioId) {
+        Usuario usuario = usuarioRepository.findById(usuarioId)
+                .orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado"));
+        if (usuario.isVerificado()) {
+            throw new BusinessException("Conta já verificada");
+        }
+        if (denunciaRepository
+                .findByDenuncianteIdAndTipoAlvoAndAlvoId(usuarioId, AlvoDenuncia.USUARIO, usuarioId)
+                .isPresent()) {
+            throw new BusinessException("Solicitação já enviada");
+        }
+        Denuncia denuncia = new Denuncia();
+        denuncia.setDenunciante(usuario);
+        denuncia.setTipoAlvo(AlvoDenuncia.USUARIO);
+        denuncia.setAlvoId(usuarioId);
+        denuncia.setMotivo("VERIFICACAO");
+        denuncia.setDescricao("Solicitação de selo de verificação");
+        denuncia.setStatus(StatusDenuncia.ABERTA);
+        denuncia.setDataCriacao(java.time.LocalDateTime.now());
+        denunciaRepository.save(denuncia);
+    }
+
+    /** LGPD: exporta os dados da conta em estrutura serializável. */
+    @Transactional(readOnly = true)
+    public java.util.Map<String, Object> exportarDados(Long usuarioId) {
+        Usuario usuario = usuarioRepository.findById(usuarioId)
+                .orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado"));
+        java.util.Map<String, Object> dados = new java.util.LinkedHashMap<>();
+        dados.put("id", usuario.getId());
+        dados.put("nome", usuario.getNome());
+        dados.put("username", usuario.getUsername());
+        dados.put("email", usuario.getEmail());
+        dados.put("bio", usuario.getBio());
+        dados.put("privado", usuario.isPrivado());
+        dados.put("verificado", usuario.isVerificado());
+        dados.put("emailVerificado", usuario.isEmailVerificado());
+        dados.put("tipoConta", usuario.getTipoConta());
+        dados.put("dataCriacao", usuario.getDataCriacao());
+        dados.put("numeroSeguidores",
+                seguidorRepository.countSeguidoresByUsuarioId(usuarioId, StatusSeguimento.ACEITO));
+        dados.put("numeroSeguindo",
+                seguidorRepository.countSeguidosByUsuarioId(usuarioId, StatusSeguimento.ACEITO));
+        dados.put("posts", postRepository.findByAutorId(usuarioId, org.springframework.data.domain.Pageable.unpaged())
+                .map(post -> java.util.Map.of(
+                        "id", post.getId(),
+                        "legenda", String.valueOf(post.getLegenda()),
+                        "dataCriacao", String.valueOf(post.getDataCriacao())))
+                .getContent());
+        return dados;
+    }
+
+    /** LGPD: anonimiza a conta (conteúdo coletivo preservado sem PII). */
+    @Transactional
+    public void excluirConta(Long usuarioId) {
+        Usuario usuario = usuarioRepository.findById(usuarioId)
+                .orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado"));
+        usuario.setNome("Usuário removido");
+        usuario.setUsername("removido_" + usuarioId);
+        usuario.setEmail("removido_" + usuarioId + "@deleted.local");
+        usuario.setSenha("REMOVED_" + java.util.UUID.randomUUID());
+        usuario.setBio(null);
+        usuario.setFotoPerfil(null);
+        usuario.setPrivado(true);
+        usuario.setVerificado(false);
+        usuario.setTwoFactorEnabled(false);
+        usuario.setTotpSecret(null);
+        usuario.setChavePix(null);
+        usuarioRepository.save(usuario);
+    }
+
+    @Transactional
+    public UsuarioResponseDTO atualizarChavePix(Long usuarioId, String chavePix) {
+        Usuario usuario = usuarioRepository.findById(usuarioId)
+                .orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado"));
+        String chave = chavePix == null ? null : chavePix.trim();
+        if (chave != null && (chave.isEmpty() || chave.length() > 100)) {
+            chave = chave.isEmpty() ? null : chave;
+            if (chave != null && chave.length() > 100) {
+                throw new BusinessException("Chave Pix deve ter no máximo 100 caracteres");
+            }
+        }
+        usuario.setChavePix(chave);
+        return converterParaUsuarioResponseDTO(usuarioRepository.save(usuario), usuarioId);
+    }
+
+    @Transactional
+    public UsuarioResponseDTO atualizarTipoConta(Long usuarioId, TipoConta tipoConta) {
+        Usuario usuario = usuarioRepository.findById(usuarioId)
+                .orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado"));
+        if (tipoConta == null) {
+            throw new BusinessException("Tipo de conta é obrigatório");
+        }
+        usuario.setTipoConta(tipoConta);
+        return converterParaUsuarioResponseDTO(usuarioRepository.save(usuario), usuarioId);
+    }
+
+    @Transactional(readOnly = true)
+    public com.jhcs.newgram.application.dtos.usuario.AnalyticsDTO analytics(Long usuarioId) {
+        usuarioRepository.findById(usuarioId)
+                .orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado"));
+        java.time.LocalDate ha7 = java.time.LocalDate.now().minusDays(7);
+        java.time.LocalDate ha30 = java.time.LocalDate.now().minusDays(30);
+        com.jhcs.newgram.application.dtos.usuario.AnalyticsDTO dto =
+                new com.jhcs.newgram.application.dtos.usuario.AnalyticsDTO();
+        dto.setViews7d(visualizacaoPostRepository.countViewsDoAutorDesde(usuarioId, ha7));
+        dto.setViews30d(visualizacaoPostRepository.countViewsDoAutorDesde(usuarioId, ha30));
+        dto.setAlcance7d(visualizacaoPostRepository.countAlcanceDoAutorDesde(usuarioId, ha7));
+        dto.setSeguidores(seguidorRepository.countSeguidoresByUsuarioId(usuarioId, StatusSeguimento.ACEITO));
+        dto.setPosts(postRepository.countPostsByUsuarioId(usuarioId));
+        return dto;
+    }
+
     private boolean segue(Long usuarioLogadoId, Long alvoId) {
         return usuarioLogadoId != null && seguidorRepository.existsBySeguidorIdAndSeguidoIdAndStatus(
                 usuarioLogadoId, alvoId, StatusSeguimento.ACEITO);
@@ -185,6 +312,10 @@ public class UsuarioService {
         dto.setNumeroPosts(postRepository.countPostsByUsuarioId(usuario.getId()));
         dto.setSeguindoUsuario(segue(usuarioLogadoId, usuario.getId()));
         dto.setPrivado(usuario.isPrivado());
+        dto.setVerificado(usuario.isVerificado());
+        dto.setEmailVerificado(usuario.isEmailVerificado());
+        dto.setChavePix(usuario.getChavePix());
+        dto.setTipoConta(usuario.getTipoConta());
         return dto;
     }
 
@@ -200,6 +331,7 @@ public class UsuarioService {
         dto.setFotoPerfil(s3StorageService.getFileUrl(usuario.getFotoPerfil()));
         dto.setSeguindoUsuario(segue(usuarioLogadoId, usuario.getId()));
         dto.setPrivado(usuario.isPrivado());
+        dto.setVerificado(usuario.isVerificado());
 
         return dto;
     }

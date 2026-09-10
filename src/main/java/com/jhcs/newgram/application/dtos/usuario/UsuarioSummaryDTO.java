@@ -20,6 +20,9 @@ public class UsuarioSummaryDTO {
     @Schema(description = "Indica se a conta é privada", example = "false")
     private boolean privado;
 
+    @Schema(description = "Selo de verificação", example = "false")
+    private boolean verificado;
+
     @Schema(description = "Número de seguidores do usuário", example = "100")
     private Long numeroSeguidores;
 

@@ -1,5 +1,6 @@
 package com.jhcs.newgram.application.dtos.storie;
 
+import com.jhcs.newgram.application.dtos.enquete.PollResponseDTO;
 import com.jhcs.newgram.application.dtos.usuario.UsuarioSummaryDTO;
 import lombok.Data;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -35,4 +36,7 @@ public class StorieResponseDTO {
     private List<String> imagensUrls;
     private Long autorId;
     private String autorUsername;
+
+    @Schema(description = "Enquete anexada (null quando não há)")
+    private PollResponseDTO enquete;
 }
