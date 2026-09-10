@@ -196,22 +196,24 @@ Swagger UI → http://localhost:8080/swagger-ui.html
 
 ### Variáveis de ambiente (back-end)
 
-Configure em `src/main/resources/application.properties` (ou via variáveis de ambiente):
+Nunca commite segredos: copie `.env.example` para `.env` e exporte (ou use `docker-compose.yml`
+para Postgres + MinIO locais). Gere o segredo JWT com `openssl rand -base64 32`.
 
-```properties
-spring.datasource.url=jdbc:postgresql://localhost:5432/newgram
-spring.datasource.username=SEU_USUARIO
-spring.datasource.password=SUA_SENHA
-
-jwt.access.expiration=900000
-jwt.refresh.expiration=604800000
-
-aws.accessKeyId=SUA_ACCESS_KEY
-aws.secretKey=SUA_SECRET_KEY
-aws.region=us-east-1
-aws.s3.bucket-name=seu-bucket
-aws.s3.presigned-url-expiration-minutes=10
+```bash
+DATABASE_URL=jdbc:postgresql://localhost:5432/newgram
+DATABASE_USERNAME=newgram
+DATABASE_PASSWORD=troque-esta-senha
+JWT_SECRET=<saida-do-openssl-rand-base64-32>
+AWS_ACCESS_KEY_ID=
+AWS_SECRET_ACCESS_KEY=
+AWS_REGION=us-east-1
+AWS_S3_BUCKET=newgram-dev
+# AWS_S3_ENDPOINT=http://localhost:9000   # MinIO local
+# APP_CORS_EXTRA=https://meu-dominio.com
 ```
+
+Contrato de auth: access token 15 min + refresh 7 dias **com rotação**
+(reuso do refresh antigo é rejeitado). Presigned URLs S3 expiram em 60 min.
 
 > As migrations do Flyway criam o schema e populam dados de exemplo automaticamente na primeira execução.
 
