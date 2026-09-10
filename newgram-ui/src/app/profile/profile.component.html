@@ -1,0 +1,232 @@
+<div class=" overflow-y-hidden">
+  <div class="content-area">
+    <div class="max-w-7xl mx-auto">
+      <div class="profile-header animate__fadeIn animate__animated">
+        <div class="profile-avatar">
+          <div class="profile-avatar" (click)="storiesAtivos.length > 0 ? openStory(storiesAtivos) : null">
+            <div
+              [ngClass]="storiesAtivos.length > 0 ? 'story-circle' : ''"
+              [class.viewed]="viewed"
+            ></div>
+            <img
+              [src]="getFotoPerfil(userProfile)"
+              (error)="handleFotoPerfilError($event)"
+              alt="Foto de Perfil"
+              class="profile-avatar-img"
+            />
+          </div>
+
+        </div>
+
+        <div class="profile-info">
+          <div class="profile-name-section">
+            <h1 class="h2-bold">{{ userProfile?.nome }}</h1>
+            <i
+              class="fas fa-check-circle verified-badge"
+              *ngIf="ifVerified()"
+              title="Conta verificada"
+            ></i>
+            <button (click)="openEditProfileModal()" *ngIf="isPerfilDoUsuarioLogado" class="message-btn">
+              <i class="fas fa-user-edit"></i>
+              <span>Editar perfil</span>
+            </button>
+          </div>
+
+          <p class="profile-username">&#64;{{ userProfile?.username }}</p>
+
+          <p class="profile-bio">
+            {{ userProfile?.bio }}
+          </p>
+
+          <div class="profile-stats">
+            <div class="stat-item">
+              <span class="stat-value">{{
+                userProfile?.numeroPosts | formatNumber
+              }}</span>
+              <span class="stat-label">Posts</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-value">{{
+                userProfile?.numeroSeguidores | formatNumber
+              }}</span>
+              <span class="stat-label">Seguidores</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-value">{{
+                userProfile?.numeroSeguindo | formatNumber
+              }}</span>
+              <span class="stat-label">Seguindo</span>
+            </div>
+          </div>
+
+          <div class="profile-actions">
+            <button
+              *ngIf="!isPerfilDoUsuarioLogado"
+              (click)="toggleFollow(userProfile, $event)"
+              id="followBtn"
+              type="button"
+              [class.follow-btn]="!userProfile?.seguindoUsuario"
+              [class.following-btn]="userProfile?.seguindoUsuario"
+            >
+              {{ userProfile?.seguindoUsuario ? "Seguindo" : "Seguir" }}
+            </button>
+
+          </div>
+        </div>
+      </div>
+
+
+      <div class="highlights-section w-full max-w-full overflow-x-hidden">
+
+
+        <div class="highlights-container flex space-x-3 md:space-x-4 pb-2 overflow-x-auto scroll-smooth scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-100">
+
+          <div
+            *ngIf="isPerfilDoUsuarioLogado"
+            class="highlight-item flex flex-col items-center flex-shrink-0 w-16 md:w-20 cursor-pointer"
+            (click)="openCreateStoryModal()"
+          >
+            <div
+              class="highlight-circle w-14 h-14 md:w-16 md:h-16 rounded-full bg-gray-700 flex items-center justify-center transition-colors duration-200 relative"
+            >
+              <div
+                class="absolute bottom-0 right-0 w-5 h-5 bg-purple-600 rounded-full flex items-center justify-center"
+              >
+                <i class="fas fa-plus text-xs text-white"></i>
+              </div>
+              <i class="fas fa-user text-lg md:text-xl text-gray-300"></i>
+            </div>
+            <span
+              class="highlight-title mt-1 md:mt-2 text-xs text-center text-gray-200 truncate w-full px-1"
+              >Seu Story</span
+            >
+          </div>
+          <div
+            *ngIf="isPerfilDoUsuarioLogado"
+            class="highlight-item flex flex-col items-center flex-shrink-0 w-16 md:w-20 cursor-pointer"
+            (click)="openCreateHighlightModal()"
+          >
+            <div
+              class="highlight-circle w-14 h-14 md:w-16 md:h-16 rounded-full bg-gray-700 flex items-center justify-center transition-colors duration-200"
+            >
+              <i class="fas fa-plus text-2xl text-light-3"></i>
+            </div>
+            <span
+              class="highlight-title mt-1 md:mt-2 text-xs text-center text-gray-200 truncate w-full px-1"
+              >Novo</span
+            >
+          </div>
+          <div
+            class="highlight-item flex flex-col items-center flex-shrink-0 w-16 md:w-20 cursor-pointer"
+            *ngFor="let highlight of destaque"
+            (click)="openStory(highlight)"
+          >
+            <div
+              class="highlight-circle w-14 h-14 md:w-16 md:h-16 rounded-full overflow-hidden transition-colors duration-200 relative"
+            >
+              <img
+                [src]="getDestaqueFotoDeCapa(highlight?.destaqueFotoDeCapaUrl)"
+                alt="Destaque"
+                class="highlight-image"
+              />
+            </div>
+            <span
+              class="highlight-title mt-1 md:mt-2 text-xs text-center text-gray-200 truncate w-full px-1"
+            >
+              {{ highlight?.nome || "Destaque" }}
+            </span>
+          </div>
+        </div>
+
+        <div class="profile-tabs animate-slideUp" style="animation-delay: 0.2s">
+          <div class="profile-tab active" data-tab="posts">
+            <i class="fas fa-th mr-1"></i>
+            <span>Posts</span>
+          </div>
+        </div>
+
+        <div
+          class="posts-grid animate-slideUp"
+          style="animation-delay: 0.3s"
+          id="postsGrid"
+        >
+          <div
+            class="post-item"
+            data-post-id="1"
+            (click)="openPostDetails(post, $event)"
+            *ngFor="let post of posts"
+          >
+
+            <label for="modal-1" class="">
+              <img
+                (error)="handleImageError($event)"
+                [src]="getImagemPost(post?.imagem)"
+                alt="Post"
+                class="post-image"
+              />
+
+              <div class="post-overlay">
+                <div class="post-stats">
+                  <div class="post-stat">
+                    <i class="fas fa-heart"></i>
+                    <span>{{ post?.numeroCurtidas }}</span>
+                  </div>
+                  <div class="post-stat">
+                    <i class="fas fa-comment"></i>
+                    <span>{{ post?.numeroComentarios }}</span>
+                  </div>
+                </div>
+              </div>
+            </label>
+          </div>
+        </div>
+
+        <div *ngIf="!posts?.length" class="posts-grid hidden" id="savedGrid">
+          <div class="empty-state col-span-3">
+            <i class="far fa-bookmark empty-state-icon"></i>
+            <h3 class="h3-bold mb-2">
+              {{
+                isPerfilDoUsuarioLogado
+    ? `Você ainda não criou nenhum post.`
+    : `${nomeDoUsuario} ainda não publicou nenhum post.`
+              }}
+            </h3>
+            <p
+              *ngIf="isPerfilDoUsuarioLogado"
+              class="base-medium text-light-3 mb-6"
+            >
+              Quando você criar posts, eles aparecerão aqui.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <app-post-details
+      [postSelected]="postSelected"
+      (postSelectedChange)="postSelected = $event"
+    ></app-post-details>
+    <app-story-modal
+    [isOpen]="isStoryModalOpen"
+    [storyImages]="getStoryImages(currentStory)"
+    [storyTitle]="currentStory?.nome || 'Stories'"
+    [storyAvatar]="getFotoPerfil(userProfile)"
+    (close)="closeStoryModal()"
+  ></app-story-modal>
+    <app-create-highlight-modal
+      [isOpen]="isCreateHighlightModalOpen"
+      (close)="closeCreateHighlightModal()"
+      (createHighlight)="handleCreateHighlight($event)"
+    ></app-create-highlight-modal>
+    <app-create-story-modal
+      [isOpen]="isCreateStoryModalOpen"
+      (close)="closeCreateStoryModal()"
+      (createStory)="handleCreateStory($event)"
+    ></app-create-story-modal>
+    <app-edit-profile-modal
+  [isOpen]="isEditProfileModalOpen"
+  [userProfile]="userProfile"
+  (close)="isEditProfileModalOpen = false"
+  (save)="onProfileUpdated($event)">
+</app-edit-profile-modal>
+  </div>
+</div>

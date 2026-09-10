@@ -1,0 +1,540 @@
+<div class="content-area px-4 sm:px-6 lg:px-8">
+  <div class="max-w-7xl mx-auto">
+    <h1 class="h2-bold mb-6 text-primary-500 animate-fadeIn">Explorar</h1>
+
+    <div class="search-container relative mb-4 sm:mb-6 animate-slideUp">
+      <i
+        class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
+      ></i>
+      <input
+        type="text"
+        class="search-input w-full py-2 px-4 pl-10 text-sm sm:text-base rounded-lg border border-gray-600 bg-gray-800 text-white focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+        placeholder="Pesquisar posts"
+        [(ngModel)]="termo"
+        (keyup)="listPostsByLegenda()"
+      />
+    </div>
+
+
+
+    <div
+      class="flex-between mb-6 animate-slideUp"
+      style="animation-delay: 0.4s"
+    >
+      <h1 class="font-semibold text-sm sm:text-lg">Resultados</h1>
+
+    </div>
+    <section
+      class="trending-section mb-4 sm:mb-8 animate-slideUp"
+      style="animation-delay: 0.5s"
+      *ngIf="pesquisaOcorreu"
+    >
+      <div
+        class="trending-header flex justify-between items-center mb-2 sm:mb-4"
+      >
+        <h3 class="font-semibold text-primary-custom text-sm sm:text-lg">
+          Resultados ao pesquisar por "{{ termo }}"
+        </h3>
+      </div>
+
+      <div
+        class="trending-posts grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4"
+      >
+        <div
+          *ngFor="let post of postsPorLegenda; let i = index"
+          (click)="openPostDetails(post, $event)"
+          class="trending-post bg-gray-800 rounded-lg sm:rounded-xl overflow-hidden transition-transform hover:scale-[1.02] active:scale-[0.98] flex flex-col"
+
+        >
+            <img
+              [src]="getImagemPost(post.imagem)"
+              (error)="handleImageError($event)"
+              alt="Post em Tendência"
+              class="trending-post-img w-full h-32 xs:h-36 sm:h-40 md:h-48 object-cover"
+            />
+
+            <div class="trending-post-content p-2 sm:p-3 md:p-4 flex flex-col justify-between flex-grow">
+              <div class="flex justify-between items-center mb-1 sm:mb-2">
+                <div class="flex items-center gap-1 sm:gap-2">
+                  <img
+                    src="{{ getFotoPerfil(post.autor) }}"
+                    alt="Avatar"
+                    class="w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7 rounded-full object-cover"
+                  />
+                  <p
+                    class="text-xs sm:text-sm font-medium text-gray-300 truncate max-w-[80px] xs:max-w-[100px] sm:max-w-none"
+                  >
+                    {{ post.autor.nome }}
+                  </p>
+                </div>
+                <span
+                  class="text-[10px] xs:text-xs font-semibold text-gray-400"
+                >
+                  {{ post.dataCriacao | dateFormat }}
+                </span>
+              </div>
+
+              <h4
+                class="font-semibold text-gray-100 mb-1 text-xs sm:text-sm md:text-base line-clamp-2"
+              >
+                {{ post.legenda }}
+              </h4>
+
+              <div class="flex flex-wrap gap-1 sm:gap-2 mb-2">
+                <span
+                *ngFor="let tag of tagsByPostId[post.id]?.slice(0, 2) || []"
+                class="text-[10px] xs:text-xs font-semibold text-gray-400"
+              >
+                #{{ tag.nome }}
+              </span>
+              </div>
+
+              <div class="flex justify-between items-center ">
+                <div class="flex gap-2 sm:gap-3 md:gap-4">
+                  <span
+                    class="flex items-center gap-1 text-gray-400 text-[10px] xs:text-xs sm:text-sm"
+                  >
+                  <button
+                  class="flex-center gap-1 text-light-1 hover:text-primary-custom transition"
+                  (click)="toggleLike(post, $event)"
+                  [ngClass]="{
+                    'text-red': post.isLiked,
+                    'hover:text-primary-custom': !post.isLiked
+                  }"
+                >
+                  <i
+                    class="fa-heart btn-icon text-xl"
+                    [ngClass]="{
+                      fas: post.isLiked,
+                      far: !post.isLiked
+                    }"
+                    [ngStyle]="{
+                      transform: post.isAnimating ? 'scale(1.2)' : 'scale(1)'
+                    }"
+                  ></i>
+                  <span class="small-medium">{{
+                    post.numeroCurtidas | formatNumber
+                  }}</span>
+                </button>
+                  </span>
+                  <span
+                    class="flex items-center gap-1 text-gray-400 text-[10px] xs:text-xs sm:text-sm"
+                  >
+                    <i (click)="openComments(post, $event)" class="far fa-comment btn-icon"></i>
+                    <span>{{ post.numeroComentarios | formatNumber }}</span>
+                  </span>
+                </div>
+                <button
+                class="flex-center gap-1 text-light-1 hover:text-primary-custom transition"
+                (click)="toggleFavorite(post, $event)"
+                [ngClass]="{
+                  'text-yellow-400': post.isFavorite,
+                  'hover:text-primary-custom': !post.isFavorite
+                }"
+              >
+                <i
+                  class="fa-bookmark btn-icon text-xl"
+                  [ngClass]="{
+                    fas: post.isFavorite,
+                    far: !post.isFavorite
+                  }"
+                  [ngStyle]="{
+                    transform: post.isFavAnimating ? 'scale(1.2)' : 'scale(1)'
+                  }"
+                ></i>
+                <span *ngIf="post.numeroFavoritos > 0" class="small-medium">
+                  {{ post.numeroFavoritos | formatNumber }}
+                </span>
+              </button>
+              </div>
+            </div>
+        </div>
+      </div>
+    </section>
+    <button
+      class="load-more-btn flex-center gap-2 text-light-1 hover:text-primary-custom transition"
+    £refktkl,dm,
+      *ngIf="pesquisaOcorreu && postsPorLegenda.length > 0"
+    >
+      <i class="fa-plus btn-icon text-xl"></i>
+      <span>Carregar Mais</span>
+    </button>
+    <section
+      class="trending-section mb-4 sm:mb-8 animate-slideUp"
+      style="animation-delay: 0.5s"
+      *ngIf="!pesquisaOcorreu && postsRecomendados.length > 0"
+    >
+      <div
+        class="trending-header flex justify-between items-center mb-2 sm:mb-4"
+      >
+        <h3 class="font-semibold text-primary-custom text-sm sm:text-lg">
+          Recomendações
+        </h3>
+      </div>
+
+      <div
+        class="trending-posts grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4"
+      >
+        <div
+          *ngFor="let post of postsRecomendados; let i = index"
+          (click)="openPostDetails(post, $event)"
+          class="trending-post bg-gray-800 rounded-lg sm:rounded-xl overflow-hidden transition-transform hover:scale-[1.02] active:scale-[0.98]"
+        >
+          <img
+            [src]="getImagemPost(post.imagem)"
+            (error)="handleImageError($event)"
+            alt="Post em Tendência"
+            class="trending-post-img w-full h-32 xs:h-36 sm:h-40 md:h-48 object-cover"
+          />
+
+          <div class="trending-post-content p-2 sm:p-3 md:p-4">
+            <div class="flex justify-between items-center mb-1 sm:mb-2">
+              <div class="flex items-center gap-1 sm:gap-2">
+                <img src="{{ getFotoPerfil(post.autor) }}" alt="Avatar" class="w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7 rounded-full object-cover" />
+                <p
+                  class="text-xs sm:text-sm font-medium text-gray-300 truncate max-w-[80px] xs:max-w-[100px] sm:max-w-none"
+                >
+                  {{ post.autor.nome }}
+                </p>
+              </div>
+              <span class="text-[10px] xs:text-xs font-semibold text-gray-400">
+                {{ post.dataCriacao | dateFormat }}
+              </span>
+            </div>
+
+            <h4
+              class="font-semibold text-gray-100 mb-1 text-xs sm:text-sm md:text-base line-clamp-2"
+            >
+              {{ post.legenda }}
+            </h4>
+
+            <div class="flex flex-wrap gap-1 sm:gap-2 mb-2">
+              <span
+                *ngFor="let tag of popularTags.slice(0, 2)"
+                class="text-[10px] xs:text-xs font-semibold text-gray-400"
+              >
+                #{{ tag }}
+              </span>
+            </div>
+
+            <div class="flex justify-between items-center">
+              <div class="flex gap-2 sm:gap-3 md:gap-4">
+                <span
+                  class="flex items-center gap-1 text-gray-400 text-[10px] xs:text-xs sm:text-sm"
+                >
+                <button
+                class="flex-center gap-1 text-light-1 hover:text-primary-custom transition"
+                (click)="toggleLike(post, $event)"
+                [ngClass]="{
+                  'text-red': post.isLiked,
+                  'hover:text-primary-custom': !post.isLiked
+                }"
+              >
+                <i
+                  class="fa-heart btn-icon text-xl"
+                  [ngClass]="{
+                    fas: post.isLiked,
+                    far: !post.isLiked
+                  }"
+                  [ngStyle]="{
+                    transform: post.isAnimating ? 'scale(1.2)' : 'scale(1)'
+                  }"
+                ></i>
+                <span class="small-medium">{{
+                  post.numeroCurtidas | formatNumber
+                }}</span>
+              </button>
+                </span>
+                <span
+                  class="flex items-center gap-1 text-gray-400 text-[10px] xs:text-xs sm:text-sm"
+                >
+                  <i (click)="openComments(post, $event)" class="far fa-comment btn-icon"></i>
+                  <span>{{ post.numeroComentarios | formatNumber }}</span>
+                </span>
+              </div>
+              <button
+              class="flex-center gap-1 text-light-1 hover:text-primary-custom transition"
+              (click)="toggleFavorite(post, $event)"
+              [ngClass]="{
+                'text-yellow-400': post.isFavorite,
+                'hover:text-primary-custom': !post.isFavorite
+              }"
+            >
+              <i
+                class="fa-bookmark btn-icon text-xl"
+                [ngClass]="{
+                  fas: post.isFavorite,
+                  far: !post.isFavorite
+                }"
+                [ngStyle]="{
+                  transform: post.isFavAnimating ? 'scale(1.2)' : 'scale(1)'
+                }"
+              ></i>
+              <span *ngIf="post.numeroFavoritos > 0" class="small-medium">
+                {{ post.numeroFavoritos | formatNumber }}
+              </span>
+            </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+    <section
+      class="trending-section mb-4 sm:mb-8 animate-slideUp"
+      style="animation-delay: 0.5s"
+    >
+      <div
+        *ngIf="!pesquisaOcorreu && viralPosts.length > 0"
+        class="trending-header flex justify-between items-center mb-2 sm:mb-4"
+      >
+        <h3 class="font-semibold text-primary-custom text-sm sm:text-lg">
+          Tendências
+        </h3>
+        <a
+          href="#"
+          class="text-xs sm:text-sm font-medium text-gray-400 hover:text-gray-100 transition-colors"
+        >
+          Ver Todos
+        </a>
+      </div>
+
+      <div
+        class="trending-posts grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4"
+      >
+        <div
+          *ngFor="let post of viralPosts; let i = index"
+          (click)="openPostDetails(post, $event)"
+          class="trending-post bg-gray-800 rounded-lg sm:rounded-xl overflow-hidden transition-transform hover:scale-[1.02] active:scale-[0.98]"
+        >
+          <img
+            [src]="getImagemPost(post.imagem)"
+            (error)="handleImageError($event)"
+            alt="Post em Tendência"
+            class="trending-post-img w-full h-32 xs:h-36 sm:h-40 md:h-48 object-cover"
+          />
+
+          <div class="trending-post-content p-2 sm:p-3 md:p-4">
+            <div class="flex justify-between items-center mb-1 sm:mb-2">
+              <div class="flex items-center gap-1 sm:gap-2">
+                <img src="{{ getFotoPerfil(post.autor) }}" alt="Avatar" class="w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7 rounded-full object-cover" />
+                <p
+                  class="text-xs sm:text-sm font-medium text-gray-300 truncate max-w-[80px] xs:max-w-[100px] sm:max-w-none"
+                >
+                  {{ post.autor.nome }}
+                </p>
+              </div>
+              <span class="text-[10px] xs:text-xs font-semibold text-gray-400">
+                {{ post.dataCriacao | dateFormat }}
+              </span>
+            </div>
+
+            <h4
+              class="font-semibold text-gray-100 mb-1 text-xs sm:text-sm md:text-base line-clamp-2"
+            >
+              {{ post.legenda }}
+            </h4>
+
+            <div class="flex flex-wrap gap-1 sm:gap-2 mb-2">
+              <span
+                *ngFor="let tag of popularTags.slice(0, 2)"
+                class="text-[10px] xs:text-xs font-semibold text-gray-400"
+              >
+                #{{ tag }}
+              </span>
+            </div>
+
+            <div class="flex justify-between items-center">
+              <div class="flex gap-2 sm:gap-3 md:gap-4">
+                <span
+                  class="flex items-center gap-1 text-gray-400 text-[10px] xs:text-xs sm:text-sm"
+                >
+                  <i class="far fa-heart btn-icon"></i>
+                  <span>{{ post.numeroCurtidas | formatNumber }}</span>
+                </span>
+                <span
+                  class="flex items-center gap-1 text-gray-400 text-[10px] xs:text-xs sm:text-sm"
+                >
+                  <i (click)="openComments(post, $event)" class="far fa-comment btn-icon"></i>
+                  <span>{{ post.numeroComentarios | formatNumber }}</span>
+                </span>
+              </div>
+              <i (click)="toggleFavorite(post, $event)" class="far fa-bookmark text-gray-400 hover:text-primary-500 cursor-pointer text-xs sm:text-sm"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <div *ngIf="!pesquisaOcorreu && celebrityPosts.length > 0">
+      <div
+        class="trending-header flex justify-between items-center mb-3 sm:mb-4"
+      >
+        <h3 class="font-semibold text-primary-custom text-base sm:text-lg">
+          Famosos
+        </h3>
+      </div>
+      <div
+        id="gridView"
+        class="post-grid animate-slideUp"
+        style="animation-delay: 0.6s"
+      >
+        <div class="post-card" *ngFor="let post of celebrityPosts">
+          <img
+            [src]="getImagemPost(post.imagem)"
+            (error)="handleImageError($event)"
+            alt="Post"
+            class="post-card-img"
+            (click)="openPostDetails(post, $event)"
+          />
+          <div class="post-card-content">
+            <div class="flex-between mb-2">
+              <div class="flex-start gap-2">
+                <img src="{{ getFotoPerfil(post.autor) }}" alt="Avatar" class="w-6 h-6 rounded-full object-cover" />
+                <p class="small-medium">{{ post.autor.nome }}</p>
+              </div>
+              <span class="subtle-semibold text-light-3">{{
+                post.dataCriacao | dateFormat
+              }}</span>
+            </div>
+            <h4 class="base-semibold mb-1 truncate">
+              {{ post.legenda }}
+            </h4>
+            <div class="post-card-stats">
+              <span class="flex-center gap-1 text-light-3">
+                <button
+                class="flex-center gap-1 text-light-1 hover:text-primary-custom transition"
+                (click)="toggleLike(post, $event)"
+                [ngClass]="{
+                  'text-red': post.isLiked,
+                  'hover:text-primary-custom': !post.isLiked
+                }"
+              >
+                <i
+                  class="fa-heart btn-icon text-xl"
+                  [ngClass]="{
+                    fas: post.isLiked,
+                    far: !post.isLiked
+                  }"
+                  [ngStyle]="{
+                    transform: post.isAnimating ? 'scale(1.2)' : 'scale(1)'
+                  }"
+                ></i>
+                <span class="small-medium">{{
+                  post.numeroCurtidas | formatNumber
+                }}</span>
+              </button>
+              </span>
+              <span class="flex-center gap-1 text-light-3">
+                <i (click)="openComments(post, $event)" class="far fa-comment btn-icon"></i>
+                <small>{{ post.numeroComentarios | formatNumber }}</small>
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div *ngIf="followedPeoplePosts.length > 0">
+      <div
+        class="trending-header flex justify-between items-center mb-3 sm:mb-4"
+      >
+        <h3 class="font-semibold text-primary-custom text-base sm:text-lg">
+          Quem você segue
+        </h3>
+      </div>
+      <div id="listView" class="post-list hidden">
+        <div
+          class="post-list-item"
+          (click)="openPostDetails(post, $event)"
+          *ngFor="let post of followedPeoplePosts; let i = index"
+        >
+          <img
+            [src]="getImagemPost(post.imagem)"
+            (error)="handleImageError($event)"
+            alt="Post"
+            class="post-list-img"
+          />
+          <div class="post-list-content">
+            <div>
+              <div class="flex-between mb-2">
+                <div class="flex-start gap-2">
+                  <img src="{{ getFotoPerfil(post.autor) }}" alt="Avatar" class="w-6 h-6 rounded-full object-cover" />
+                  <p class="small-medium">{{ post.autor.nome }}</p>
+                </div>
+                <span class="subtle-semibold text-light-3">{{
+                  post.dataCriacao | dateFormat
+                }}</span>
+              </div>
+              <h4 class="base-semibold mb-1">
+                {{ post.legenda }}
+              </h4>
+              <p class="small-medium text-light-3 mb-2 line-clamp-2">
+                {{ post.tags }}
+              </p>
+            </div>
+            <div class="flex-between">
+              <div class="flex gap-3">
+                <span class="flex-center gap-1 text-light-3">
+                  <button
+                  class="flex-center gap-1 text-light-1 hover:text-primary-custom transition"
+                  (click)="toggleLike(post, $event)"
+                  [ngClass]="{
+                    'text-red': post.isLiked,
+                    'hover:text-primary-custom': !post.isLiked
+                  }"
+                >
+                  <i
+                    class="fa-heart btn-icon text-xl"
+                    [ngClass]="{
+                      fas: post.isLiked,
+                      far: !post.isLiked
+                    }"
+                    [ngStyle]="{
+                      transform: post.isAnimating ? 'scale(1.2)' : 'scale(1)'
+                    }"
+                  ></i>
+                  <span class="small-medium">{{
+                    post.numeroCurtidas | formatNumber
+                  }}</span>
+                </button>
+                </span>
+                <span class="flex-center gap-1 text-light-3">
+                  <i (click)="openComments(post, $event)" class="far fa-comment btn-icon"></i>
+                  <small>{{
+                    post.numeroComentarios | formatNumber
+                  }}</small>
+                </span>
+              </div>
+              <button
+              class="flex-center gap-1 text-light-1 hover:text-primary-custom transition"
+              (click)="toggleFavorite(post, $event)"
+              [ngClass]="{
+                'text-yellow-400': post.isFavorite,
+                'hover:text-primary-custom': !post.isFavorite
+              }"
+            >
+              <i
+                class="fa-bookmark btn-icon text-xl"
+                [ngClass]="{
+                  fas: post.isFavorite,
+                  far: !post.isFavorite
+                }"
+                [ngStyle]="{
+                  transform: post.isFavAnimating ? 'scale(1.2)' : 'scale(1)'
+                }"
+              ></i>
+              <span *ngIf="post.numeroFavoritos > 0" class="small-medium">
+                {{ post.numeroFavoritos | formatNumber }}
+              </span>
+            </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+  <app-post-details
+    [postSelected]="postSelected"
+    (postSelectedChange)="postSelected = $event"
+  ></app-post-details>
+</div>

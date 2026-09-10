@@ -1,0 +1,167 @@
+/* You can add global styles to this file, and also import other style files */
+@import "animate.css";
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap");
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --primary-500: #877eff;
+  --primary-600: #5d5fef;
+  --primary-700: #8b5cf6;
+  --primary-800: #7c3aed;
+  --primary-custom: #49437e;
+  --secondary-500: #ffb620;
+  --off-white: #d0dfff;
+  --dark-1: #000000;
+  --dark-2: #09090a;
+  --dark-3: #101012;
+  --dark-4: #1f1f22;
+  --light-1: #ffffff;
+  --light-2: #efefef;
+  --light-3: #7878a3;
+  --light-4: #5c5c7b;
+  --red: #ff5a5a;
+  --green: #4caf50;
+  --yellow: #ffc107;
+}
+
+
+
+body {
+  background-color: var(--dark-1);
+  color: white;
+  font-family: "Inter", sans-serif;
+}
+.h1-bold {
+  font-size: 36px;
+  font-weight: 700;
+  line-height: 140%;
+  letter-spacing: -0.03em;
+}
+.h2-bold {
+  font-size: 30px;
+  font-weight: 700;
+  line-height: 140%;
+  letter-spacing: -0.03em;
+}
+.h3-bold {
+  font-size: 24px;
+  font-weight: 700;
+  line-height: 140%;
+  letter-spacing: -0.03em;
+}
+.base-medium {
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 140%;
+}
+.base-semibold {
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 140%;
+  letter-spacing: -0.03em;
+}
+.small-medium {
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 140%;
+}
+.small-semibold {
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 140%;
+  letter-spacing: -0.03em;
+}
+.subtle-semibold {
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 140%;
+}
+
+.flex-center {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.flex-between {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.flex-start {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+}
+
+
+
+
+.toast-purple {
+  background-color: rgba(156, 39, 176, 0.3) !important;
+  color: white !important;
+  box-shadow: 0 4px 12px rgb(155, 39, 176);
+}
+
+.toast-purple .toast-title {
+  font-weight: bold;
+  font-size: 16px;
+}
+
+.toast-purple .toast-message {
+  font-size: 14px;
+  opacity: 0.9;
+}
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.2s ease-out forwards;
+}
+
+.tag-transition {
+  transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.avatar {
+  @apply w-[70px] h-[70px] rounded-full object-cover;
+}
+.text-principal {
+  color: #8d8bb4;
+}
+
+
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--dark-2);
+  border-radius: 5px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(to bottom, #654FC7),#6B54CB;
+  border-radius: 5px;
+  border: 1px solid rgba(40, 0, 78, 0.2);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(to bottom, rgba(63, 44, 148, 0.534)),#6c54cb83;
+  box-shadow: 0 0 8px var(--primary-700);
+}
+
+::-webkit-scrollbar-thumb:active {
+  background: var(--primary-custom);
+}

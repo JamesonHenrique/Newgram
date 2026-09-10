@@ -1,0 +1,309 @@
+<!-- Background Elements -->
+<div
+  class="min-h-screen flex items-center justify-center p-4 relative overflow-hidden"
+>
+  <div class="bg-gradient"></div>
+  <div class="bg-pattern"></div>
+  <div class="floating-shape shape-1"></div>
+  <div class="floating-shape shape-2"></div>
+
+  <div class="register-container animate-fadeIn">
+    <!-- Login Form Section -->
+    <div class="register-form-section">
+      <div class="register-form-container">
+        <a
+          href="#"
+          class="h3-bold text-primary-500 flex items-center justify-center logo-pulse"
+        >
+          <img src="/images/logo.png" width="200" height="200" alt="Logo" />
+        </a>
+        <div class="register-form-header">
+          <p class="base-medium text-light-3 mt-2">
+            Crie sua conta e compartilhe seus momentos
+          </p>
+        </div>
+
+        <div class="step-indicators">
+          <div class="step-indicator active" id="indicator-1" [ngClass]="{ active: isStepActive(1) }"></div>
+          <div class="step-indicator" id="indicator-2" [ngClass]="{ active: isStepActive(2) }"></div>
+          <div class="step-indicator" id="indicator-3" [ngClass]="{ active: isStepActive(3) }"></div>
+        </div>
+
+        <div class="step-title " id="step-title-1" [ngClass]="{ active: isStepActive(1) }">
+          Etapa 1: Informações Básicas
+        </div>
+        <div class="step-title" id="step-title-2" [ngClass]="{ active: isStepActive(2) }">Etapa 2: Segurança</div>
+        <div class="step-title" id="step-title-3" [ngClass]="{ active: isStepActive(3) }">Etapa 3: Perfil</div>
+
+        <form id="registerForm" [formGroup]="authForm" (ngSubmit)="register()" enctype="multipart/form-data" >
+          <div class="form-step" id="step-1" [ngClass]="{ active: isStepActive(1) }">
+            <div class="form-group">
+              <label for="name" class="form-label">Nome completo</label>
+              <input
+                type="text"
+                formControlName="nome"
+                id="name"
+                class="form-input"
+                [class.invalid]="hasError('nome', 'required') || hasError('nome', 'minlength')"
+                placeholder="Digite seu nome completo"
+              />
+              <div *ngIf="hasError('nome', 'required')" class="error-message">
+                Nome é obrigatório
+              </div>
+              <div *ngIf="hasError('nome', 'minlength')" class="error-message">
+                Nome deve ter pelo menos 3 caracteres
+              </div>
+
+            </div>
+
+            <div class="form-group">
+              <label for="email" class="form-label">Email</label>
+              <input
+                type="email"
+                formControlName="email"
+                id="email"
+                class="form-input"
+                [class.invalid]="hasError('email', 'required') || hasError('email', 'email')"
+                placeholder="Digite seu email"
+              />
+              <div *ngIf="hasError('email', 'required')" class="error-message">
+                Email é obrigatório
+              </div>
+              <div *ngIf="hasError('email', 'email')" class="error-message">
+                Por favor, insira um email válido
+              </div>
+
+            </div>
+
+            <div class="social-features">
+              <div class="social-feature">
+                <i class="fas fa-camera"></i>
+                <span>Compartilhe fotos</span>
+              </div>
+              <div class="social-feature">
+                <i class="fas fa-heart"></i>
+                <span>Receba curtidas</span>
+              </div>
+              <div class="social-feature">
+                <i class="fas fa-comment"></i>
+                <span>Interaja com amigos</span>
+              </div>
+            </div>
+
+            <div class="form-actions">
+              <button type="button" class="btn btn-primary" (click)="nextStep()" [disabled]="authForm.get('nome')?.invalid || authForm.get('email')?.invalid">
+                Próximo
+              </button>
+            </div>
+          </div>
+          <div class="form-step" id="step-2" [ngClass]="{ active: isStepActive(2) }">
+            <div class="form-group">
+              <label for="senha" class="form-label">Senha</label>
+              <div class="input-wrapper">
+                <input
+                  type="password"
+                  formControlName="senha"
+                  id="senha"
+                  class="form-input"
+                  [class.invalid]="hasError('senha', 'required') || hasError('senha', 'noUpperCase') ||
+                  hasError('senha', 'noLowerCase') || hasError('senha', 'noNumber') ||
+                  hasError('senha', 'noSpecialChar') || hasError('senha', 'minlength')"
+  placeholder="Crie uma senha forte"
+  (input)="authForm.get('senha')?.updateValueAndValidity()"
+/>
+                <i
+                  class="fas password-toggle"
+                  [ngClass]="{'fa-eye': !showPassword, 'fa-eye-slash': showPassword}"
+                  (click)="togglePasswordVisibility('senha')"
+                ></i>
+              </div>
+
+              <div class="password-strength">
+                <div class="strength-meter">
+                  <div class="strength-meter-fill" id="strengthMeter"></div>
+                </div>
+                <div class="strength-text" id="strengthText">Força da senha</div>
+              </div>
+
+              <div class="password-requirements">
+                <div class="requirement requirement-unmet" id="reqLength">
+                  <i class="fas fa-circle"></i>
+                  <span>Mínimo de 8 caracteres</span>
+                </div>
+                <div class="requirement requirement-unmet" id="reqUppercase">
+                  <i class="fas fa-circle"></i>
+                  <span>Pelo menos uma letra maiúscula</span>
+                </div>
+                <div class="requirement requirement-unmet" id="reqLowercase">
+                  <i class="fas fa-circle"></i>
+                  <span>Pelo menos uma letra minúscula</span>
+                </div>
+                <div class="requirement requirement-unmet" id="reqNumber">
+                  <i class="fas fa-circle"></i>
+                  <span>Pelo menos um número</span>
+                </div>
+                <div class="requirement requirement-unmet" id="reqSpecial">
+                  <i class="fas fa-circle"></i>
+                  <span>Pelo menos um caractere especial</span>
+                </div>
+              </div>
+
+              <div *ngIf="authForm.get('senha')?.invalid && (authForm.get('senha')?.dirty || authForm.get('senha')?.touched)"
+                   class="error-message">
+                <div *ngIf="authForm.get('senha')?.errors?.['required']">Senha é obrigatória</div>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="confirmacaoSenha" class="form-label">Confirmar senha</label>
+              <div class="input-wrapper">
+                <input
+                  type="password"
+                  id="confirmacaoSenha"
+                  class="form-input"
+                  placeholder="Confirme sua senha"
+                  formControlName="confirmacaoSenha"
+                  [ngClass]="{'error-message': authForm.get('confirmacaoSenha')?.invalid && (authForm.get('confirmacaoSenha')?.dirty || authForm.get('confirmacaoSenha')?.touched)}"
+                />
+                <i
+                  class="fas password-toggle"
+                  [ngClass]="{'fa-eye': !showConfirmPassword, 'fa-eye-slash': showConfirmPassword}"
+                  (click)="togglePasswordVisibility('confirmacaoSenha')"
+                ></i>
+              </div>
+
+              <div class="error-message">
+                <div *ngIf="authForm.get('confirmacaoSenha')?.errors?.['required'] &&
+                           (authForm.get('confirmacaoSenha')?.dirty || authForm.get('confirmacaoSenha')?.touched)">
+                  Confirmação de senha é obrigatória
+                </div>
+                <div *ngIf="authForm.errors?.['passwordMismatch'] &&
+                           authForm.get('confirmacaoSenha')?.valid &&
+                           (authForm.get('confirmacaoSenha')?.dirty || authForm.get('confirmacaoSenha')?.touched)">
+                  As senhas não coincidem
+                </div>
+              </div>
+            </div>
+
+            <div class="form-actions">
+              <button type="button" class="btn btn-secondary" id="backToStep1" (click)="previousStep()">
+                Voltar
+              </button>
+              <button type="button" class="btn btn-primary" (click)="nextStep()"
+              [disabled]="authForm.get('senha')?.invalid || authForm.get('confirmacaoSenha')?.invalid || authForm.errors?.['passwordMismatch']">
+        Próximo
+      </button>
+            </div>
+          </div>
+
+          <div class="form-step" id="step-3" [ngClass]="{ active: isStepActive(3) }">
+            <div class="avatar-upload" >
+              <div class="avatar-preview" id="avatarPreview"  (click)="triggerFileInput()">
+                <img #avatarImage id="avatarImage" [src]="selectedFotoDePerfil" alt="Avatar" />
+                <i  #avatarPlaceholder class="fas fa-user" id="avatarPlaceholder"></i>
+                <div class="avatar-overlay">
+                  <i class="fas fa-camera"></i>
+                </div>
+              </div>
+              <label for="avatarUpload" class="avatar-upload-btn">
+                <i class="fas fa-upload mr-2"></i>
+                Escolher foto de perfil
+              </label>
+              <input
+              #avatarUpload
+              type="file"
+              id="avatarUpload"
+              accept="image/*"
+              (change)="previewSelectedImage($event)"
+              style="display: none;"
+            />
+            </div>
+
+            <div class="form-group">
+              <label for="username" class="form-label">Nome de usuário</label>
+              <div class="username-input-wrapper">
+                <span class="username-prefix">&#64;</span>
+                <input
+                  type="text"
+                  id="username"
+                  class="form-input username-input"
+                  [class.invalid]="hasError('username', 'required') || hasError('username', 'pattern')"
+                  placeholder="escolha um nome de usuário"
+                  formControlName="username"
+                />
+              </div>
+              <div *ngIf="hasError('username', 'required')" class="error-message">
+                Nome de usuário é obrigatório
+              </div>
+              <div *ngIf="hasError('username', 'pattern')" class="error-message">
+                Use apenas letras, números e underscores
+              </div>
+              <div *ngIf="hasError('username', 'maxlength')" class="error-message">
+                Nome de usuário deve ter no máximo 15 caracteres
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="bio" class="form-label">Bio</label>
+              <textarea
+                id="bio"
+                class="form-input form-textarea"
+                placeholder="Conte um pouco sobre você..."
+                formControlName="bio"
+              ></textarea>
+              <div class="char-counter">
+                {{ authForm.get('bio')?.value?.length || 0 }}/150 caracteres
+              </div>
+            </div>
+
+            <div class="form-actions">
+              <button type="button" class="btn btn-secondary" id="backToStep2" (click)="previousStep()">
+                Voltar
+              </button>
+              <button type="submit" class="btn btn-primary" [disabled]="authForm.invalid ">
+                <span>Criar conta</span>
+
+              </button>
+            </div>
+          </div>
+
+
+          <div class="form-footer">
+            <p class="small-medium text-light-3">
+              Já tem uma conta? <a routerLink="/login" class="text-primary-500">Entrar</a>
+            </p>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <div class="register-visual-section">
+      <div class="register-visual-overlay"></div>
+      <div class="register-visual-bg"></div>
+
+      <div class="floating-circle floating-element"></div>
+      <div class="floating-square floating-element"></div>
+
+      <div class="register-visual-content">
+        <h2 class="h3-bold mb-4">Junte-se ao Newgram</h2>
+        <p class="base-medium mb-6">Conheça novas pessoas e compartilhe seus melhores momentos</p>
+
+        <div class="flex-center gap-3 flex-wrap ">
+          <div class="flex-center flex-col  mr-6">
+            <h3 class="h3-bold text-primary-500 ">10M+</h3>
+            <p class="small-medium">Usuários</p>
+          </div>
+          <div class="flex-center flex-col  mr-6">
+            <h3 class="h3-bold text-primary-500">50M+</h3>
+            <p class="small-medium">Posts</p>
+          </div>
+          <div class="flex-center flex-col  mr-6">
+            <h3 class="h3-bold text-primary-500">+100k+</h3>
+            <p class="small-medium">Momentos diários</p>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

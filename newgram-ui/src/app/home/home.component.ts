@@ -1,0 +1,364 @@
+import { CommonModule } from '@angular/common';
+import { ChangeDetectorRef, Component, ElementRef, ViewChild } from '@angular/core';
+import { Router } from '@angular/router';
+import { PostDetailsComponent } from '../post-details/post-details.component';
+import { DomSanitizer, Title } from '@angular/platform-browser';
+import { FormatNumberPipe } from '../services/pipes/format-number.pipe';
+import {
+  PostsService,
+  SeguidoresService,
+  UsuariosService,
+} from '../services/services';
+import { Pageable } from '../services/models';
+import { DateFormatPipe } from '../services/pipes/date-format-pipe';
+import { TokenService } from '../services/token/token.service';
+import { Observable, Subject, forkJoin, of } from 'rxjs';
+import { takeUntil, catchError, finalize, tap, map } from 'rxjs/operators';
+@Component({
+  selector: 'app-home',
+  imports: [
+    CommonModule,
+    PostDetailsComponent,
+    FormatNumberPipe,
+    DateFormatPipe,
+  ],
+  templateUrl: './home.component.html',
+  styleUrl: './home.component.css',
+})
+export class HomeComponent {
+  private destroy$ = new Subject<void>();
+   loading = false;
+
+  posts: any[] = [];
+  topCreators: any[] = [];
+  usuarioLogado: any | null = null;
+
+  postSelected: any | null = null;
+  showDetail = false;
+
+  pageable: Pageable = {
+    page: 0,
+    size: 10,
+    sort: [''],
+  };
+
+  pageableCreators: Pageable = {
+    page: 0,
+    size: 4,
+    sort: [''],
+  };
+
+  hasMorePosts = true;
+  endOfPostsMessage = 'Você chegou ao final do feed! 🎉';
+  constructor(
+    private title: Title,
+    private postsService: PostsService,
+    private usuariosService: UsuariosService,
+    private tokenService: TokenService,
+    private router: Router,
+    private seguidorService: SeguidoresService
+  ) {}
+
+  ngOnInit(): void {
+    this.title.setTitle('Feed');
+    this.loadInitialData();
+    setTimeout(() => this.setupScrollListener(), 1000);
+  }
+  @ViewChild('feedContainer') feedContainer!: ElementRef;
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
+  private loadInitialData(): void {
+    this.loading = true;
+
+    forkJoin([
+      this.listFeed(),
+      this.findAllTopCriadores(),
+      this.findUsuarioLogado(),
+    ])
+      .pipe(
+        takeUntil(this.destroy$),
+        finalize(() => (this.loading = false))
+      )
+      .subscribe();
+  }private setupScrollListener(): void {
+    const feedContainer = document.querySelector('.feed-container');
+    const isMobile = window.innerWidth <= 1024;
+
+    const target = isMobile ? window : feedContainer;
+    if (!target) return;
+
+    const scrollHandler = () => {
+      if (this.loading || !this.hasMorePosts) return;
+
+      let scrollTop: number, scrollHeight: number, clientHeight: number;
+      const threshold = 200;
+      if (isMobile) {
+        scrollTop = window.pageYOffset;
+        clientHeight = window.innerHeight;
+        scrollHeight = document.documentElement.scrollHeight;
+      } else {
+        const el = feedContainer as HTMLElement;
+        scrollTop = el.scrollTop;
+        clientHeight = el.clientHeight;
+        scrollHeight = el.scrollHeight;
+      }
+
+      if (scrollHeight - (scrollTop + clientHeight) < threshold) {
+        this.loadMorePosts();
+      }
+    };
+
+    const debouncedScrollHandler = this.debounce(scrollHandler, 200);
+    target.addEventListener('scroll', debouncedScrollHandler);
+
+    this.destroy$.subscribe(() => {
+      target.removeEventListener('scroll', debouncedScrollHandler);
+    });
+  }
+
+  private debounce(func: Function, wait: number) {
+    let timeout: any;
+    return (...args: any[]) => {
+      clearTimeout(timeout);
+      timeout = setTimeout(() => func.apply(this, args), wait);
+    };
+  }
+  private loadMorePosts(): void {
+    if (this.loading || !this.hasMorePosts) return;
+
+    this.loading = true;
+    this.pageable.page = (this.pageable.page || 0) + 1;
+
+    this.postsService
+      .listarFeed({ pageable: this.pageable })
+      .pipe(
+        takeUntil(this.destroy$),
+        finalize(() => (this.loading = false))
+      )
+      .subscribe({
+        next: (response) => {
+          const newPosts = response.content || [];
+
+          if (newPosts.length === 0) {
+            this.hasMorePosts = false;
+            return;
+          }
+
+          this.posts = [
+            ...this.posts,
+            ...newPosts.map((post: any) => ({
+              ...post,
+              isLiked: post.curtidoPeloUsuario,
+              isFavorite: post.salvoPeloUsuario,
+              isAnimating: false,
+              isFavAnimating: false,
+            }))
+          ];
+        },
+        error: (error) => {
+          console.error('Erro ao carregar mais posts:', error);
+          this.hasMorePosts = false;
+        },
+      });
+  }
+  toggleFollow(user: any, event: Event) {
+    event.stopPropagation();
+    if (user.seguindoUsuario) {
+      this.deixarDeSeguir(user, event);
+    } else {
+      this.seguir(user, event);
+    }
+  }
+  deixarDeSeguir(user: any, event: Event) {
+    event.stopPropagation();
+
+    this.seguidorService
+      .deixarDeSeguir({ usuarioId: user.id })
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: () => {
+          const index = this.topCreators.findIndex((c) => c.id === user.id);
+          if (index !== -1) {
+            this.topCreators[index].seguindoUsuario = false;
+          }
+        },
+        error: (error) => {
+          console.error('Erro ao deixar de seguir:', error);
+        },
+      });
+  }
+
+  seguir(user: any, event: Event) {
+    event.stopPropagation();
+
+    this.seguidorService
+      .seguirUsuario({ usuarioId: user.id })
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: () => {
+          const index = this.topCreators.findIndex((c) => c.id === user.id);
+          if (index !== -1) {
+            this.topCreators[index].seguindoUsuario = true;
+          }
+        },
+        error: (error) => {
+          console.error('Erro ao seguir:', error);
+        },
+      });
+  }
+  verPerfil(username: string): void {
+    this.router.navigate(['/perfil', username]);
+  }
+
+  getFotoPerfil(user: any): string {
+    if (!user.fotoPerfil || user.fotoPerfil.trim() === '') {
+      return '/icons/profile-placeholder.svg';
+    }
+    if (user.fotoPerfil.includes('post-placeholder.svg')) {
+      return user.fotoPerfil;
+    }
+    return user.fotoPerfil;
+  }
+  getImagemPost(imagem: string | null | undefined): string {
+    if (!imagem || imagem.trim() === '') {
+      return '/icons/post-placeholder.svg';
+    }
+
+    if (imagem.includes('post-placeholder.svg')) {
+      return imagem;
+    }
+
+    return imagem;
+  }
+  handleFotoPerfilError(event: Event): void {
+    const imgElement = event.target as HTMLImageElement;
+    imgElement.src = '/icons/profile-placeholder.svg';
+
+    imgElement.onerror = null;
+  }
+
+  handleImageError(event: Event): void {
+    const imgElement = event.target as HTMLImageElement;
+    imgElement.src = '/icons/post-placeholder.svg';
+
+    imgElement.onerror = null;
+  }
+
+  private findUsuarioLogado(): Observable<void> {
+    if (!this.tokenService.userId) return of(undefined);
+
+    return this.usuariosService
+      .buscarUsuarioPorId({ id: this.tokenService.userId })
+      .pipe(
+        tap((res) => (this.usuarioLogado = res)),
+        map(() => undefined),
+        catchError((error) => {
+          console.error('Erro ao buscar usuário logado:', error);
+          return of(undefined);
+        })
+      );
+  }
+
+  private findAllTopCriadores(): Observable<void> {
+    return this.usuariosService
+      .listarUsuariosMaisFamosos({ pageable: this.pageableCreators })
+      .pipe(
+        tap((response) => (this.topCreators = response.content || [])),
+        map(() => undefined),
+        catchError((error) => {
+          console.error('Erro ao buscar top criadores:', error);
+          return of(undefined);
+        })
+      );
+  }
+
+  private listFeed(): Observable<void> {
+    return this.postsService.listarFeed({ pageable: this.pageable }).pipe(
+      tap((response) => {
+        this.posts = (response.content || []).map((post: any) => ({
+          ...post,
+          isLiked: post.curtidoPeloUsuario,
+          isFavorite: post.salvoPeloUsuario,
+          isAnimating: false,
+          isFavAnimating: false,
+        }));
+      }),
+      map(() => undefined),
+      catchError((error) => {
+        console.error('Erro ao carregar feed:', error);
+        return of(undefined);
+      })
+    );
+  }
+
+  openPostDetails(post: any, event: MouseEvent): void {
+    event.preventDefault();
+    this.postSelected = post;
+    this.showDetail = true;
+  }
+
+  toggleLike(post: any, event: Event): void {
+    event.stopPropagation();
+    if (post.isAnimating) return;
+
+    post.isAnimating = true;
+    const wasLiked = post.isLiked;
+
+    post.isLiked = !wasLiked;
+    post.numeroCurtidas += wasLiked ? -1 : 1;
+
+    const likeAction$ = wasLiked
+      ? this.postsService.descurtirPost({ id: post.id })
+      : this.postsService.curtirPost({ id: post.id });
+
+    likeAction$
+      .pipe(
+        takeUntil(this.destroy$),
+        finalize(() => (post.isAnimating = false))
+      )
+      .subscribe({
+        error: () => {
+          post.isLiked = wasLiked;
+          post.numeroCurtidas += wasLiked ? 1 : -1;
+        },
+      });
+  }
+
+  toggleFavorite(post: any, event: Event): void {
+    event.stopPropagation();
+    if (post.isFavAnimating) return;
+
+    post.isFavAnimating = true;
+    const wasFavorite = post.isFavorite;
+
+    post.isFavorite = !wasFavorite;
+    post.numeroFavoritos += wasFavorite ? -1 : 1;
+
+    const favAction$ = wasFavorite
+      ? this.postsService.removerPostSalvo({ id: post.id })
+      : this.postsService.salvarPost({ id: post.id });
+
+    favAction$
+      .pipe(
+        takeUntil(this.destroy$),
+        finalize(() => (post.isFavAnimating = false))
+      )
+      .subscribe({
+        error: () => {
+          post.isFavorite = wasFavorite;
+          post.numeroFavoritos += wasFavorite ? 1 : -1;
+        },
+      });
+  }
+
+  trackByPostId(index: number, post: any): number {
+    return post.id;
+  }
+
+  trackByCreatorId(index: number, creator: any): number {
+    return creator.id || 0;
+  }
+}

@@ -1,0 +1,179 @@
+<div class="content-area overflow-hidden">
+  <div
+    class="feed-container animate__animated animate__slideInUp"
+    #feedContainer
+  >
+    <h1 class="h1-bold max-w-3xl mx-auto mb-4 mr-1">Feed</h1>
+    <div class="flex flex-col max-w-3xl mx-auto mr-1 animate-fadeIn">
+      <div class="post-list">
+        <article
+          *ngFor="let post of posts"
+          class="post-card animate-slideUp flex flex-col justify-center"
+          [style.animation-delay]="0.2 * +1 + 's'"
+          (click)="openPostDetails(post, $event)"
+          [attr.data-post-id]="post.id"
+        >
+          <label for="modal-1" class="cursor-pointer">
+            <div class="flex-between mb-4">
+              <div class="flex-start gap-3">
+                <img
+                  [src]="getFotoPerfil(post.autor)"
+                  (error)="handleFotoPerfilError($event)"
+                  alt="Avatar do Usuário"
+                  class="w-16 h-16 story-border"
+                />
+                <div>
+                  <h4 class="base-semibold">{{ post.autor.nome }}</h4>
+                  <div
+                    class="flex gap-2 small-medium text-principal text-light-3"
+                  >
+                    <span>{{ post.dataCriacao | dateFormat }}</span>
+                    <span>•</span>
+                    <span>{{ post.localizacao }}</span>
+                  </div>
+                </div>
+              </div>
+              <button class="post-menu-btn" (click)="$event.stopPropagation()">
+                <i class="fas fa-ellipsis-h text-light-3"></i>
+              </button>
+            </div>
+
+            <p class="base-medium mb-3">{{ post.legenda }}</p>
+            <div
+              class="flex gap-2 small-medium text-principal text-light-3 mb-4"
+            >
+              <span *ngFor="let tag of post.tags">#{{ tag }}</span>
+            </div>
+
+            <img
+              [src]="getImagemPost(post.imagem)"
+              (error)="handleImageError($event)"
+              alt="Imagem do Post"
+              class="post-card_img"
+            />
+
+            <div class="flex-between mt-3">
+              <div class="flex gap-4">
+                <button
+                  class="flex-center gap-1 text-light-1 hover:text-primary-custom transition"
+                  (click)="toggleLike(post, $event)"
+                  [ngClass]="{
+                    'text-red': post.isLiked,
+                    'hover:text-primary-custom': !post.isLiked
+                  }"
+                >
+                  <i
+                    class="fa-heart btn-icon text-xl"
+                    [ngClass]="{
+                      fas: post.isLiked,
+                      far: !post.isLiked
+                    }"
+                    [ngStyle]="{
+                      transform: post.isAnimating ? 'scale(1.2)' : 'scale(1)'
+                    }"
+                  ></i>
+                  <span class="small-medium">{{
+                    post.numeroCurtidas | formatNumber
+                  }}</span>
+                </button>
+
+                <button
+                  class="flex-center gap-1 text-light-1 hover:text-primary-custom transition"
+                  (click)="toggleFavorite(post, $event)"
+                  [ngClass]="{
+                    'text-yellow-400': post.isFavorite,
+                    'hover:text-primary-custom': !post.isFavorite
+                  }"
+                >
+                  <i
+                    class="fa-bookmark btn-icon text-xl"
+                    [ngClass]="{
+                      fas: post.isFavorite,
+                      far: !post.isFavorite
+                    }"
+                    [ngStyle]="{
+                      transform: post.isFavAnimating ? 'scale(1.2)' : 'scale(1)'
+                    }"
+                  ></i>
+                  <span *ngIf="post.numeroFavoritos > 0" class="small-medium">
+                    {{ post.numeroFavoritos | formatNumber }}
+                  </span>
+                </button>
+              </div>
+
+              <button
+                class="small-medium text-light-3"
+                (click)="$event.stopPropagation()"
+              >
+                {{ post.numeroComentarios | formatNumber }} comentários
+              </button>
+            </div>
+          </label>
+        </article>
+      </div>
+      <div *ngIf="loading" class="loading-indicator py-4 text-center">
+        <i class="fas fa-spinner fa-spin text-primary-custom"></i>
+        <span class="ml-2">Carregando mais posts...</span>
+      </div>
+
+      <div
+        *ngIf="!hasMorePosts"
+        class="end-of-feed-message text-center py-8 text-light-3  "
+      >
+        {{ endOfPostsMessage }}
+      </div>
+    </div>
+  </div>
+  <div
+    class="top-creators sticky top-0 right-0 w-full lg:w-[350px] xl:w-[400px] h-screen p-4 lg:p-6 xl:p-8 overflow-y-auto custom-scrollbar bg-dark-2"
+  >
+    <div
+      class="creators-box rounded-2xl lg:rounded-3xl p-4 lg:p-6 mb-6 shadow-lg bg-dark-3"
+    >
+      <h3 class="text-lg lg:text-xl font-bold mb-4 lg:mb-6 text-primary-custom">
+        Top Criadores
+      </h3>
+      <div
+        class="creator-grid grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-1 gap-3 lg:gap-4"
+      >
+        <div
+          class="creator-card flex flex-col items-center justify-center gap-2 bg-dark-4 rounded-lg lg:rounded-xl p-3 transition-all duration-300 hover:bg-dark-5 hover:-translate-y-1 hover:shadow-md"
+          *ngFor="let topCreator of topCreators; let i = index"
+          (click)="verPerfil(topCreator.username)"
+        >
+          <img
+            [src]="getFotoPerfil(topCreator)"
+            (error)="handleFotoPerfilError($event)"
+            alt="Criador"
+            class="w-10 h-10 lg:w-12 lg:h-12 rounded-full object-cover"
+          />
+
+          <h4
+            class="text-sm lg:text-base font-semibold truncate w-full text-center"
+          >
+            {{ topCreator.name }}
+          </h4>
+          <p
+            class="text-xs lg:text-sm text-gray-400 truncate w-full text-center"
+          >
+            &#64;{{ topCreator.username }}
+          </p>
+          <button
+            class="mt-1 lg:mt-2 text-white text-xs lg:text-sm font-medium py-1 px-3 lg:px-4 rounded-full transition-colors duration-200"
+            (click)="toggleFollow(topCreator, $event)"
+            [ngClass]="{
+              'btn-follow': !topCreator.seguindoUsuario,
+              'btn-following': topCreator.seguindoUsuario
+            }"
+          >
+            {{ topCreator.seguindoUsuario ? "Seguindo" : "Seguir" }}
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <app-post-details
+    [postSelected]="postSelected"
+    (postSelectedChange)="postSelected = $event"
+  ></app-post-details>
+</div>

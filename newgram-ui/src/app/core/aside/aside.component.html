@@ -1,0 +1,195 @@
+<div class="main-layout">
+  <aside class="leftsidebar">
+    <div class="flex flex-col gap-10 cursor-pointer">
+      <a href="#" class="h3-bold text-primary-500 flex items-center">
+        <img src="/images/logo.png" width="200" height="200" alt="Logo" />
+      </a>
+
+      <div
+        class="group relative flex flex-col gap-3"
+        [routerLink]="['/perfil', usuarioLogado?.username]"
+      >
+        <div class="flex items-center gap-4">
+          <div class="relative">
+            <img
+              [src]="getFotoPerfil()"
+              (error)="handleFotoPerfilError($event)"
+              alt="Perfil do Usuário"
+              class="avatar w-10 h-10 rounded-full object-cover transition-all"
+            />
+
+            <div
+              class="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 hidden group-hover:block w-auto whitespace-nowrap px-3 py-2 bg-[#877EFF] text-white text-sm rounded-md shadow-md"
+            >
+              <div class="flex items-center gap-2">
+                <span>Ver perfil </span>
+              </div>
+              <div
+                class="absolute left-1/2 -translate-x-1/2 top-full w-0 h-0 border-l-4 border-r-4 border-b-0 border-t-4 border-l-transparent border-r-transparent border-t-[#877EFF]"
+              ></div>
+            </div>
+          </div>
+
+          <div class="flex flex-col">
+            <h3 class="base-semibold text-light-1 max-w-[13ch] break-words">
+              {{ usuarioLogado?.nome }}
+            </h3>
+            <p
+              class="small-medium text-primary-500 text-principal max-w-[13ch] break-words"
+            >
+              &#64;{{ usuarioLogado?.username }}
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <nav class="flex flex-col gap-2">
+        <a
+          routerLink="/feed"
+          routerLinkActive="active-route  btn-active"
+          class="leftsidebar-link group base-medium transition-all duration-300"
+        >
+          <div
+            class="flex items-center gap-4 p-3 rounded-lg group-[.active-route]:bg-primary-500/10 group-[.active-route]:border-primary-500 group-[.active-route]:pl-3"
+          >
+            <i
+              routerLinkActive="icon-custom-active"
+              class="fas fa-home flex-center w-5 text-light-3 group-[.active-route]:text-primary-500 icon-custom"
+            ></i>
+            <span
+              class="text-light-3 group-[.active-route]:text-primary-500 group-[.active-route]:font-bold"
+              >Página Inicial</span
+            >
+          </div>
+        </a>
+
+        <a
+          routerLink="/explorar"
+          routerLinkActive="active-route  btn-active"
+          class="leftsidebar-link group base-medium transition-all duration-300"
+        >
+          <div
+            class="flex items-center gap-4 p-3 rounded-lg group-[.active-route]:bg-primary-500/10 group-[.active-route]:border-primary-500 group-[.active-route]:pl-3"
+          >
+            <i
+              routerLinkActive="icon-custom-active"
+              class="fas fa-compass flex-center w-5 text-light-3 group-[.active-route]:text-primary-500 icon-custom"
+            ></i>
+            <span
+              class="text-light-3 group-[.active-route]:text-primary-500 group-[.active-route]:font-bold"
+              >Explorar</span
+            >
+          </div>
+        </a>
+
+        <a
+          routerLink="/pessoas"
+          routerLinkActive="active-route  btn-active"
+          class="leftsidebar-link group base-medium transition-all duration-300"
+        >
+          <div
+            class="flex items-center gap-4 p-3 rounded-lg group-[.active-route]:bg-primary-500/10 group-[.active-route]:border-primary-500 group-[.active-route]:pl-3"
+          >
+            <i
+              routerLinkActive="icon-custom-active"
+              class="fas fa-users flex-center w-5 text-light-3 group-[.active-route]:text-primary-500 icon-custom"
+            ></i>
+            <span
+              class="text-light-3 group-[.active-route]:text-primary-500 group-[.active-route]:font-bold"
+              >Pessoas</span
+            >
+          </div>
+        </a>
+
+        <a
+          routerLink="/salvos"
+          routerLinkActive="active-route  btn-active"
+          class="leftsidebar-link group base-medium transition-all duration-300"
+        >
+          <div
+            class="flex items-center gap-4 p-3 rounded-lg group-[.active-route]:bg-primary-500/10 group-[.active-route]:border-primary-500 group-[.active-route]:pl-3"
+          >
+            <i
+              routerLinkActive="icon-custom-active"
+              class="fas fa-bookmark flex-center w-5 text-light-3 group-[.active-route]:text-primary-500 icon-custom"
+            ></i>
+            <span
+              class="text-light-3 group-[.active-route]:text-primary-500 group-[.active-route]:font-bold"
+              >Salvos</span
+            >
+          </div>
+        </a>
+
+        <a
+          routerLink="/criar-post"
+          routerLinkActive="active-route    btn-active"
+          class="leftsidebar-link group base-medium transition-all duration-300"
+        >
+          <div
+            class="flex items-center gap-4 p-3 rounded-lg group-[.active-route]:bg-primary-500/10 group-[.active-route]:border-primary-500 group-[.active-route]:pl-3"
+          >
+            <i
+              routerLinkActive="icon-custom-active"
+              class="fas fa-plus-circle flex-center w-5 text-light-3 group-[.active-route]:text-primary-500 icon-custom"
+            ></i>
+            <span
+              class="text-light-3 group-[.active-route]:text-primary-500 group-[.active-route]:font-bold"
+              >Criar Post</span
+            >
+          </div>
+        </a>
+      </nav>
+    </div>
+
+    <button class="leftsidebar-link mt-10 group" (click)="logout()">
+      <div
+        class="flex items-center gap-4 p-3 rounded-lg transition-all duration-300"
+      >
+        <i class="fas fa-sign-out-alt flex-center w-5 icon-custom"></i>
+        <span class="text-light-3">Sair</span>
+      </div>
+    </button>
+  </aside>
+  <div class="bottom-bar flex-between w-full px-5 py-4">
+    <a routerLink="/feed" class="flex-center flex-col gap-1">
+      <i routerLinkActive="icon-custom" class="fas fa-home text-xl"></i>
+      <span routerLinkActive="font-bold" class="tiny-medium">Início</span>
+    </a>
+    <a routerLink="/explorar" class="flex-center flex-col gap-1">
+      <i
+        routerLinkActive="icon-custom"
+        class="fas fa-compass text-light-3 text-xl"
+      ></i>
+      <span routerLinkActive="font-bold" class="tiny-medium">Explorar</span>
+    </a>
+    <a routerLink="/criar-post" class="flex-center flex-col gap-1">
+      <i
+        routerLinkActive="icon-custom"
+        class="fas fa-plus-circle text-light-3 text-xl"
+      ></i>
+      <span routerLinkActive="font-bold" class="tiny-medium">Criar</span>
+    </a>
+    <a routerLink="/salvos" class="flex-center flex-col gap-1">
+      <i
+        routerLinkActive="icon-custom"
+        class="fas fa-bookmark text-light-3 text-xl"
+      ></i>
+      <span routerLinkActive="font-bold" class="tiny-medium">Salvos</span>
+    </a>
+    <a routerLink="/pessoas" class="flex-center flex-col gap-1">
+      <i
+        routerLinkActive="icon-custom"
+        class="fas fa-users text-light-3 text-xl"
+      ></i>
+      <span routerLinkActive="font-bold" class="tiny-medium">Pessoas</span>
+    </a>
+    <button (click)="logout()" class="flex-center flex-col gap-1">
+      <i
+        class="fas fa-sign-out-alt text-light-3 text-xl"
+      ></i>
+      <span class="tiny-medium">Sair</span>
+    </button>
+
+  </div>
+
+</div>

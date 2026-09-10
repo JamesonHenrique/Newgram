@@ -1,0 +1,169 @@
+<div class="">
+  <div class="content-area">
+    <div class="max-w-7xl mx-auto">
+      <h1
+        class="text-2xl font-bold mb-4 sm:mb-6 text-primary-500 animate-fadeIn"
+      >
+        Salvos
+      </h1>
+
+      <div
+        id="collectionCreator"
+        class="collection-creator mb-6 bg-gray-800 rounded-lg p-4"
+      >
+        <h3 class="font-semibold text-base mb-3">Criar Nova Coleção</h3>
+        <form class="collection-form space-y-3">
+          <div class="form-group">
+            <label
+              for="collectionName"
+              class="block text-sm font-semibold mb-1"
+            >
+              Nome da Coleção
+            </label>
+            <input
+              type="text"
+              id="collectionName"
+              class="w-full p-2 bg-gray-700 border border-gray-600 rounded text-sm"
+              placeholder="Ex: Inspirações de Viagem"
+            />
+          </div>
+          <div class="form-group">
+            <label
+              for="collectionDescription"
+              class="block text-sm font-semibold mb-1"
+            >
+              Descrição (opcional)
+            </label>
+            <input
+              type="text"
+              id="collectionDescription"
+              class="w-full p-2 bg-gray-700 border border-gray-600 rounded text-sm"
+              placeholder="Descreva sua coleção..."
+            />
+          </div>
+          <div class="form-actions flex gap-2 pt-2">
+            <button
+              type="button"
+              id="cancelCollectionBtn"
+              class="btn btn-secondary flex-1 py-2 px-4 bg-gray-600 hover:bg-gray-500 rounded text-sm font-medium"
+            >
+              Cancelar
+            </button>
+            <button
+              type="button"
+              id="createCollectionBtn"
+              class="btn btn-primary flex-1 py-2 px-4 bg-primary-500 hover:bg-primary-600 rounded text-sm font-medium"
+            >
+              Criar Coleção
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <div
+        class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 animate-slideUp"
+        style="animation-delay: 0.1s"
+      >
+        <div
+          class="collection-tabs flex overflow-x-auto pb-2 mb-3 sm:mb-0 w-full sm:w-auto gap-2"
+        >
+          <div
+            class="collection-tab active whitespace-nowrap flex items-center gap-1 px-3 py-2 bg-primary-500 text-white rounded-full text-xs sm:text-sm"
+          >
+            <i class="fas fa-th-large text-xs"></i>
+            <span>Todos os Salvos</span>
+          </div>
+
+        </div>
+
+        <button
+        *ngIf="false"
+          id="createCollectionToggle"
+          class="create-collection-btn w-full sm:w-auto whitespace-nowrap flex items-center justify-center gap-1 px-3 py-2 bg-gray-700 hover:bg-gray-600 rounded-full text-xs sm:text-sm"
+        >
+          <i class="fas fa-plus text-xs"></i>
+          <span>Nova Coleção</span>
+        </button>
+      </div>
+
+      <div
+        class="filter-options flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 animate-slideUp"
+        style="animation-delay: 0.2s"
+      >
+        <div class="text-sm font-medium mb-2 sm:mb-0">
+          <span id="savedCount">{{ postsTotais }}</span> posts salvos
+        </div>
+
+
+
+      </div>
+
+      <div
+        id="gridView"
+        class="post-grid animate-slideUp"
+        style="animation-delay: 0.3s"
+      >
+        <div
+          class="post-card"
+          *ngFor="let post of savedPosts; let i = index"
+          (click)="openModal(post, i)"
+        >
+            <img
+              [src]="getImagemPost(post.imagem)"
+              (error)="handleImageError($event)"
+              alt="Post"
+              class="post-card-img"
+            />
+
+            <div class="absolute bottom-3 left-3 z-10">
+              <img
+                [src]="getFotoPerfil(post.autor)"
+                alt="Avatar"
+                class="w-8 h-8 rounded-full object-cover shadow-md hover:scale-110 hover:border-primary-500 transition-all duration-300"
+              />
+            </div>
+
+            <div class="post-actions flex gap-2">
+              <div class="relative group">
+                <button
+                  class="post-action-btn p-2 rounded-full hover:bg-gray-700 transition-colors" (click)="desfavoritar(post, $event)"
+                >
+                  <i class="fas fa-bookmark hover:text-red-500"></i>
+                </button>
+              </div>
+
+              <div class="relative group">
+                <button *ngIf="false"
+                  class="post-action-btn p-2 rounded-full hover:bg-gray-700 transition-colors"
+                >
+                  <i class="fas fa-folder-plus hover:text-primary-500"></i>
+                </button>
+              </div>
+            </div>
+        </div>
+      </div>
+      <app-post-details
+        [postSelected]="postSelected"
+        (postSelectedChange)="postSelected = $event"
+      ></app-post-details>
+      <app-pagination
+      *ngIf="savedPosts.length"
+        [currentPage]="pageable.page || 0"
+        [totalPages]="paginaTotal || 0"
+        (pageChange)="onPageChange($event)"
+      ></app-pagination>
+      <div
+        *ngIf="!savedPosts.length"
+        id="emptyState"
+        class="empty-state hidden animate-fadeIn"
+      >
+        <i class="far fa-bookmark empty-state-icon"></i>
+        <h3 class="h3-bold mb-2">Nenhum post salvo</h3>
+        <p class="base-medium text-light-3 mb-6">
+          Quando você salvar posts, eles aparecerão aqui.
+        </p>
+        <a [routerLink]="['/explorar']" class="btn btn-primary"> Explorar Posts </a>
+      </div>
+    </div>
+  </div>
+</div>

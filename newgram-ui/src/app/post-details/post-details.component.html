@@ -1,0 +1,120 @@
+<div
+  class="post-detail-overlay"
+  id="postDetailOverlay"
+  [class.active]="isModalActive"
+  (click)="onOverlayClick($event)"
+>
+  <div class="post-detail-container custom-scrollbar" (click)="$event.stopPropagation()">
+    <div class="post-detail-header flex-between">
+       <button class="back-button" id="closePostDetail" (click)="closeModal()">
+        <i class="fas fa-arrow-left"></i>
+        <span class="base-medium">Voltar</span>
+      </button>
+      <button *ngIf="postPertenceAoUsuarioLogado" class="btn-icon" (click)="editPost(postSelected.id)">
+        <i class="fas fa-edit"></i>
+      </button>
+    </div>
+
+    <div class="post-detail-content" id="postDetailContent">
+      <div class="flex-between p-4 border-b border-dark-4">
+        <div class="flex-start gap-3">
+          <img
+            [src]="getFotoPerfil(postSelected?.autor)"
+            alt="Avatar do Usuário"
+            class="w-12 h-12 rounded-full object-cover "
+            (click)="verPerfil()"
+          />
+          <div>
+            <h4 class="base-semibold">{{ postSelected?.autor?.nome }}</h4>
+            <div class="flex gap-2 small-medium text-light-3">
+              <span>{{ postSelected?.dataCriacao | dateFormat }}</span>
+              <span>•</span>
+              <span>{{ postSelected?.localizacao }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <img
+        [src]="getImagemPost(postSelected?.imagem)"
+        (error)="handleImageError($event)"
+        alt="Imagem do Post"
+        class="post-detail-image"
+      />
+
+      <div class="post-detail-info">
+        <p class="base-medium mb-3">{{ postSelected?.legenda }}</p>
+        <p class="base-medium mb-3 text-principal">{{ postSelected?.tags }}</p>
+        <div class="flex gap-2 flex-wrap mt-4"></div>
+        <div class="flex-between mt-6">
+          <div class="flex gap-2 items-center">
+            <i class="fas fa-heart text-red"></i>
+            <span class="small-medium">
+              {{ postSelected?.numeroCurtidas | formatNumber }} curtidas
+            </span>
+          </div>
+          <span class="small-medium text-light-3">
+            {{ postSelected?.numeroComentarios | formatNumber }} comentários
+          </span>
+
+        </div>
+      </div>
+    </div>
+
+    <div class="post-detail-actions">
+      <div class="flex gap-4">
+        <span
+        class="flex items-center gap-1 text-gray-400 text-[10px] xs:text-xs sm:text-sm"
+      >
+      <button
+      class="flex-center gap-1 text-light-1 hover:text-primary-custom transition"
+      (click)="toggleLike(postSelected, $event)"
+      [ngClass]="{
+        'text-red': postSelected?.isLiked,
+        'hover:text-primary-custom': !postSelected?.isLiked
+      }"
+    >
+      <i
+        class="fa-heart btn-icon text-xl"
+        [ngClass]="{
+          fas: postSelected?.isLiked,
+          far: !postSelected?.isLiked
+        }"
+        [ngStyle]="{
+          transform: postSelected?.isAnimating ? 'scale(1.2)' : 'scale(1)'
+        }"
+      ></i>
+      <span class="small-medium">{{
+        postSelected?.numeroCurtidas | formatNumber
+      }}</span>
+    </button>
+      </span>
+
+      </div>
+      <button
+      class="flex-center gap-1 text-light-1 hover:text-primary-custom transition"
+      (click)="toggleFavorite(postSelected, $event)"
+      [ngClass]="{
+        'text-yellow-400': postSelected?.isFavorite,
+        'hover:text-primary-custom': !postSelected?.isFavorite
+      }"
+    >
+      <i
+        class="fa-bookmark btn-icon text-xl"
+        [ngClass]="{
+          fas: postSelected?.isFavorite,
+          far: !postSelected?.isFavorite
+        }"
+        [ngStyle]="{
+          transform: postSelected?.isFavAnimating ? 'scale(1.2)' : 'scale(1)'
+        }"
+      ></i>
+      <span *ngIf="postSelected?.numeroFavoritos > 0" class="small-medium">
+        {{ postSelected?.numeroFavoritos | formatNumber }}
+      </span>
+    </button>
+    </div>
+
+    <app-comments [postId]="postSelected?.id"></app-comments>
+  </div>
+</div>
