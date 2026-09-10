@@ -32,6 +32,17 @@
               Marcar todas como lidas
             </button>
           </div>
+          <div class="p-3 border-b border-gray-700">
+            <button
+              *ngIf="!pushAtivo"
+              type="button"
+              class="text-sm text-primary-500"
+              (click)="ativarPush()"
+            >
+              Ativar push neste dispositivo
+            </button>
+            <span *ngIf="pushMsg" class="text-xs text-gray-400 block mt-1">{{ pushMsg }}</span>
+          </div>
           <div *ngIf="!notificacoes?.length" class="p-4 text-gray-500 text-sm">
             Nenhuma notificação.
           </div>

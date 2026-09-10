@@ -2,7 +2,7 @@ import { Component, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Subject, interval, takeUntil } from 'rxjs';
 import { TokenService } from '../../services/token/token.service';
-import { NotificacoesService, UsuariosService } from '../../services/services';
+import { NotificacoesService, PushService, UsuariosService } from '../../services/services';
 import { NotificacaoResponseDto } from '../../services/models';
 import { UsuarioSummaryDto } from '../../services/models';
 import { ActivatedRoute, RouterLink } from '@angular/router';
@@ -20,6 +20,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
     private tokenService: TokenService,
     private usuarioService: UsuariosService,
     private notificacoesService: NotificacoesService,
+    private pushService: PushService,
     private route: ActivatedRoute,
 
   ) {}
@@ -28,6 +29,8 @@ export class HeaderComponent implements OnInit, OnDestroy {
   naoLidas = 0;
   notificacoes: NotificacaoResponseDto[] = [];
   sinoAberto = false;
+  pushAtivo = false;
+  pushMsg: string | null = null;
 
   private __fotoPerfil: string | undefined;
   getFotoPerfil(): string {
@@ -98,18 +101,31 @@ carregarNotificacoes(): void {
     });
 }
 
-marcarTodasComoLidas(): void {
-  this.notificacoesService
-    .marcarTodasComoVisualizadas()
-    .pipe(takeUntil(this.destroy$))
-    .subscribe({
-      next: () => {
-        this.naoLidas = 0;
-        this.notificacoes = this.notificacoes.map((n) => ({ ...n, lida: true }));
-      },
-      error: () => {},
-    });
-}
+  marcarTodasComoLidas(): void {
+    this.notificacoesService
+      .marcarTodasComoVisualizadas()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: () => {
+          this.naoLidas = 0;
+          this.notificacoes = this.notificacoes.map((n) => ({ ...n, lida: true }));
+        },
+        error: () => {},
+      });
+  }
+
+  ativarPush(): void {
+    this.pushMsg = null;
+    this.pushService
+      .ativarNesteDispositivo()
+      .then(() => {
+        this.pushAtivo = true;
+        this.pushMsg = 'Push ativado neste dispositivo.';
+      })
+      .catch(() => {
+        this.pushMsg = 'Não foi possível ativar o push.';
+      });
+  }
 
 marcarComoLida(notificacao: NotificacaoResponseDto): void {
   if (!notificacao.id || notificacao.lida) {

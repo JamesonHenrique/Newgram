@@ -23,8 +23,13 @@
             <h1 class="h2-bold">{{ userProfile?.nome }}</h1>
             <i
               class="fas fa-check-circle verified-badge"
-              *ngIf="ifVerified()"
+              *ngIf="userProfile?.verificado"
               title="Conta verificada"
+            ></i>
+            <i
+              class="fas fa-lock text-gray-500"
+              *ngIf="userProfile?.privado"
+              title="Conta privada"
             ></i>
             <button (click)="openEditProfileModal()" *ngIf="isPerfilDoUsuarioLogado" class="message-btn">
               <i class="fas fa-user-edit"></i>
@@ -34,9 +39,42 @@
 
           <p class="profile-username">&#64;{{ userProfile?.username }}</p>
 
+          <div
+            *ngIf="isPerfilDoUsuarioLogado && userProfile && userProfile.emailVerificado === false"
+            class="mt-2 p-3 bg-yellow-900/20 border border-yellow-700 rounded-lg text-sm"
+          >
+            <span>E-mail não verificado.</span>
+            <button type="button" class="text-primary-500 ml-2" (click)="reenviarVerificacaoEmail()">
+              Reenviar link
+            </button>
+          </div>
+
           <p class="profile-bio">
             {{ userProfile?.bio }}
           </p>
+
+          <div
+            *ngIf="!isPerfilDoUsuarioLogado && userProfile?.chavePix"
+            class="mt-2"
+          >
+            <button type="button" class="follow-btn" (click)="copiarPix($event)">
+              Apoiar com Pix
+            </button>
+          </div>
+
+          <div
+            *ngIf="isPerfilDoUsuarioLogado && analytics"
+            class="mt-3 p-3 bg-gray-800 rounded-lg"
+            id="analyticsSection"
+          >
+            <h3 class="font-semibold text-sm mb-2">Painel do criador (7d/30d)</h3>
+            <div class="flex flex-wrap gap-4 text-sm">
+              <span>Views 7d: <strong>{{ analytics.views7d }}</strong></span>
+              <span>Views 30d: <strong>{{ analytics.views30d }}</strong></span>
+              <span>Alcance 7d: <strong>{{ analytics.alcance7d }}</strong></span>
+              <span>Seguidores: <strong>{{ analytics.seguidores }}</strong></span>
+            </div>
+          </div>
 
           <div class="profile-stats">
             <div class="stat-item">
@@ -165,7 +203,7 @@
             *ngFor="let solicitacao of solicitacoes"
           >
             <span class="font-semibold">{{ solicitacao?.seguidorNome || solicitacao?.seguidorUsername }}</span>
-            <span class="text-gray-500">@{{ solicitacao?.seguidorUsername }}</span>
+            <span class="text-gray-500">&#64;{{ solicitacao?.seguidorUsername }}</span>
             <button type="button" class="follow-btn" (click)="aceitarSolicitacao(solicitacao, $event)">
               Aceitar
             </button>
@@ -258,6 +296,9 @@
     <app-story-modal
     [isOpen]="isStoryModalOpen"
     [storyImages]="getStoryImages(currentStory)"
+    [storyIds]="getStoryIds(currentStory)"
+    [autorId]="userProfile?.id ?? null"
+    [viewerId]="tokenService.userId"
     [storyTitle]="currentStory?.nome || 'Stories'"
     [storyAvatar]="getFotoPerfil(userProfile)"
     (close)="closeStoryModal()"

@@ -65,6 +65,26 @@ export interface UsuarioResponseDto {
   privado?: boolean;
 
   /**
+   * Selo de verificação
+   */
+  verificado?: boolean;
+
+  /**
+   * E-mail verificado
+   */
+  emailVerificado?: boolean;
+
+  /**
+   * Chave Pix para gorjetas
+   */
+  chavePix?: string;
+
+  /**
+   * Tipo da conta
+   */
+  tipoConta?: 'PESSOAL' | 'CRIADOR' | 'NEGOCIOS';
+
+  /**
    * Nome de usuário único
    */
   username?: string;

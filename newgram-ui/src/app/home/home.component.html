@@ -4,6 +4,46 @@
     #feedContainer
   >
     <h1 class="h1-bold max-w-3xl mx-auto mb-4 mr-1">Feed</h1>
+
+    <div class="max-w-3xl mx-auto mr-1 mb-4">
+      <div class="flex gap-3 overflow-x-auto pb-2" id="notesStrip">
+        <div class="flex flex-col items-center flex-shrink-0 w-16">
+          <button
+            type="button"
+            (click)="mostrarEditorNota = !mostrarEditorNota"
+            class="w-14 h-14 rounded-full bg-gray-700 flex items-center justify-center text-xl"
+            title="Sua nota"
+          >
+            +
+          </button>
+          <span class="tiny-medium text-center">Sua nota</span>
+        </div>
+        <div
+          *ngFor="let nota of notas"
+          class="flex flex-col items-center flex-shrink-0 w-16"
+          [title]="nota.nota || ''"
+        >
+          <div class="w-14 h-14 rounded-full bg-gray-700 flex items-center justify-center text-xs p-1 text-center overflow-hidden">
+            {{ (nota.nota || '').slice(0, 24) }}
+          </div>
+          <span class="tiny-medium text-center truncate w-full">{{ nota.username }}</span>
+        </div>
+      </div>
+      <div *ngIf="mostrarEditorNota" class="flex gap-2 mt-2">
+        <input
+          type="text"
+          [(ngModel)]="textoNota"
+          maxlength="60"
+          placeholder="Compartilhe uma nota (máx. 60)..."
+          class="flex-1 p-2 bg-gray-800 border border-gray-700 rounded text-sm"
+          (keyup.enter)="salvarNota()"
+        />
+        <button type="button" class="btn btn-primary text-sm" (click)="salvarNota()">
+          Publicar
+        </button>
+      </div>
+    </div>
+
     <div class="flex flex-col max-w-3xl mx-auto mr-1 animate-fadeIn">
       <div class="post-list">
         <article

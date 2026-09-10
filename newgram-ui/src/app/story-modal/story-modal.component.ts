@@ -1,28 +1,88 @@
 import { CommonModule } from '@angular/common';
-import { Component, EventEmitter, Input, OnChanges, Output, SimpleChanges } from '@angular/core';
+import { Component, EventEmitter, Input, OnChanges, OnDestroy, Output, SimpleChanges } from '@angular/core';
+import { FormsModule } from '@angular/forms';
+import { Subject, switchMap, takeUntil } from 'rxjs';
+import { ConversasService } from '../services/services';
 
 @Component({
   selector: 'app-story-modal',
-  imports: [CommonModule],
+  imports: [CommonModule, FormsModule],
   templateUrl: './story-modal.component.html',
   styleUrl: './story-modal.component.css'
 })
-export class StoryModalComponent implements OnChanges {
+export class StoryModalComponent implements OnChanges, OnDestroy {
   @Input() isOpen = false;
   @Input() storyTitle = '';
   @Input() storyAvatar = '';
   @Input() storyImages: string[] = [];
+  @Input() storyIds: number[] = [];
+  @Input() autorId: number | null = null;
+  @Input() viewerId: number | null = null;
 
   @Output() close = new EventEmitter<void>();
+
+  private destroy$ = new Subject<void>();
+  respostaTexto = '';
+  enviandoResposta = false;
+  reacoes = ['❤️', '😂', '😮', '😢', '👏', '🔥'];
 
   currentImageIndex = 0;
   progressValue = 0;
   private progressInterval: any;
-  private readonly STORY_DURATION = 5000; 
+  private readonly STORY_DURATION = 5000;
   private animationFrameId: number | null = null;
   private lastTimestamp: number = 0;
-  private pauseStartTime: number = 0;
+  private pauseStartTime = 0;
   private remainingTime: number = this.STORY_DURATION;
+
+  constructor(private conversasService: ConversasService) {}
+
+  /** Resposta/reação só para stories de outro usuário com IDs conhecidos. */
+  get podeInteragir(): boolean {
+    return !!this.autorId && this.autorId !== this.viewerId;
+  }
+
+  private storyAtualId(): number | null {
+    if (this.storyIds?.length) {
+      return this.storyIds[Math.min(this.currentImageIndex, this.storyIds.length - 1)] ?? null;
+    }
+    return null;
+  }
+
+  enviarViaDm(texto: string): void {
+    const conteudo = texto.trim();
+    if (!conteudo || !this.autorId || this.enviandoResposta) {
+      return;
+    }
+    this.enviandoResposta = true;
+    const id = this.storyAtualId();
+    const mensagem = id ? `${conteudo} (story #${id})` : conteudo;
+    this.conversasService
+      .iniciarConversa({ usuarioId: this.autorId })
+      .pipe(
+        switchMap((conversa) =>
+          this.conversasService.enviarMensagem({ id: conversa.id as number, body: { texto: mensagem } })
+        ),
+        takeUntil(this.destroy$)
+      )
+      .subscribe({
+        next: () => {
+          this.respostaTexto = '';
+          this.enviandoResposta = false;
+        },
+        error: () => {
+          this.enviandoResposta = false;
+        },
+      });
+  }
+
+  enviarResposta(): void {
+    this.enviarViaDm(this.respostaTexto);
+  }
+
+  enviarReacao(emoji: string): void {
+    this.enviarViaDm(emoji);
+  }
 
   ngOnChanges(changes: SimpleChanges) {
     if (changes['isOpen'] && changes['isOpen'].currentValue) {
@@ -34,6 +94,8 @@ export class StoryModalComponent implements OnChanges {
   }
 
   ngOnDestroy() {
+    this.destroy$.next();
+    this.destroy$.complete();
     this.clearTimers();
   }
 

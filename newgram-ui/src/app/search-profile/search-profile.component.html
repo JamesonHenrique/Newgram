@@ -13,13 +13,71 @@
       <input
         type="text"
         class="search-input w-full py-2 px-4 pl-10 text-sm md:text-base rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-        placeholder="Pesquisar pessoas por nome ou @username"
+        placeholder="Pesquisar pessoas, posts e #hashtags"
         id="searchInput"
         [(ngModel)]="searchProfiles"
         (ngModelChange)="searchSubject.next($event)"
         (keyup)="findAllUsuarios()"
       />
     </div>
+
+    <div *ngIf="pesquisando" class="flex gap-2 mb-4" id="abasBusca">
+      <button
+        type="button"
+        (click)="trocarAba('pessoas')"
+        [class.follow-btn]="aba !== 'pessoas'"
+        [class.following-btn]="aba === 'pessoas'"
+      >
+        Pessoas
+      </button>
+      <button
+        type="button"
+        (click)="trocarAba('posts')"
+        [class.follow-btn]="aba !== 'posts'"
+        [class.following-btn]="aba === 'posts'"
+      >
+        Posts
+      </button>
+      <button
+        type="button"
+        (click)="trocarAba('tags')"
+        [class.follow-btn]="aba !== 'tags'"
+        [class.following-btn]="aba === 'tags'"
+      >
+        Tags
+      </button>
+    </div>
+
+    <div *ngIf="pesquisando && aba === 'posts'" class="mb-6">
+      <div *ngIf="!postsEncontrados?.length" class="text-gray-500 text-sm">
+        Nenhum post encontrado.
+      </div>
+      <div class="grid grid-cols-3 gap-2">
+        <img
+          *ngFor="let post of postsEncontrados"
+          [src]="getImagemPost(post.imagem)"
+          (error)="post.imagem = '/icons/post-placeholder.svg'"
+          alt="Post"
+          class="w-full aspect-square object-cover rounded"
+        />
+      </div>
+    </div>
+
+    <div *ngIf="pesquisando && aba === 'tags'" class="mb-6">
+      <div *ngIf="!tagsEncontradas?.length" class="text-gray-500 text-sm">
+        Nenhuma hashtag encontrada.
+      </div>
+      <div class="flex flex-wrap gap-2">
+        <span
+          *ngFor="let tag of tagsEncontradas"
+          class="px-3 py-1 bg-gray-800 rounded-full text-sm"
+        >
+          #{{ tag.nome }}
+        </span>
+      </div>
+    </div>
+
+    <div *ngIf="!pesquisando || aba === 'pessoas'">
 
 
 
@@ -199,5 +257,6 @@
     >
       Carregar Mais
     </button>
+    </div><!-- fim aba pessoas -->
   </div>
 </div>

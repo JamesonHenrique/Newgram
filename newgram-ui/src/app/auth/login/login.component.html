@@ -103,6 +103,28 @@
           <button type="submit" class="btn btn-primary"  [disabled]="authForm.get('email')?.invalid || authForm.get('senha')?.invalid">
             Entrar
           </button>
+
+          <div *ngIf="etapaTwoFactor" class="form-group mt-4">
+            <label for="codigoTwoFactor">Código do app autenticador</label>
+            <input
+              id="codigoTwoFactor"
+              type="text"
+              inputmode="numeric"
+              maxlength="6"
+              [(ngModel)]="codigoTwoFactor"
+              [ngModelOptions]="{ standalone: true }"
+              placeholder="123456"
+              (keyup.enter)="confirmarTwoFactor()"
+            />
+            <button
+              type="button"
+              class="btn btn-primary mt-2"
+              [disabled]="codigoTwoFactor.trim().length !== 6 || isLoading"
+              (click)="confirmarTwoFactor()"
+            >
+              Confirmar código
+            </button>
+          </div>
        
 
           <div class="signup-link">

@@ -67,6 +67,80 @@
           </label>
         </div>
 
+        <div class="form-group">
+          <label>Autenticação em dois fatores (2FA)</label>
+          <div *ngIf="!twoFactorAtivo && !segredoTwoFactor">
+            <button type="button" class="cancel-btn" (click)="iniciarAtivacaoTwoFactor()">
+              Ativar 2FA
+            </button>
+          </div>
+          <div *ngIf="segredoTwoFactor && !twoFactorAtivo" class="space-y-2 mt-2">
+            <p class="text-sm">Escaneie no app autenticador ou digite o segredo:</p>
+            <code class="block p-2 bg-gray-700 rounded text-sm break-all">{{ segredoTwoFactor }}</code>
+            <input
+              type="text"
+              [(ngModel)]="codigoTwoFactor"
+              [ngModelOptions]="{ standalone: true }"
+              maxlength="6"
+              placeholder="Código de 6 dígitos"
+              class="w-full p-2 bg-gray-700 border border-gray-600 rounded text-sm"
+            />
+            <button type="button" class="save-btn" (click)="confirmarAtivacaoTwoFactor()">
+              Confirmar e ativar
+            </button>
+          </div>
+          <div *ngIf="twoFactorAtivo" class="mt-2">
+            <span class="text-sm text-green-500">2FA ativo.</span>
+            <button type="button" class="cancel-btn ml-2" (click)="desativarTwoFactor()">
+              Desativar
+            </button>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Conta de criador</label>
+          <input
+            type="text"
+            [(ngModel)]="chavePix"
+            [ngModelOptions]="{ standalone: true }"
+            placeholder="Chave Pix para gorjetas (opcional)"
+            class="w-full p-2 bg-gray-700 border border-gray-600 rounded text-sm"
+          />
+          <select
+            [(ngModel)]="tipoConta"
+            [ngModelOptions]="{ standalone: true }"
+            class="w-full p-2 mt-2 bg-gray-700 border border-gray-600 rounded text-sm"
+          >
+            <option value="PESSOAL">Pessoal</option>
+            <option value="CRIADOR">Criador</option>
+            <option value="NEGOCIOS">Negócios</option>
+          </select>
+          <button type="button" class="cancel-btn mt-2" (click)="salvarPixETipoConta()">
+            Salvar Pix e tipo de conta
+          </button>
+        </div>
+
+        <div class="form-group">
+          <label>Verificação e dados (LGPD)</label>
+          <div class="flex flex-wrap gap-2 mt-1">
+            <button type="button" class="cancel-btn" (click)="solicitarVerificacao()">
+              Solicitar selo de verificação
+            </button>
+            <button type="button" class="cancel-btn" (click)="exportarDados()">
+              Exportar meus dados
+            </button>
+            <button
+              type="button"
+              class="cancel-btn"
+              (click)="excluirConta()"
+              [class.text-red-500]="confirmarExclusao"
+            >
+              {{ confirmarExclusao ? 'Clique de novo para confirmar a exclusão' : 'Excluir minha conta' }}
+            </button>
+          </div>
+          <p *ngIf="sucessoMsg" class="text-sm text-green-500 mt-2">{{ sucessoMsg }}</p>
+        </div>
+
         <div class="form-actions">
           <button type="button"
                   class="cancel-btn"

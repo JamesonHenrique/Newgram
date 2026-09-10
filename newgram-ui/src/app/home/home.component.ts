@@ -1,4 +1,5 @@
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { ChangeDetectorRef, Component, ElementRef, ViewChild } from '@angular/core';
 import { Router } from '@angular/router';
 import { PostDetailsComponent } from '../post-details/post-details.component';
@@ -7,6 +8,7 @@ import { FormatNumberPipe } from '../services/pipes/format-number.pipe';
 import {
   PostsService,
   SeguidoresService,
+  StatusService,
   UsuariosService,
 } from '../services/services';
 import { Pageable } from '../services/models';
@@ -18,6 +20,7 @@ import { takeUntil, catchError, finalize, tap, map } from 'rxjs/operators';
   selector: 'app-home',
   imports: [
     CommonModule,
+    FormsModule,
     PostDetailsComponent,
     FormatNumberPipe,
     DateFormatPipe,
@@ -32,6 +35,10 @@ export class HomeComponent {
   posts: any[] = [];
   topCreators: any[] = [];
   usuarioLogado: any | null = null;
+
+  notas: any[] = [];
+  mostrarEditorNota = false;
+  textoNota = '';
 
   postSelected: any | null = null;
   showDetail = false;
@@ -56,18 +63,45 @@ export class HomeComponent {
     private usuariosService: UsuariosService,
     private tokenService: TokenService,
     private router: Router,
-    private seguidorService: SeguidoresService
+    private seguidorService: SeguidoresService,
+    private statusService: StatusService
   ) {}
 
   ngOnInit(): void {
     this.title.setTitle('Feed');
     this.loadInitialData();
+    this.carregarNotas();
     setTimeout(() => this.setupScrollListener(), 1000);
   }
   @ViewChild('feedContainer') feedContainer!: ElementRef;
   ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
+  }
+
+  carregarNotas(): void {
+    this.statusService
+      .listarNotas()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (notas) => (this.notas = notas || []),
+        error: () => (this.notas = []),
+      });
+  }
+
+  salvarNota(): void {
+    const nota = this.textoNota.trim();
+    this.statusService
+      .definirNota({ body: { nota: nota || undefined } })
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: () => {
+          this.textoNota = '';
+          this.mostrarEditorNota = false;
+          this.carregarNotas();
+        },
+        error: () => {},
+      });
   }
 
   private loadInitialData(): void {

@@ -1,8 +1,9 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { catchError, finalize, of, tap } from 'rxjs';
-import { UsuariosService } from '../services/services';
+import { AutenticacaoService, UsuariosService } from '../services/services';
 import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { CommonModule } from '@angular/common';
+import { Router } from '@angular/router';
 import { UsuarioUpdateDto } from '../services/models';
 import { TokenService } from '../services/token/token.service';
 
@@ -26,7 +27,24 @@ export class EditProfileModalComponent {
   contaPrivada = false;
   errorMessage: string | null = null;
   errorMsg: Array<string> = [];
-  constructor(private fb: FormBuilder, private usuariosService: UsuariosService, private tokenService: TokenService) {}
+  sucessoMsg: string | null = null;
+
+  segredoTwoFactor: string | null = null;
+  uriTwoFactor: string | null = null;
+  codigoTwoFactor = '';
+  twoFactorAtivo = false;
+
+  chavePix = '';
+  tipoConta: 'PESSOAL' | 'CRIADOR' | 'NEGOCIOS' = 'PESSOAL';
+
+  confirmarExclusao = false;
+  constructor(
+    private fb: FormBuilder,
+    private usuariosService: UsuariosService,
+    private autenticacaoService: AutenticacaoService,
+    private tokenService: TokenService,
+    private router: Router
+  ) {}
   ngOnInit(): void {
     this.editForm = this.fb.group(
       {
@@ -89,6 +107,8 @@ export class EditProfileModalComponent {
         username: this.userProfile?.username
       });
       this.contaPrivada = !!this.userProfile?.privado;
+      this.chavePix = this.userProfile?.chavePix || '';
+      this.tipoConta = this.userProfile?.tipoConta || 'PESSOAL';
       this.newProfileImage = null;
       this.selectedFile = null;
     }
@@ -128,5 +148,97 @@ export class EditProfileModalComponent {
 
   closeModal() {
     this.close.emit();
+  }
+
+  iniciarAtivacaoTwoFactor(): void {
+    this.errorMessage = null;
+    this.autenticacaoService.ativarTwoFactor().subscribe({
+      next: (res) => {
+        this.segredoTwoFactor = res?.['segredo'] ?? null;
+        this.uriTwoFactor = res?.['uri'] ?? null;
+      },
+      error: () => (this.errorMessage = 'Não foi possível iniciar o 2FA.'),
+    });
+  }
+
+  confirmarAtivacaoTwoFactor(): void {
+    const codigo = this.codigoTwoFactor.trim();
+    if (!codigo) {
+      return;
+    }
+    this.autenticacaoService.confirmarTwoFactor({ body: { codigo } }).subscribe({
+      next: () => {
+        this.twoFactorAtivo = true;
+        this.segredoTwoFactor = null;
+        this.codigoTwoFactor = '';
+        this.sucessoMsg = 'Autenticação em dois fatores ativada.';
+      },
+      error: () => (this.errorMessage = 'Código inválido.'),
+    });
+  }
+
+  desativarTwoFactor(): void {
+    this.autenticacaoService.desativarTwoFactor().subscribe({
+      next: () => {
+        this.twoFactorAtivo = false;
+        this.sucessoMsg = 'Autenticação em dois fatores desativada.';
+      },
+      error: () => (this.errorMessage = 'Não foi possível desativar o 2FA.'),
+    });
+  }
+
+  solicitarVerificacao(): void {
+    this.usuariosService.solicitarVerificacao().subscribe({
+      next: () => (this.sucessoMsg = 'Solicitação de verificação enviada.'),
+      error: () => (this.errorMessage = 'Não foi possível solicitar. Talvez já enviada.'),
+    });
+  }
+
+  salvarPixETipoConta(): void {
+    this.usuariosService
+      .atualizarChavePix({ body: { chavePix: this.chavePix || undefined } })
+      .subscribe({
+        next: () => {
+          this.usuariosService
+            .atualizarTipoConta({ tipoConta: this.tipoConta })
+            .subscribe({
+              next: () => {
+                this.sucessoMsg = 'Pix e tipo de conta atualizados.';
+                this.save.emit();
+              },
+              error: () => (this.errorMessage = 'Não foi possível salvar.'),
+            });
+        },
+        error: () => (this.errorMessage = 'Não foi possível salvar a chave Pix.'),
+      });
+  }
+
+  exportarDados(): void {
+    this.usuariosService.exportarDados().subscribe({
+      next: (dados) => {
+        const blob = new Blob([JSON.stringify(dados, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = 'meus-dados-newgram.json';
+        link.click();
+        URL.revokeObjectURL(url);
+      },
+      error: () => (this.errorMessage = 'Não foi possível exportar os dados.'),
+    });
+  }
+
+  excluirConta(): void {
+    if (!this.confirmarExclusao) {
+      this.confirmarExclusao = true;
+      return;
+    }
+    this.usuariosService.excluirConta().subscribe({
+      next: () => {
+        this.tokenService.logout();
+        this.router.navigate(['/login']);
+      },
+      error: () => (this.errorMessage = 'Não foi possível excluir a conta.'),
+    });
   }
 }

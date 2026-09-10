@@ -41,6 +41,11 @@ export interface UsuarioSummaryDto {
   privado?: boolean;
 
   /**
+   * Selo de verificação
+   */
+  verificado?: boolean;
+
+  /**
    * Nome de usuário único
    */
   username?: string;

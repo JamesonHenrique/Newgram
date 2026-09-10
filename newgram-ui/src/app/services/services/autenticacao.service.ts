@@ -13,6 +13,12 @@ import { StrictHttpResponse } from '../strict-http-response';
 
 import { login } from '../fn/autenticacao/login';
 import { Login$Params } from '../fn/autenticacao/login';
+import { ativarTwoFactor } from '../fn/autenticacao/verificar-2fa';
+import { confirmarTwoFactor, ConfirmarTwoFactor$Params } from '../fn/autenticacao/verificar-2fa';
+import { desativarTwoFactor } from '../fn/autenticacao/verificar-2fa';
+import { reenviarVerificacao } from '../fn/autenticacao/verificar-2fa';
+import { verificarEmail, VerificarEmail$Params } from '../fn/autenticacao/verificar-2fa';
+import { verificarTwoFactor, VerificarTwoFactor$Params } from '../fn/autenticacao/verificar-2fa';
 import { recuperarSenha, RecuperarSenha$Params, redefinirSenha, RedefinirSenha$Params } from '../fn/autenticacao/recuperar-senha';
 import { refreshToken } from '../fn/autenticacao/refresh-token';
 import { RefreshToken$Params } from '../fn/autenticacao/refresh-token';
@@ -192,6 +198,212 @@ export class AutenticacaoService extends BaseService {
    */
   redefinirSenha(params: RedefinirSenha$Params, context?: HttpContext): Observable<void> {
     return this.redefinirSenha$Response(params, context).pipe(
+      map((r: StrictHttpResponse<void>): void => r.body)
+    );
+  }
+
+  /** Path part for operation `verificarTwoFactor()` */
+  static readonly VerificarTwoFactorPath = '/auth/2fa/verificar';
+
+  /**
+   * Concluir login com 2FA.
+   *
+   * Segunda etapa: código do app autenticador
+   *
+   * This method provides access to the full `HttpResponse`, allowing access to response headers.
+   * To access only the response body, use `verificarTwoFactor()` instead.
+   *
+   * This method sends `application/json` and handles request body of type `application/json`.
+   */
+  verificarTwoFactor$Response(params: VerificarTwoFactor$Params, context?: HttpContext): Observable<StrictHttpResponse<TokenDto>> {
+    return verificarTwoFactor(this.http, this.rootUrl, params, context);
+  }
+
+  /**
+   * Concluir login com 2FA.
+   *
+   * Segunda etapa: código do app autenticador
+   *
+   * This method provides access only to the response body.
+   * To access the full response (for headers, for example), `verificarTwoFactor$Response()` instead.
+   *
+   * This method sends `application/json` and handles request body of type `application/json`.
+   */
+  verificarTwoFactor(params: VerificarTwoFactor$Params, context?: HttpContext): Observable<TokenDto> {
+    return this.verificarTwoFactor$Response(params, context).pipe(
+      map((r: StrictHttpResponse<TokenDto>): TokenDto => r.body)
+    );
+  }
+
+  /** Path part for operation `ativarTwoFactor()` */
+  static readonly AtivarTwoFactorPath = '/auth/2fa/ativar';
+
+  /**
+   * Iniciar ativação do 2FA.
+   *
+   * Retorna segredo + URI para o app autenticador
+   *
+   * This method provides access to the full `HttpResponse`, allowing access to response headers.
+   * To access only the response body, use `ativarTwoFactor()` instead.
+   *
+   * This method doesn't expect any request body.
+   */
+  ativarTwoFactor$Response(context?: HttpContext): Observable<StrictHttpResponse<{
+[key: string]: string;
+}>> {
+    return ativarTwoFactor(this.http, this.rootUrl, context);
+  }
+
+  /**
+   * Iniciar ativação do 2FA.
+   *
+   * Retorna segredo + URI para o app autenticador
+   *
+   * This method provides access only to the response body.
+   * To access the full response (for headers, for example), `ativarTwoFactor$Response()` instead.
+   *
+   * This method doesn't expect any request body.
+   */
+  ativarTwoFactor(context?: HttpContext): Observable<{
+[key: string]: string;
+}> {
+    return this.ativarTwoFactor$Response(context).pipe(
+      map((r: StrictHttpResponse<{
+[key: string]: string;
+}>): {
+[key: string]: string;
+} => r.body)
+    );
+  }
+
+  /** Path part for operation `confirmarTwoFactor()` */
+  static readonly ConfirmarTwoFactorPath = '/auth/2fa/confirmar';
+
+  /**
+   * Confirmar ativação do 2FA.
+   *
+   * Valida o código e ativa
+   *
+   * This method provides access to the full `HttpResponse`, allowing access to response headers.
+   * To access only the response body, use `confirmarTwoFactor()` instead.
+   *
+   * This method sends `application/json` and handles request body of type `application/json`.
+   */
+  confirmarTwoFactor$Response(params: ConfirmarTwoFactor$Params, context?: HttpContext): Observable<StrictHttpResponse<void>> {
+    return confirmarTwoFactor(this.http, this.rootUrl, params, context);
+  }
+
+  /**
+   * Confirmar ativação do 2FA.
+   *
+   * Valida o código e ativa
+   *
+   * This method provides access only to the response body.
+   * To access the full response (for headers, for example), `confirmarTwoFactor$Response()` instead.
+   *
+   * This method sends `application/json` and handles request body of type `application/json`.
+   */
+  confirmarTwoFactor(params: ConfirmarTwoFactor$Params, context?: HttpContext): Observable<void> {
+    return this.confirmarTwoFactor$Response(params, context).pipe(
+      map((r: StrictHttpResponse<void>): void => r.body)
+    );
+  }
+
+  /** Path part for operation `desativarTwoFactor()` */
+  static readonly DesativarTwoFactorPath = '/auth/2fa';
+
+  /**
+   * Desativar 2FA.
+   *
+   * Remove a autenticação em dois fatores
+   *
+   * This method provides access to the full `HttpResponse`, allowing access to response headers.
+   * To access only the response body, use `desativarTwoFactor()` instead.
+   *
+   * This method doesn't expect any request body.
+   */
+  desativarTwoFactor$Response(context?: HttpContext): Observable<StrictHttpResponse<void>> {
+    return desativarTwoFactor(this.http, this.rootUrl, context);
+  }
+
+  /**
+   * Desativar 2FA.
+   *
+   * Remove a autenticação em dois fatores
+   *
+   * This method provides access only to the response body.
+   * To access the full response (for headers, for example), `desativarTwoFactor$Response()` instead.
+   *
+   * This method doesn't expect any request body.
+   */
+  desativarTwoFactor(context?: HttpContext): Observable<void> {
+    return this.desativarTwoFactor$Response(context).pipe(
+      map((r: StrictHttpResponse<void>): void => r.body)
+    );
+  }
+
+  /** Path part for operation `reenviarVerificacao()` */
+  static readonly ReenviarVerificacaoPath = '/auth/verificar-email/reenviar';
+
+  /**
+   * Reenviar verificação.
+   *
+   * Novo link de 24h para o autenticado
+   *
+   * This method provides access to the full `HttpResponse`, allowing access to response headers.
+   * To access only the response body, use `reenviarVerificacao()` instead.
+   *
+   * This method doesn't expect any request body.
+   */
+  reenviarVerificacao$Response(context?: HttpContext): Observable<StrictHttpResponse<void>> {
+    return reenviarVerificacao(this.http, this.rootUrl, context);
+  }
+
+  /**
+   * Reenviar verificação.
+   *
+   * Novo link de 24h para o autenticado
+   *
+   * This method provides access only to the response body.
+   * To access the full response (for headers, for example), `reenviarVerificacao$Response()` instead.
+   *
+   * This method doesn't expect any request body.
+   */
+  reenviarVerificacao(context?: HttpContext): Observable<void> {
+    return this.reenviarVerificacao$Response(context).pipe(
+      map((r: StrictHttpResponse<void>): void => r.body)
+    );
+  }
+
+  /** Path part for operation `verificarEmail()` */
+  static readonly VerificarEmailPath = '/auth/verificar-email';
+
+  /**
+   * Verificar e-mail.
+   *
+   * Confirma o token single-use de 24h
+   *
+   * This method provides access to the full `HttpResponse`, allowing access to response headers.
+   * To access only the response body, use `verificarEmail()` instead.
+   *
+   * This method doesn't expect any request body.
+   */
+  verificarEmail$Response(params: VerificarEmail$Params, context?: HttpContext): Observable<StrictHttpResponse<void>> {
+    return verificarEmail(this.http, this.rootUrl, params, context);
+  }
+
+  /**
+   * Verificar e-mail.
+   *
+   * Confirma o token single-use de 24h
+   *
+   * This method provides access only to the response body.
+   * To access the full response (for headers, for example), `verificarEmail$Response()` instead.
+   *
+   * This method doesn't expect any request body.
+   */
+  verificarEmail(params: VerificarEmail$Params, context?: HttpContext): Observable<void> {
+    return this.verificarEmail$Response(params, context).pipe(
       map((r: StrictHttpResponse<void>): void => r.body)
     );
   }

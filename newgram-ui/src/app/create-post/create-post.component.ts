@@ -205,15 +205,15 @@ export class CreatePostComponent {
     if (input.files && input.files[0]) {
       const file = input.files[0];
 
-      if (file.size > 10 * 1024 * 1024) {
+      if (file.size > 32 * 1024 * 1024) {
         alert(
-          'O arquivo é muito grande. Por favor, selecione uma imagem menor que 10MB.'
+          'O arquivo é muito grande. Por favor, selecione um arquivo menor que 32MB.'
         );
         return;
       }
 
-      if (!file.type.match('image.*')) {
-        alert('Por favor, selecione apenas imagens (JPG, PNG ou GIF).');
+      if (!file.type.match('image.*') && !file.type.match('video.*')) {
+        alert('Por favor, selecione apenas imagens ou vídeos (JPG, PNG, GIF, WEBP, MP4).');
         return;
       }
       this.selectedFoto = file;

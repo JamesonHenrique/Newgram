@@ -45,6 +45,66 @@
       <div class="post-detail-info">
         <p class="base-medium mb-3">{{ postSelected?.legenda }}</p>
         <p class="base-medium mb-3 text-principal">{{ postSelected?.tags }}</p>
+
+        <div *ngIf="postSelected?.enquete as enquete" class="poll-card mt-3 p-3 bg-gray-800 rounded-lg">
+          <p class="font-semibold text-sm mb-2">{{ enquete.pergunta }}</p>
+          <div *ngFor="let opcao of enquete.opcoes" class="mb-1">
+            <button
+              type="button"
+              class="w-full text-left text-sm p-2 rounded bg-gray-700 hover:bg-gray-600 disabled:opacity-70"
+              [disabled]="enquete.minhaOpcaoId || enquete.encerrada"
+              (click)="votarEnquete(enquete, opcao, $event)"
+            >
+              {{ opcao.texto }} — {{ opcao.percentual?.toFixed(0) }}% ({{ opcao.votos }})
+              <span *ngIf="enquete.minhaOpcaoId === opcao.id">✓</span>
+            </button>
+          </div>
+          <p class="text-xs text-gray-500 mt-1">
+            {{ enquete.totalVotos }} votos{{ enquete.encerrada ? ' · encerrada' : '' }}
+          </p>
+          <button
+            *ngIf="postPertenceAoUsuarioLogado"
+            type="button"
+            class="text-xs text-red-400 mt-1"
+            (click)="excluirEnquete(enquete, $event)"
+          >
+            Excluir enquete
+          </button>
+        </div>
+
+        <div *ngIf="postPertenceAoUsuarioLogado && !postSelected?.enquete" class="mt-3">
+          <button
+            *ngIf="!mostrarFormEnquete"
+            type="button"
+            class="text-sm text-primary-500"
+            (click)="mostrarFormEnquete = true"
+          >
+            + Adicionar enquete
+          </button>
+          <div *ngIf="mostrarFormEnquete" class="p-3 bg-gray-800 rounded-lg space-y-2">
+            <input
+              type="text"
+              [(ngModel)]="novaEnquetePergunta"
+              placeholder="Pergunta da enquete"
+              class="w-full p-2 bg-gray-700 border border-gray-600 rounded text-sm"
+            />
+            <input
+              type="text"
+              *ngFor="let op of novaEnqueteOpcoes; let i = index; trackBy: trackByIndex"
+              [(ngModel)]="novaEnqueteOpcoes[i]"
+              [placeholder]="'Opção ' + (i + 1)"
+              class="w-full p-2 bg-gray-700 border border-gray-600 rounded text-sm"
+            />
+            <div class="flex gap-2">
+              <button type="button" class="btn btn-primary text-sm" (click)="criarEnquete($event)">
+                Criar enquete
+              </button>
+              <button type="button" class="text-sm text-gray-400" (click)="mostrarFormEnquete = false">
+                Cancelar
+              </button>
+            </div>
+          </div>
+        </div>
         <div class="flex gap-2 flex-wrap mt-4"></div>
         <div class="flex-between mt-6">
           <div class="flex gap-2 items-center">

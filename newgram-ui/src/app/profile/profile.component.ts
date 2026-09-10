@@ -11,6 +11,7 @@ import { PostDetailsComponent } from '../post-details/post-details.component';
 import { CommonModule } from '@angular/common';
 import { FormatNumberPipe } from '../services/pipes/format-number.pipe';
 import {
+  AutenticacaoService,
   ConversasService,
   DestaquesService,
   ModeracaoService,
@@ -62,6 +63,7 @@ export class ProfileComponent {
 
   solicitacoes: any[] = [];
   totalSolicitacoes = 0;
+  analytics: any = null;
 
   posts: any[] = [];
   postSelected: any = null;
@@ -86,12 +88,13 @@ export class ProfileComponent {
     private usuariosService: UsuariosService,
     private route: ActivatedRoute,
     private postsService: PostsService,
-    private tokenService: TokenService,
+    protected tokenService: TokenService,
     private seguidorService: SeguidoresService,
     private destaqueService: DestaquesService,
     private storiesService: StoriesService,
     private moderacaoService: ModeracaoService,
     private conversasService: ConversasService,
+    private autenticacaoService: AutenticacaoService,
     private router: Router,
     private cdr: ChangeDetectorRef
   ) {}
@@ -137,6 +140,7 @@ export class ProfileComponent {
             this.findAllDestaquesByUsername(),
             this.findAllStoriesAtivosByUserId(),
             this.carregarSolicitacoes(),
+            this.carregarAnalytics(),
           ])
         ),
         takeUntil(this.destroy$),
@@ -148,6 +152,32 @@ export class ProfileComponent {
           this.error = 'Erro ao carregar perfil. Tente novamente mais tarde.';
         },
       });
+  }
+
+  /** Analytics só no próprio perfil (números da conta). */
+  private carregarAnalytics() {
+    if (!this.userProfile?.id || this.userProfile.id !== this.tokenService.userId) {
+      this.analytics = null;
+      return of(null);
+    }
+    return this.usuariosService.analytics().pipe(
+      tap((dados) => (this.analytics = dados)),
+      catchError(() => {
+        this.analytics = null;
+        return of(null);
+      })
+    );
+  }
+
+  copiarPix(event: Event): void {
+    event.stopPropagation();
+    const chave = this.userProfile?.chavePix;
+    if (!chave) {
+      return;
+    }
+    if (navigator?.clipboard) {
+      navigator.clipboard.writeText(chave).catch(() => {});
+    }
   }
 
   /** Solicitações pendentes só fazem sentido no próprio perfil. */
@@ -377,6 +407,24 @@ export class ProfileComponent {
     document.body.style.overflow = '';
   }
 
+  getStoryIds(storyData: any): number[] {
+    if (!storyData) return [];
+
+    if (storyData?.stories) {
+      return storyData.stories.map((story: any) => story.id).filter(Boolean);
+    }
+
+    if (Array.isArray(storyData)) {
+      return storyData.map((story: any) => story.id).filter(Boolean);
+    }
+
+    if (storyData?.id) {
+      return [storyData.id];
+    }
+
+    return [];
+  }
+
   getStoryImages(storyData: any): string[] {
     if (!storyData) return [];
 
@@ -486,8 +534,11 @@ export class ProfileComponent {
     imgElement.onerror = null;
   }
 
-  ifVerified(): boolean {
-    return this.userProfile?.numeroSeguidores > 100000;
+  reenviarVerificacaoEmail(): void {
+    this.autenticacaoService.reenviarVerificacao().subscribe({
+      next: () => {},
+      error: () => {},
+    });
   }
 
   toggleFollow(user: any, event: Event) {

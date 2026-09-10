@@ -2,7 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
 import { Title } from '@angular/platform-browser';
 import { FormatNumberPipe } from '../services/pipes/format-number.pipe';
-import { SeguidoresService, UsuariosService } from '../services/services';
+import { BuscarService, SeguidoresService, UsuariosService } from '../services/services';
 import { Pageable } from '../services/models';
 import { FormsModule } from '@angular/forms';
 import { Subject, Observable, of } from 'rxjs';
@@ -19,6 +19,9 @@ export class SearchProfileComponent {
   private destroy$ = new Subject<void>();
 
   searchProfiles = '';
+  aba: 'pessoas' | 'posts' | 'tags' = 'pessoas';
+  postsEncontrados: any[] = [];
+  tagsEncontradas: any[] = [];
   famousUsers: any = [];
   connectionUsers: any = [];
   randomUsers: any = [];
@@ -39,6 +42,7 @@ export class SearchProfileComponent {
   constructor(
     private title: Title,
     private usuariosService: UsuariosService,
+    private buscarService: BuscarService,
     private router: Router,
     private seguidorService: SeguidoresService
   ) {
@@ -136,6 +140,26 @@ export class SearchProfileComponent {
 
     const cachedResults = this.searchInCache(term);
     this.updateDisplayedUsers(cachedResults);
+
+    // Busca global (posts + hashtags) roda em paralelo e preenche as abas.
+    if (term.trim()) {
+      this.buscarService
+        .buscar({ q: term.trim(), pageable: { page: 0, size: 20, sort: [''] } })
+        .pipe(takeUntil(this.destroy$))
+        .subscribe({
+          next: (res) => {
+            this.postsEncontrados = (res.posts?.content as any[] | undefined) || [];
+            this.tagsEncontradas = (res.hashtags?.content as any[] | undefined) || [];
+          },
+          error: () => {
+            this.postsEncontrados = [];
+            this.tagsEncontradas = [];
+          },
+        });
+    } else {
+      this.postsEncontrados = [];
+      this.tagsEncontradas = [];
+    }
 
     return this.buscarTodosUsuariosPorTermo(term).pipe(
       tap((serverResults) => {
@@ -247,6 +271,17 @@ export class SearchProfileComponent {
 
   verPerfil(username: string): void {
     this.router.navigate(['/perfil', username]);
+  }
+
+  trocarAba(aba: 'pessoas' | 'posts' | 'tags'): void {
+    this.aba = aba;
+  }
+
+  getImagemPost(imagem: string | null | undefined): string {
+    if (!imagem || imagem.trim() === '') {
+      return '/icons/post-placeholder.svg';
+    }
+    return imagem;
   }
 
   carregarMais(tipoDeUsuario: string): void {

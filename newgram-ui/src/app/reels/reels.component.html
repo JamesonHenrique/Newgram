@@ -1,0 +1,38 @@
+<div class="reels-container">
+  <h1 class="h3-bold p-4">Reels</h1>
+
+  <div *ngIf="!reels?.length && !carregando" class="p-4 text-gray-500 text-sm">
+    Nenhum vídeo ainda. Publique um post com vídeo!
+  </div>
+
+  <div class="reel-item" *ngFor="let reel of reels" (click)="abrir(reel)">
+    <video
+      [src]="reel.imagem"
+      class="reel-video"
+      muted
+      loop
+      playsinline
+      preload="metadata"
+      (mouseenter)="$any($event.target).play()"
+      (mouseleave)="$any($event.target).pause()"
+    ></video>
+    <div class="reel-info">
+      <span class="font-semibold text-sm">&#64;{{ reel.autor?.username }}</span>
+      <span class="text-xs text-gray-400">{{ reel.legenda }}</span>
+    </div>
+  </div>
+
+  <div class="p-4 text-center">
+    <button
+      *ngIf="temMais"
+      type="button"
+      class="btn btn-primary"
+      (click)="carregar()"
+      [disabled]="carregando"
+    >
+      {{ carregando ? 'Carregando...' : 'Carregar mais' }}
+    </button>
+  </div>
+
+  <app-post-details [postSelected]="postSelected" (postSelectedChange)="postSelected = $event"></app-post-details>
+</div>

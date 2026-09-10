@@ -37,6 +37,10 @@ import { listarPostsPopulares } from '../fn/posts/listar-posts-populares';
 import { ListarPostsPopulares$Params } from '../fn/posts/listar-posts-populares';
 import { listarPostsPopularesSeguidores } from '../fn/posts/listar-posts-populares-seguidores';
 import { ListarPostsPopularesSeguidores$Params } from '../fn/posts/listar-posts-populares-seguidores';
+import { listarReels } from '../fn/posts/listar-reels';
+import { ListarReels$Params } from '../fn/posts/listar-reels';
+import { registrarVisualizacao } from '../fn/posts/registrar-visualizacao';
+import { RegistrarVisualizacao$Params } from '../fn/posts/registrar-visualizacao';
 import { listarPostsPorHashtag } from '../fn/posts/listar-posts-por-hashtag';
 import { ListarPostsPorHashtag$Params } from '../fn/posts/listar-posts-por-hashtag';
 import { listarPostsPorLocalizacao } from '../fn/posts/listar-posts-por-localizacao';
@@ -553,6 +557,72 @@ export class PostsService extends BaseService {
   listarColecoes(context?: HttpContext): Observable<Array<string>> {
     return this.listarColecoes$Response(context).pipe(
       map((r: StrictHttpResponse<Array<string>>): Array<string> => r.body)
+    );
+  }
+
+  /** Path part for operation `listarReels()` */
+  static readonly ListarReelsPath = '/posts/reels';
+
+  /**
+   * Listar reels.
+   *
+   * Posts em vídeo respeitando privacidade e bloqueios
+   *
+   * This method provides access to the full `HttpResponse`, allowing access to response headers.
+   * To access only the response body, use `listarReels()` instead.
+   *
+   * This method doesn't expect any request body.
+   */
+  listarReels$Response(params: ListarReels$Params, context?: HttpContext): Observable<StrictHttpResponse<Page>> {
+    return listarReels(this.http, this.rootUrl, params, context);
+  }
+
+  /**
+   * Listar reels.
+   *
+   * Posts em vídeo respeitando privacidade e bloqueios
+   *
+   * This method provides access only to the response body.
+   * To access the full response (for headers, for example), `listarReels$Response()` instead.
+   *
+   * This method doesn't expect any request body.
+   */
+  listarReels(params: ListarReels$Params, context?: HttpContext): Observable<Page> {
+    return this.listarReels$Response(params, context).pipe(
+      map((r: StrictHttpResponse<Page>): Page => r.body)
+    );
+  }
+
+  /** Path part for operation `registrarVisualizacao()` */
+  static readonly RegistrarVisualizacaoPath = '/posts/{id}/views';
+
+  /**
+   * Registrar visualização.
+   *
+   * Dedupeada por usuário+dia; 204 sempre
+   *
+   * This method provides access to the full `HttpResponse`, allowing access to response headers.
+   * To access only the response body, use `registrarVisualizacao()` instead.
+   *
+   * This method doesn't expect any request body.
+   */
+  registrarVisualizacao$Response(params: RegistrarVisualizacao$Params, context?: HttpContext): Observable<StrictHttpResponse<void>> {
+    return registrarVisualizacao(this.http, this.rootUrl, params, context);
+  }
+
+  /**
+   * Registrar visualização.
+   *
+   * Dedupeada por usuário+dia; 204 sempre
+   *
+   * This method provides access only to the response body.
+   * To access the full response (for headers, for example), `registrarVisualizacao$Response()` instead.
+   *
+   * This method doesn't expect any request body.
+   */
+  registrarVisualizacao(params: RegistrarVisualizacao$Params, context?: HttpContext): Observable<void> {
+    return this.registrarVisualizacao$Response(params, context).pipe(
+      map((r: StrictHttpResponse<void>): void => r.body)
     );
   }
 

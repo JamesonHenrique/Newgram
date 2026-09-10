@@ -18,6 +18,17 @@
       <p class="base-medium">
         {{ comentario.texto }}
       </p>
+      <button
+        type="button"
+        class="flex items-center gap-1 text-light-3 hover:text-red text-xs mt-1"
+        (click)="toggleCurtidaComentario(comentario, $event)"
+      >
+        <i
+          class="fa-heart"
+          [ngClass]="{ fas: comentario.curtidoPeloUsuario, far: !comentario.curtidoPeloUsuario }"
+        ></i>
+        <span>{{ comentario.numeroCurtidas || 0 }}</span>
+      </button>
     </div>
   </div>
 

@@ -15,7 +15,13 @@ import { atualizarUsuario } from '../fn/usuarios/atualizar-usuario';
 import { AtualizarUsuario$Params } from '../fn/usuarios/atualizar-usuario';
 import { atualizarPrivado } from '../fn/usuarios/atualizar-privado';
 import { AtualizarPrivado$Params } from '../fn/usuarios/atualizar-privado';
+import { analytics } from '../fn/usuarios/criador';
+import { atualizarChavePix, AtualizarChavePix$Params } from '../fn/usuarios/criador';
+import { atualizarTipoConta, AtualizarTipoConta$Params } from '../fn/usuarios/criador';
 import { buscarUsuarioPorId } from '../fn/usuarios/buscar-usuario-por-id';
+import { excluirConta } from '../fn/usuarios/conta';
+import { exportarDados } from '../fn/usuarios/conta';
+import { solicitarVerificacao } from '../fn/usuarios/conta';
 import { BuscarUsuarioPorId$Params } from '../fn/usuarios/buscar-usuario-por-id';
 import { buscarUsuarioPorUsername } from '../fn/usuarios/buscar-usuario-por-username';
 import { BuscarUsuarioPorUsername$Params } from '../fn/usuarios/buscar-usuario-por-username';
@@ -32,6 +38,7 @@ import { ListarUsuariosMaisFamosos$Params } from '../fn/usuarios/listar-usuarios
 import { listarUsuariosPorAmigosEmComum } from '../fn/usuarios/listar-usuarios-por-amigos-em-comum';
 import { ListarUsuariosPorAmigosEmComum$Params } from '../fn/usuarios/listar-usuarios-por-amigos-em-comum';
 import { Page } from '../models/page';
+import { AnalyticsDto } from '../models/analytics-dto';
 import { UsuarioResponseDto } from '../models/usuario-response-dto';
 
 
@@ -140,6 +147,113 @@ export class UsuariosService extends BaseService {
   atualizarPrivado(params: AtualizarPrivado$Params, context?: HttpContext): Observable<UsuarioResponseDto> {
     return this.atualizarPrivado$Response(params, context).pipe(
       map((r: StrictHttpResponse<UsuarioResponseDto>): UsuarioResponseDto => r.body)
+    );
+  }
+
+  /** Path part for operation `solicitarVerificacao()` */
+  static readonly SolicitarVerificacaoPath = '/usuarios/eu/solicitar-verificacao';
+
+  /**
+   * Solicitar selo de verificação.
+   *
+   * Entra na fila de moderação
+   *
+   * This method provides access to the full `HttpResponse`, allowing access to response headers.
+   * To access only the response body, use `solicitarVerificacao()` instead.
+   *
+   * This method doesn't expect any request body.
+   */
+  solicitarVerificacao$Response(context?: HttpContext): Observable<StrictHttpResponse<void>> {
+    return solicitarVerificacao(this.http, this.rootUrl, context);
+  }
+
+  /**
+   * Solicitar selo de verificação.
+   *
+   * Entra na fila de moderação
+   *
+   * This method provides access only to the response body.
+   * To access the full response (for headers, for example), `solicitarVerificacao$Response()` instead.
+   *
+   * This method doesn't expect any request body.
+   */
+  solicitarVerificacao(context?: HttpContext): Observable<void> {
+    return this.solicitarVerificacao$Response(context).pipe(
+      map((r: StrictHttpResponse<void>): void => r.body)
+    );
+  }
+
+  /** Path part for operation `exportarDados()` */
+  static readonly ExportarDadosPath = '/usuarios/eu/exportar';
+
+  /**
+   * Exportar meus dados (LGPD).
+   *
+   * JSON com perfil, contagens e posts
+   *
+   * This method provides access to the full `HttpResponse`, allowing access to response headers.
+   * To access only the response body, use `exportarDados()` instead.
+   *
+   * This method doesn't expect any request body.
+   */
+  exportarDados$Response(context?: HttpContext): Observable<StrictHttpResponse<{
+[key: string]: any;
+}>> {
+    return exportarDados(this.http, this.rootUrl, context);
+  }
+
+  /**
+   * Exportar meus dados (LGPD).
+   *
+   * JSON com perfil, contagens e posts
+   *
+   * This method provides access only to the response body.
+   * To access the full response (for headers, for example), `exportarDados$Response()` instead.
+   *
+   * This method doesn't expect any request body.
+   */
+  exportarDados(context?: HttpContext): Observable<{
+[key: string]: any;
+}> {
+    return this.exportarDados$Response(context).pipe(
+      map((r: StrictHttpResponse<{
+[key: string]: any;
+}>): {
+[key: string]: any;
+} => r.body)
+    );
+  }
+
+  /** Path part for operation `excluirConta()` */
+  static readonly ExcluirContaPath = '/usuarios/eu';
+
+  /**
+   * Excluir minha conta (LGPD).
+   *
+   * Anonimiza a conta; ação irreversível
+   *
+   * This method provides access to the full `HttpResponse`, allowing access to response headers.
+   * To access only the response body, use `excluirConta()` instead.
+   *
+   * This method doesn't expect any request body.
+   */
+  excluirConta$Response(context?: HttpContext): Observable<StrictHttpResponse<void>> {
+    return excluirConta(this.http, this.rootUrl, context);
+  }
+
+  /**
+   * Excluir minha conta (LGPD).
+   *
+   * Anonimiza a conta; ação irreversível
+   *
+   * This method provides access only to the response body.
+   * To access the full response (for headers, for example), `excluirConta$Response()` instead.
+   *
+   * This method doesn't expect any request body.
+   */
+  excluirConta(context?: HttpContext): Observable<void> {
+    return this.excluirConta$Response(context).pipe(
+      map((r: StrictHttpResponse<void>): void => r.body)
     );
   }
 
@@ -371,6 +485,105 @@ export class UsuariosService extends BaseService {
   listarUsuariosPorAmigosEmComum(params: ListarUsuariosPorAmigosEmComum$Params, context?: HttpContext): Observable<Page> {
     return this.listarUsuariosPorAmigosEmComum$Response(params, context).pipe(
       map((r: StrictHttpResponse<Page>): Page => r.body)
+    );
+  }
+
+  /** Path part for operation `analytics()` */
+  static readonly AnalyticsPath = '/usuarios/eu/analytics';
+
+  /**
+   * Analytics da conta.
+   *
+   * Views, alcance e seguidores
+   *
+   * This method provides access to the full `HttpResponse`, allowing access to response headers.
+   * To access only the response body, use `analytics()` instead.
+   *
+   * This method doesn't expect any request body.
+   */
+  analytics$Response(context?: HttpContext): Observable<StrictHttpResponse<AnalyticsDto>> {
+    return analytics(this.http, this.rootUrl, context);
+  }
+
+  /**
+   * Analytics da conta.
+   *
+   * Views, alcance e seguidores
+   *
+   * This method provides access only to the response body.
+   * To access the full response (for headers, for example), `analytics$Response()` instead.
+   *
+   * This method doesn't expect any request body.
+   */
+  analytics(context?: HttpContext): Observable<AnalyticsDto> {
+    return this.analytics$Response(context).pipe(
+      map((r: StrictHttpResponse<AnalyticsDto>): AnalyticsDto => r.body)
+    );
+  }
+
+  /** Path part for operation `atualizarChavePix()` */
+  static readonly AtualizarChavePixPath = '/usuarios/eu/pix';
+
+  /**
+   * Definir chave Pix.
+   *
+   * Vazia remove; exibida no perfil
+   *
+   * This method provides access to the full `HttpResponse`, allowing access to response headers.
+   * To access only the response body, use `atualizarChavePix()` instead.
+   *
+   * This method sends `application/json` and handles request body of type `application/json`.
+   */
+  atualizarChavePix$Response(params: AtualizarChavePix$Params, context?: HttpContext): Observable<StrictHttpResponse<UsuarioResponseDto>> {
+    return atualizarChavePix(this.http, this.rootUrl, params, context);
+  }
+
+  /**
+   * Definir chave Pix.
+   *
+   * Vazia remove; exibida no perfil
+   *
+   * This method provides access only to the response body.
+   * To access the full response (for headers, for example), `atualizarChavePix$Response()` instead.
+   *
+   * This method sends `application/json` and handles request body of type `application/json`.
+   */
+  atualizarChavePix(params: AtualizarChavePix$Params, context?: HttpContext): Observable<UsuarioResponseDto> {
+    return this.atualizarChavePix$Response(params, context).pipe(
+      map((r: StrictHttpResponse<UsuarioResponseDto>): UsuarioResponseDto => r.body)
+    );
+  }
+
+  /** Path part for operation `atualizarTipoConta()` */
+  static readonly AtualizarTipoContaPath = '/usuarios/eu/tipo-conta';
+
+  /**
+   * Definir tipo de conta.
+   *
+   * PESSOAL, CRIADOR ou NEGOCIOS
+   *
+   * This method provides access to the full `HttpResponse`, allowing access to response headers.
+   * To access only the response body, use `atualizarTipoConta()` instead.
+   *
+   * This method doesn't expect any request body.
+   */
+  atualizarTipoConta$Response(params: AtualizarTipoConta$Params, context?: HttpContext): Observable<StrictHttpResponse<UsuarioResponseDto>> {
+    return atualizarTipoConta(this.http, this.rootUrl, params, context);
+  }
+
+  /**
+   * Definir tipo de conta.
+   *
+   * PESSOAL, CRIADOR ou NEGOCIOS
+   *
+   * This method provides access only to the response body.
+   * To access the full response (for headers, for example), `atualizarTipoConta$Response()` instead.
+   *
+   * This method doesn't expect any request body.
+   */
+  atualizarTipoConta(params: AtualizarTipoConta$Params, context?: HttpContext): Observable<UsuarioResponseDto> {
+    return this.atualizarTipoConta$Response(params, context).pipe(
+      map((r: StrictHttpResponse<UsuarioResponseDto>): UsuarioResponseDto => r.body)
     );
   }
 

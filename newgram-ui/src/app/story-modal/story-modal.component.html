@@ -23,5 +23,32 @@
       <div class="story-nav-left" (click)="prevImage()"></div>
       <div class="story-nav-right" (click)="nextImage()"></div>
     </div>
+
+    <div *ngIf="podeInteragir" class="story-reply" (click)="$event.stopPropagation()">
+      <div class="story-reactions">
+        <button
+          type="button"
+          *ngFor="let emoji of reacoes"
+          (click)="enviarReacao(emoji)"
+          [disabled]="enviandoResposta"
+        >
+          {{ emoji }}
+        </button>
+      </div>
+      <form (ngSubmit)="enviarResposta()" class="story-reply-form">
+        <input
+          type="text"
+          [(ngModel)]="respostaTexto"
+          name="respostaTexto"
+          maxlength="1000"
+          placeholder="Responder..."
+          (focus)="pauseProgress()"
+          (blur)="resumeProgress()"
+        />
+        <button type="submit" [disabled]="!respostaTexto.trim() || enviandoResposta">
+          <i class="fas fa-paper-plane"></i>
+        </button>
+      </form>
+    </div>
   </div>
 </div>

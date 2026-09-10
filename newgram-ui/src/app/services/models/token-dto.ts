@@ -13,4 +13,9 @@ export interface TokenDto {
    * Token de acesso do usuário
    */
   token?: string;
+
+  /**
+   * Login parcial: falta o código 2FA
+   */
+  twoFactorRequired?: boolean;
 }

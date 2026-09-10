@@ -18,6 +18,8 @@ export class LoginComponent implements OnInit {
   isLoading = false;
   errorMessage: string | null = null;
   showPassword = false;
+  etapaTwoFactor = false;
+  codigoTwoFactor = '';
 
   constructor(
     private fb: FormBuilder,
@@ -80,15 +82,47 @@ export class LoginComponent implements OnInit {
 
     this.authService.login({ body: authRequest }).subscribe({
       next: (response) => {
-        this.tokenService.token = response.token as string;
-
-        this.router.navigate(['feed']);
+        // 2FA ativo: segunda etapa pede o código do app autenticador.
+        if (response.twoFactorRequired) {
+          this.etapaTwoFactor = true;
+          this.isLoading = false;
+          return;
+        }
+        this.entrarComTokens(response.token as string, response.refreshToken);
       },
       error: (error) => {
+        this.isLoading = false;
         this.handleLoginError(error);
       },
     });
 
+  }
+
+  confirmarTwoFactor() {
+    const codigo = this.codigoTwoFactor.trim();
+    if (!codigo) {
+      return;
+    }
+    this.isLoading = true;
+    this.authService
+      .verificarTwoFactor({ body: { email: this.authForm.value.email, codigo } })
+      .subscribe({
+        next: (response) => {
+          this.entrarComTokens(response.token as string, response.refreshToken);
+        },
+        error: () => {
+          this.isLoading = false;
+          this.errorMessage = 'Código inválido. Tente novamente.';
+        },
+      });
+  }
+
+  private entrarComTokens(token: string, refreshToken?: string) {
+    this.tokenService.token = token;
+    if (refreshToken) {
+      this.tokenService.refreshToken = refreshToken;
+    }
+    this.router.navigate(['feed']);
   }
 
   private handleLoginError(error: any): void {

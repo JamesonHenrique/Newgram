@@ -3,8 +3,12 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Title } from '@angular/platform-browser';
 import { Subject, interval, takeUntil } from 'rxjs';
+import { Client, StompSubscription } from '@stomp/stompjs';
+import SockJS from 'sockjs-client';
 import { ConversasService } from '../services/services';
 import { ConversaResponseDto, MensagemResponseDto } from '../services/models';
+import { TokenService } from '../services/token/token.service';
+import { environment } from '../../environments/environment';
 
 @Component({
   selector: 'app-mensagens',
@@ -15,6 +19,8 @@ import { ConversaResponseDto, MensagemResponseDto } from '../services/models';
 })
 export class MensagensComponent implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();
+  private stomp: Client | null = null;
+  private inscricaoTopico: StompSubscription | null = null;
 
   conversas: ConversaResponseDto[] = [];
   conversaAtiva: ConversaResponseDto | null = null;
@@ -22,7 +28,11 @@ export class MensagensComponent implements OnInit, OnDestroy {
   novoTexto = '';
   enviando = false;
 
-  constructor(private title: Title, private conversasService: ConversasService) {
+  constructor(
+    private title: Title,
+    private conversasService: ConversasService,
+    private tokenService: TokenService
+  ) {
     this.title.setTitle('Mensagens');
   }
 
@@ -42,6 +52,47 @@ export class MensagensComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
+    this.desconectarTopico();
+    this.stomp?.deactivate();
+  }
+
+  /** Tempo real via STOMP; polling de 10s continua como fallback. */
+  private conectarTopico(conversaId: number): void {
+    this.desconectarTopico();
+    if (!this.stomp) {
+      this.stomp = new Client({
+        webSocketFactory: () => new SockJS(`${environment.apiUrl}/ws`),
+        connectHeaders: { Authorization: `Bearer ${this.tokenService.token}` },
+        reconnectDelay: 5000,
+      });
+      this.stomp.activate();
+    }
+    const assinar = () => {
+      if (!this.stomp?.connected) {
+        setTimeout(assinar, 1000);
+        return;
+      }
+      this.inscricaoTopico = this.stomp.subscribe(`/topic/conversas.${conversaId}`, (msg) => {
+        try {
+          const mensagem = JSON.parse(msg.body) as MensagemResponseDto;
+          if (!this.mensagens.some((m) => m.id === mensagem.id)) {
+            this.mensagens = [...this.mensagens, mensagem];
+          }
+        } catch {
+          this.carregarMensagens(conversaId, false);
+        }
+      });
+    };
+    assinar();
+  }
+
+  private desconectarTopico(): void {
+    try {
+      this.inscricaoTopico?.unsubscribe();
+    } catch {
+      // ignora: socket pode já estar fechado
+    }
+    this.inscricaoTopico = null;
   }
 
   carregarConversas(recarregarAtiva = true): void {
@@ -67,6 +118,7 @@ export class MensagensComponent implements OnInit, OnDestroy {
     this.mensagens = [];
     if (conversa.id) {
       this.carregarMensagens(conversa.id);
+      this.conectarTopico(conversa.id);
     }
   }
 

@@ -5,6 +5,8 @@ import { TokenService } from '../services/token/token.service';
 import { DateFormatPipe } from '../services/pipes/date-format-pipe';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Subject, takeUntil } from 'rxjs';
+import { map } from 'rxjs/operators';
 
 @Component({
   selector: 'app-comments',
@@ -15,6 +17,8 @@ import { FormsModule } from '@angular/forms';
 })
 export class CommentsComponent implements OnChanges {
   @Input() postId!: number;
+
+  private destroy$ = new Subject<void>();
 
   comentariosSelected: any[] = [];
   usuarioLogado: UsuarioSummaryDto = {} as UsuarioSummaryDto;
@@ -38,6 +42,31 @@ export class CommentsComponent implements OnChanges {
       this.loadComentarios(this.postId);
     }
   }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+  toggleCurtidaComentario(comentario: any, event: Event): void {
+    event.stopPropagation();
+    if (!comentario?.id) {
+      return;
+    }
+    const curtido = !!comentario.curtidoPeloUsuario;
+    comentario.curtidoPeloUsuario = !curtido;
+    comentario.numeroCurtidas = (comentario.numeroCurtidas || 0) + (curtido ? -1 : 1);
+
+    const acao$ = curtido
+      ? this.comentariosService.descurtirComentario({ id: comentario.id })
+      : this.comentariosService.curtirComentario({ id: comentario.id }).pipe(map(() => undefined));
+    acao$.pipe(takeUntil(this.destroy$)).subscribe({
+      error: () => {
+        comentario.curtidoPeloUsuario = curtido;
+        comentario.numeroCurtidas = (comentario.numeroCurtidas || 0) + (curtido ? 1 : -1);
+      },
+    });
+  }
+
   enviarComentario() {
     if (!this.comentarioTexto.trim() || !this.postId) return;
 

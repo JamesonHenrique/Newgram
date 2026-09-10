@@ -1,4 +1,5 @@
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import {
   Component,
   ElementRef,
@@ -15,6 +16,7 @@ import { DateFormatPipe } from '../services/pipes/date-format-pipe';
 import { Pageable, UsuarioSummaryDto } from '../services/models';
 import {
   ComentariosService,
+  EnquetesService,
   ModeracaoService,
   PostsService,
   UsuariosService,
@@ -26,7 +28,7 @@ import { finalize, map, Subject, takeUntil } from 'rxjs';
 
 @Component({
   selector: 'app-post-details',
-  imports: [CommonModule, FormatNumberPipe, DateFormatPipe, CommentsComponent],
+  imports: [CommonModule, FormsModule, FormatNumberPipe, DateFormatPipe, CommentsComponent],
   templateUrl: './post-details.component.html',
   styleUrl: './post-details.component.css',
 })
@@ -47,7 +49,74 @@ export class PostDetailsComponent {
   private postsService = inject(PostsService);
   private tokenService = inject(TokenService);
   private moderacaoService = inject(ModeracaoService);
+  private enquetesService = inject(EnquetesService);
   private toastr = inject(ToastrService);
+
+  mostrarFormEnquete = false;
+  novaEnquetePergunta = '';
+  novaEnqueteOpcoes: string[] = ['', ''];
+
+  trackByIndex(index: number): number {
+    return index;
+  }
+
+  votarEnquete(enquete: any, opcao: any, event: Event): void {
+    event.stopPropagation();
+    if (!enquete?.id || !opcao?.id || enquete.minhaOpcaoId || enquete.encerrada) {
+      return;
+    }
+    this.enquetesService
+      .votarEnquete({ id: enquete.id, body: { opcaoId: opcao.id } })
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (atualizada) => {
+          if (this.postSelected) {
+            this.postSelected = { ...this.postSelected, enquete: atualizada };
+          }
+        },
+        error: () => {},
+      });
+  }
+
+  criarEnquete(event: Event): void {
+    event.stopPropagation();
+    const pergunta = this.novaEnquetePergunta.trim();
+    const opcoes = this.novaEnqueteOpcoes.map((o) => o.trim()).filter((o) => o);
+    if (!this.postSelected?.id || !pergunta || opcoes.length < 2) {
+      this.toastr.warning('Informe pergunta e ao menos 2 opções.');
+      return;
+    }
+    this.enquetesService
+      .criarEnquete({ body: { pergunta, postId: this.postSelected.id, opcoes } })
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (enquete) => {
+          this.postSelected = { ...this.postSelected, enquete };
+          this.mostrarFormEnquete = false;
+          this.novaEnquetePergunta = '';
+          this.novaEnqueteOpcoes = ['', ''];
+        },
+        error: () => {},
+      });
+  }
+
+  excluirEnquete(enquete: any, event: Event): void {
+    event.stopPropagation();
+    if (!enquete?.id) {
+      return;
+    }
+    this.enquetesService
+      .excluirEnquete({ id: enquete.id })
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: () => {
+          if (this.postSelected) {
+            this.postSelected = { ...this.postSelected, enquete: null };
+          }
+        },
+        error: () => {},
+      });
+  }
   get postPertenceAoUsuarioLogado(): boolean {
     return this.post?.autorId === this.tokenService.userId;
   }
@@ -128,6 +197,10 @@ export class PostDetailsComponent {
     if (changes['postSelected']) {
       if (this.postSelected?.id) {
         this.openModal();
+        // Analytics do criador (dedupeado no back por usuário+dia).
+        this.postsService.registrarVisualizacao({ id: this.postSelected.id }).subscribe({
+          error: () => {},
+        });
       } else {
         this.closeModal();
       }
