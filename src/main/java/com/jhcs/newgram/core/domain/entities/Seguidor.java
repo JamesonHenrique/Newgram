@@ -1,27 +1,39 @@
 package com.jhcs.newgram.core.domain.entities;
 
 import jakarta.persistence.*;
-import lombok.Data;
+import java.time.LocalDateTime;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import org.hibernate.annotations.CreationTimestamp;
 
-import java.util.Date;
-
-@Data
+@Getter
+@Setter
+@NoArgsConstructor
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 @Entity
-@Table(name = "seguidor")
+@Table(
+        name = "seguidor",
+        uniqueConstraints = @UniqueConstraint(name = "uq_seguidor_seguido", columnNames = {"seguidor_id", "seguido_id"}))
 public class Seguidor {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @EqualsAndHashCode.Include
     private Long id;
 
-    private Date dataCriacao;
+    @CreationTimestamp
+    @Column(name = "data_criacao", nullable = false, updatable = false)
+    private LocalDateTime dataCriacao;
+
     private boolean notificacoesAtivadas;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "seguidor_id")
+    @JoinColumn(name = "seguidor_id", nullable = false)
     private Usuario seguidor;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "seguido_id")
+    @JoinColumn(name = "seguido_id", nullable = false)
     private Usuario seguido;
 }

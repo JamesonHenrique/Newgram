@@ -4,6 +4,7 @@ import com.jhcs.newgram.core.domain.entities.Salvos;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -29,5 +30,6 @@ public interface SalvosRepository extends JpaRepository<Salvos, Long> {
     @Query("SELECT COUNT(s) FROM Salvos s WHERE s.usuario.id = :usuarioId AND s.colecao = :colecao")
     Long countSalvosByUsuarioIdAndColecao(@Param("usuarioId") Long usuarioId, @Param("colecao") String colecao);
 
+    @Modifying
     void deleteByUsuarioIdAndPostId(Long usuarioId, Long postId);
 }

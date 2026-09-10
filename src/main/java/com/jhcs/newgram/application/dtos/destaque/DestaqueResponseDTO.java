@@ -4,7 +4,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import com.jhcs.newgram.application.dtos.storie.StorieResponseDTO;
 import lombok.Data;
 
-import java.util.Date;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Data
@@ -16,7 +16,7 @@ public class DestaqueResponseDTO {
     private String nome;
 
     @Schema(description = "Data de criação do destaque", example = "2023-01-01T12:00:00Z")
-    private Date dataCriacao;
+    private LocalDateTime dataCriacao;
 
     @Schema(description = "ID do usuário que criou o destaque", example = "10")
     private Long usuarioId;

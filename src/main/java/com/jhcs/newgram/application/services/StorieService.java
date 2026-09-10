@@ -12,15 +12,15 @@ import com.jhcs.newgram.core.domain.repositories.UsuarioRepository;
 import com.jhcs.newgram.infrastructure.aws.S3StorageService;
 import com.jhcs.newgram.infrastructure.exception.ResourceNotFoundException;
 import com.jhcs.newgram.infrastructure.exception.UnauthorizedException;
-import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -52,16 +52,11 @@ public class StorieService {
         Storie storie = new Storie();
 
         storie.setAutor(autor);
-        storie.setDestacado(dto.isDestacar());
+        storie.setDestacado(Boolean.TRUE.equals(dto.getDestacar()));
 
-
-        Date agora = new Date();
+        LocalDateTime agora = LocalDateTime.now();
         storie.setDataCriacao(agora);
-
-        Calendar calendar = Calendar.getInstance();
-        calendar.setTime(agora);
-        calendar.add(Calendar.HOUR, DURACAO_STORIE_HORAS);
-        storie.setDataExpiracao(calendar.getTime());
+        storie.setDataExpiracao(agora.plusHours(DURACAO_STORIE_HORAS));
 
         storie = storieRepository.save(storie);
 
@@ -69,8 +64,7 @@ public class StorieService {
             salvarImagem(storie.getId(), usuarioId, dto.getImagem());
         }
 
-
-        if (dto.isDestacar()) {
+        if (Boolean.TRUE.equals(dto.getDestacar())) {
             List<Destaque> destaques = destaqueRepository.findByUsuarioIdOrderByNome(usuarioId);
             if (!destaques.isEmpty()) {
 
@@ -88,12 +82,11 @@ public class StorieService {
 
     public void salvarImagem(Long storieId, Long usuarioId, MultipartFile file) {
         Usuario usuario = usuarioRepository.findById(usuarioId)
-                .orElseThrow(() -> new EntityNotFoundException("Nenhum usuario encontrado com o ID: " + usuarioId));
+                .orElseThrow(() -> new ResourceNotFoundException("Nenhum usuario encontrado com o ID: " + usuarioId));
         Storie storie = storieRepository.findById(storieId)
-                .orElseThrow(() -> new EntityNotFoundException("Nenhum storie encontrado com o ID: " + storieId));
-        if (!storie.getAutor().getId().equals(usuarioId)) {
-            throw new UnauthorizedException("Você não tem permissão para adicionar imagem a este storie");
-        }
+                .orElseThrow(() -> new ResourceNotFoundException("Nenhum storie encontrado com o ID: " + storieId));
+        Support.requireOwner(storie.getAutor().getId(), usuarioId,
+                "Você não tem permissão para adicionar imagem a este storie");
         var imagem = arquivoService.saveFile(file, usuario.getUsuarioName(), TipoArquivo.STORIE);
         storie.setStorieImagemUrl(imagem);
         storieRepository.save(storie);
@@ -121,8 +114,8 @@ public class StorieService {
     }
 
     @Transactional(readOnly = true)
-    public List<StorieResponseDTO> listarStoriesDeSeguidosAtivos(Long usuarioId) {
-        Date agora = new Date();
+    public Page<StorieResponseDTO> listarStoriesDeSeguidosAtivos(Long usuarioId, Pageable pageable) {
+        LocalDateTime agora = LocalDateTime.now();
         List<Usuario> usuariosComStories = storieRepository.findUsuariosComStoriesAtivos(usuarioId, agora);
 
         List<StorieResponseDTO> resultado = new ArrayList<>();
@@ -136,17 +129,27 @@ public class StorieService {
             }
         }
 
-        return resultado;
+        return Support.pageOf(resultado, pageable);
     }
 
     @Transactional(readOnly = true)
-    public List<StorieResponseDTO> listarStoriesDoUsuario(Long autorId, Long usuarioLogadoId) {
-        Date agora = new Date();
-        List<Storie> stories = storieRepository.findByAutorIdAndDataExpiracaoAfterOrderByDataCriacaoDesc(autorId, agora);
+    public Page<StorieResponseDTO> listarStoriesDoUsuario(Long autorId, Long usuarioLogadoId, Pageable pageable) {
+        LocalDateTime agora = LocalDateTime.now();
+        List<Storie> stories =
+                storieRepository.findByAutorIdAndDataExpiracaoAfterOrderByDataCriacaoDesc(autorId, agora);
 
-        return stories.stream()
-                .map(storie -> converterParaResponseDTO(storie, usuarioLogadoId))
-                .collect(Collectors.toList());
+        return Support.pageOf(
+                stories.stream()
+                        .map(storie -> converterParaResponseDTO(storie, usuarioLogadoId))
+                        .collect(Collectors.toList()),
+                pageable);
+    }
+
+    /** Mantido para compatibilidade: primeira pagina com 50 itens. */
+    @Transactional(readOnly = true)
+    public List<StorieResponseDTO> listarStoriesDoUsuario(Long autorId, Long usuarioLogadoId) {
+        return listarStoriesDoUsuario(autorId, usuarioLogadoId,
+                org.springframework.data.domain.PageRequest.of(0, Support.MAX_PAGE_SIZE)).getContent();
     }
 
     @Transactional
@@ -154,12 +157,14 @@ public class StorieService {
         Storie storie = storieRepository.findById(storieId)
                 .orElseThrow(() -> new ResourceNotFoundException("Storie não encontrado"));
 
-        Usuario usuario = usuarioRepository.findById(usuarioId)
+        usuarioRepository.findById(usuarioId)
                 .orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado"));
 
-
-        storie = storieRepository.save(storie);
-
+        // Visualizacao nao e persistida (sem entidade de view): expirado some, ativo so retorna.
+        if (storie.getDataExpiracao() != null && storie.getDataExpiracao().isBefore(LocalDateTime.now())) {
+            storieRepository.delete(storie);
+            throw new ResourceNotFoundException("Storie expirado");
+        }
         return converterParaResponseDTO(storie, usuarioId);
     }
 
@@ -168,16 +173,13 @@ public class StorieService {
         Storie storie = storieRepository.findById(storieId)
                 .orElseThrow(() -> new ResourceNotFoundException("Storie não encontrado"));
 
-        if (!storie.getAutor().getId().equals(usuarioId)) {
-            throw new UnauthorizedException("Você não tem permissão para destacar este storie");
-        }
+        Support.requireOwner(storie.getAutor().getId(), usuarioId, "Você não tem permissão para destacar este storie");
 
         Destaque destaque = destaqueRepository.findById(destaqueId)
                 .orElseThrow(() -> new ResourceNotFoundException("Destaque não encontrado"));
 
-        if (!destaque.getUsuario().getId().equals(usuarioId)) {
-            throw new UnauthorizedException("Você não tem permissão para editar este destaque");
-        }
+        Support.requireOwner(destaque.getUsuario().getId(), usuarioId,
+                "Você não tem permissão para editar este destaque");
 
         destaque.getStories().add(storie);
         destaqueRepository.save(destaque);
@@ -189,28 +191,16 @@ public class StorieService {
     }
 
     @Transactional(readOnly = true)
-    public List<StorieResponseDTO> listarStoriesDestacados(Long usuarioId) {
+    public Page<StorieResponseDTO> listarStoriesDestacados(Long usuarioId, Pageable pageable) {
         List<Storie> stories = storieRepository.findStoriesDestacados(usuarioId);
 
-        return stories.stream()
-                .map(storie -> converterParaResponseDTO(storie, null))
-                .collect(Collectors.toList());
+        return Support.pageOf(
+                stories.stream()
+                        .map(storie -> converterParaResponseDTO(storie, null))
+                        .collect(Collectors.toList()),
+                pageable);
     }
 
-
-    private void processarMarcacoesUsuarios(Storie storie, List<Long> usuariosIds) {
-        List<Usuario> usuarios = new ArrayList<>();
-
-        for (Long usuarioId : usuariosIds) {
-            Usuario usuario = usuarioRepository.findById(usuarioId)
-                    .orElseThrow(() -> new ResourceNotFoundException("Usuário com ID " + usuarioId + " não encontrado"));
-            usuarios.add(usuario);
-
-
-        }
-
-
-    }
 
     private StorieResponseDTO converterParaResponseDTO(Storie storie, Long usuarioLogadoId) {
         StorieResponseDTO dto = new StorieResponseDTO();

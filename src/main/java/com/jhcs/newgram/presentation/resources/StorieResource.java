@@ -14,6 +14,9 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -21,10 +24,8 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.List;
-
 @RestController
-@RequestMapping("stories")
+@RequestMapping("/stories")
 @Tag(name = "Stories", description = "Operações relacionadas a stories temporários")
 public class StorieResource {
 
@@ -48,7 +49,7 @@ public class StorieResource {
         return ResponseEntity.status(HttpStatus.CREATED).body(responseDTO);
     }
 
-    @GetMapping("/{id}")
+    @GetMapping("/{id:\\d+}")
     @Operation(summary = "Buscar storie por ID", description = "Busca um storie específico pelo seu ID")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Storie encontrado com sucesso"),
@@ -63,7 +64,7 @@ public class StorieResource {
         return ResponseEntity.ok(storie);
     }
 
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/{id:\\d+}")
     @Operation(summary = "Excluir storie", description = "Remove um storie existente")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "204", description = "Storie excluído com sucesso"),
@@ -84,33 +85,38 @@ public class StorieResource {
             @ApiResponse(responseCode = "200", description = "Stories listados com sucesso"),
             @ApiResponse(responseCode = "401", description = "Não autorizado")
     })
-    public ResponseEntity<List<StorieResponseDTO>> listarStoriesDoFeed(
-            @AuthenticationPrincipal Usuario usuarioAutenticado) {
+    public ResponseEntity<Page<StorieResponseDTO>> listarStoriesDoFeed(
+            @AuthenticationPrincipal Usuario usuarioAutenticado,
+            @Parameter(description = "Parâmetros de paginação (page=0, size=20)")
+            @PageableDefault(page = 0, size = 20) Pageable pageable) {
 
-        List<StorieResponseDTO> stories = storieService.listarStoriesDeSeguidosAtivos(usuarioAutenticado.getId());
+        Page<StorieResponseDTO> stories =
+                storieService.listarStoriesDeSeguidosAtivos(usuarioAutenticado.getId(), pageable);
         return ResponseEntity.ok(stories);
     }
 
-    @GetMapping("/usuario/{autorId}")
+    @GetMapping("/usuario/{autorId:\\d+}")
     @Operation(summary = "Listar stories de um usuário", description = "Lista todos os stories ativos de um usuário específico")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Stories listados com sucesso"),
             @ApiResponse(responseCode = "401", description = "Não autorizado"),
             @ApiResponse(responseCode = "404", description = "Usuário não encontrado")
     })
-    public ResponseEntity<List<StorieResponseDTO>> listarStoriesDoUsuario(
+    public ResponseEntity<Page<StorieResponseDTO>> listarStoriesDoUsuario(
             @Parameter(description = "ID do autor", required = true) @PathVariable("autorId") Long autorId,
-            @AuthenticationPrincipal Usuario usuarioAutenticado) {
+            @AuthenticationPrincipal Usuario usuarioAutenticado,
+            @Parameter(description = "Parâmetros de paginação (page=0, size=20)")
+            @PageableDefault(page = 0, size = 20) Pageable pageable) {
 
-        List<StorieResponseDTO> stories = storieService.listarStoriesDoUsuario(autorId, usuarioAutenticado.getId());
+        Page<StorieResponseDTO> stories =
+                storieService.listarStoriesDoUsuario(autorId, usuarioAutenticado.getId(), pageable);
         return ResponseEntity.ok(stories);
     }
 
-    @PostMapping("/{id}/visualizar")
+    @PostMapping("/{id:\\d+}/visualizar")
     @Operation(summary = "Marcar storie como visualizado", description = "Registra que o usuário autenticado visualizou o storie")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Storie marcado como visualizado com sucesso"),
-            @ApiResponse(responseCode = "400", description = "Storie já visualizado pelo usuário"),
+            @ApiResponse(responseCode = "201", description = "Storie visualizado com sucesso"),
             @ApiResponse(responseCode = "401", description = "Não autorizado"),
             @ApiResponse(responseCode = "404", description = "Storie não encontrado")
     })
@@ -119,13 +125,13 @@ public class StorieResource {
             @AuthenticationPrincipal Usuario usuarioAutenticado) {
 
         StorieResponseDTO responseDTO = storieService.marcarComoVisualizado(id, usuarioAutenticado.getId());
-        return ResponseEntity.ok(responseDTO);
+        return ResponseEntity.status(HttpStatus.CREATED).body(responseDTO);
     }
 
-    @PostMapping("/{id}/destacar/{destaqueId}")
+    @PutMapping("/{id:\\d+}/destacar/{destaqueId:\\d+}")
     @Operation(summary = "Destacar storie", description = "Adiciona o storie a um destaque específico")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Storie destacado com sucesso"),
+            @ApiResponse(responseCode = "201", description = "Storie destacado com sucesso"),
             @ApiResponse(responseCode = "401", description = "Não autorizado"),
             @ApiResponse(responseCode = "404", description = "Storie ou destaque não encontrado")
     })
@@ -135,7 +141,7 @@ public class StorieResource {
             @AuthenticationPrincipal Usuario usuarioAutenticado) {
 
         StorieResponseDTO responseDTO = storieService.destacarStorie(id, destaqueId, usuarioAutenticado.getId());
-        return ResponseEntity.ok(responseDTO);
+        return ResponseEntity.status(HttpStatus.CREATED).body(responseDTO);
     }
 
     @GetMapping("/destacados")
@@ -144,15 +150,16 @@ public class StorieResource {
             @ApiResponse(responseCode = "200", description = "Stories destacados listados com sucesso"),
             @ApiResponse(responseCode = "401", description = "Não autorizado")
     })
-    public ResponseEntity<List<StorieResponseDTO>> listarStoriesDestacados(
-            @AuthenticationPrincipal Usuario usuarioAutenticado) {
+    public ResponseEntity<Page<StorieResponseDTO>> listarStoriesDestacados(
+            @AuthenticationPrincipal Usuario usuarioAutenticado,
+            @Parameter(description = "Parâmetros de paginação (page=0, size=20)")
+            @PageableDefault(page = 0, size = 20) Pageable pageable) {
 
-        List<StorieResponseDTO> stories = storieService.listarStoriesDestacados(usuarioAutenticado.getId());
+        Page<StorieResponseDTO> stories = storieService.listarStoriesDestacados(usuarioAutenticado.getId(), pageable);
         return ResponseEntity.ok(stories);
     }
 
-
-    @PostMapping(value = "/{id}/imagem", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PutMapping(value = "/{id:\\d+}/imagem", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @Operation(summary = "Adicionar imagem ao storie", description = "Adiciona ou atualiza a imagem de um storie")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Imagem adicionada com sucesso"),

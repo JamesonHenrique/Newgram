@@ -4,7 +4,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.Data;
 
-import java.util.Date;
+import java.time.LocalDateTime;
 
 @Data
 public class DestaqueSummaryDTO {
@@ -15,7 +15,7 @@ public class DestaqueSummaryDTO {
     private String nome;
 
     @Schema(description = "Data de criação do destaque", example = "2023-01-01T12:00:00Z")
-    private Date dataCriacao;
+    private LocalDateTime dataCriacao;
 
     @Schema(description = "Quantidade de stories associadas ao destaque", example = "5")
     private Integer quantidadeStories;

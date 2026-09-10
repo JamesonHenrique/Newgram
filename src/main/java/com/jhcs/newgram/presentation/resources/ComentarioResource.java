@@ -51,7 +51,7 @@ public class ComentarioResource {
         return ResponseEntity.status(HttpStatus.CREATED).body(comentario);
     }
 
-    @PutMapping("/{id}")
+    @PutMapping("/{id:\\d+}")
     @Operation(summary = "Atualizar comentário", description = "Atualiza o texto de um comentário existente")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Comentário atualizado com sucesso",
@@ -72,7 +72,7 @@ public class ComentarioResource {
         return ResponseEntity.ok(comentario);
     }
 
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/{id:\\d+}")
     @Operation(summary = "Excluir comentário", description = "Exclui um comentário existente")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "204", description = "Comentário excluído com sucesso"),
@@ -90,7 +90,7 @@ public class ComentarioResource {
         return ResponseEntity.noContent().build();
     }
 
-    @GetMapping("/post/{postId}")
+    @GetMapping("/post/{postId:\\d+}")
     @Operation(summary = "Listar comentários de um post", description = "Retorna os comentários principais de um post")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Comentários listados com sucesso",
@@ -109,27 +109,29 @@ public class ComentarioResource {
         return ResponseEntity.ok(comentarios);
     }
 
-    @GetMapping("/{id}/respostas")
+    @GetMapping("/{id:\\d+}/respostas")
     @Operation(summary = "Listar respostas de um comentário", description = "Retorna as respostas de um comentário específico")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Respostas listadas com sucesso",
-                    content = @Content(schema = @Schema(implementation = List.class))),
+                    content = @Content(schema = @Schema(implementation = Page.class))),
             @ApiResponse(responseCode = "404", description = "Comentário não encontrado",
                     content = @Content)
     })
-    public ResponseEntity<List<ComentarioResponseDTO>> listarRespostasPorComentario(
+    public ResponseEntity<Page<ComentarioResponseDTO>> listarRespostasPorComentario(
             @Parameter(description = "ID do comentário", required = true)
             @PathVariable Long id,
-            @AuthenticationPrincipal Usuario usuario) {
+            @AuthenticationPrincipal Usuario usuario,
+            @Parameter(description = "Parâmetros de paginação (page=0, size=10)")
+            @PageableDefault(page = 0, size = 10) Pageable pageable) {
 
-        List<ComentarioResponseDTO> respostas = comentarioService.listarRespostasPorComentario(id, usuario.getId());
+        Page<ComentarioResponseDTO> respostas = comentarioService.listarRespostasPorComentario(id, usuario.getId(), pageable);
         return ResponseEntity.ok(respostas);
     }
 
-    @PostMapping("/{id}/curtir")
+    @PostMapping("/{id:\\d+}/curtir")
     @Operation(summary = "Curtir comentário", description = "Adiciona uma curtida a um comentário")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Comentário curtido com sucesso",
+            @ApiResponse(responseCode = "201", description = "Comentário curtido com sucesso",
                     content = @Content(schema = @Schema(implementation = ComentarioResponseDTO.class))),
             @ApiResponse(responseCode = "400", description = "Comentário já curtido pelo usuário",
                     content = @Content),
@@ -142,25 +144,24 @@ public class ComentarioResource {
             @AuthenticationPrincipal Usuario usuario) {
 
         ComentarioResponseDTO comentario = comentarioService.curtirComentario(id, usuario.getId());
-        return ResponseEntity.ok(comentario);
+        return ResponseEntity.status(HttpStatus.CREATED).body(comentario);
     }
 
-    @DeleteMapping("/{id}/descurtir")
+    @DeleteMapping("/{id:\\d+}/descurtir")
     @Operation(summary = "Remover curtida", description = "Remove a curtida de um comentário")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Curtida removida com sucesso",
-                    content = @Content(schema = @Schema(implementation = ComentarioResponseDTO.class))),
+            @ApiResponse(responseCode = "204", description = "Curtida removida com sucesso"),
             @ApiResponse(responseCode = "400", description = "Comentário não foi curtido pelo usuário",
                     content = @Content),
             @ApiResponse(responseCode = "404", description = "Comentário não encontrado",
                     content = @Content)
     })
-    public ResponseEntity<ComentarioResponseDTO> descurtirComentario(
+    public ResponseEntity<Void> descurtirComentario(
             @Parameter(description = "ID do comentário", required = true)
             @PathVariable Long id,
             @AuthenticationPrincipal Usuario usuario) {
 
-        ComentarioResponseDTO comentario = comentarioService.descurtirComentario(id, usuario.getId());
-        return ResponseEntity.ok(comentario);
+        comentarioService.descurtirComentario(id, usuario.getId());
+        return ResponseEntity.noContent().build();
     }
 }

@@ -6,17 +6,15 @@ import com.jhcs.newgram.application.dtos.usuario.UsuarioSummaryDTO;
 import com.jhcs.newgram.application.dtos.usuario.UsuarioUpdateDTO;
 import com.jhcs.newgram.core.domain.entities.Usuario;
 import com.jhcs.newgram.core.domain.enums.TipoArquivo;
+import com.jhcs.newgram.core.domain.repositories.PostRepository;
 import com.jhcs.newgram.core.domain.repositories.SeguidorRepository;
-import com.jhcs.newgram.core.domain.repositories.StatusUsuarioRepository;
 import com.jhcs.newgram.core.domain.repositories.UsuarioRepository;
 import com.jhcs.newgram.infrastructure.aws.S3StorageService;
-import jakarta.persistence.EntityNotFoundException;
+import com.jhcs.newgram.infrastructure.exception.ResourceNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -32,13 +30,11 @@ public class UsuarioService {
     private SeguidorRepository seguidorRepository;
 
     @Autowired
+    private PostRepository postRepository;
+
+    @Autowired
     private ArquivoService arquivoService;
 
-    @Autowired
-    private StatusUsuarioRepository statusUsuarioRepository;
-
-    @Autowired
-    private PasswordEncoder passwordEncoder;
     @Autowired
     private S3StorageService s3StorageService;
 
@@ -46,41 +42,27 @@ public class UsuarioService {
     @Transactional(readOnly = true)
     public UsuarioSummaryDTO buscarUsuarioPorId(Long id, Long usuarioLogadoId) {
         Usuario usuario = usuarioRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
+                .orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado"));
 
-        boolean seguindoUsuario = false;
-        if (usuarioLogadoId != null) {
-            seguindoUsuario = seguidorRepository.existsBySeguidorIdAndSeguidoId(usuarioLogadoId, id);
-        }
         UsuarioSummaryDTO dto = converterParaUsuarioSummaryDTO(usuario, usuarioLogadoId);
-        dto.setSeguindoUsuario(seguindoUsuario);
+        dto.setSeguindoUsuario(segue(usuarioLogadoId, id));
         return dto;
     }
 
     @Transactional(readOnly = true)
     public UsuarioResponseDTO buscarUsuarioPorUsername(String username, Long usuarioLogadoId) {
         Usuario usuario = usuarioRepository.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
-
-        boolean seguindoUsuario = false;
-        if (usuarioLogadoId != null) {
-            seguindoUsuario = seguidorRepository.existsBySeguidorIdAndSeguidoId(usuarioLogadoId, usuario.getId());
-        }
-
+                .orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado"));
 
         UsuarioResponseDTO dto = converterParaUsuarioResponseDTO(usuario, usuarioLogadoId);
-        dto.setSeguindoUsuario(seguindoUsuario);
+        dto.setSeguindoUsuario(segue(usuarioLogadoId, usuario.getId()));
         return dto;
     }
 
     @Transactional(readOnly = true)
     public Page<UsuarioSummaryDTO> buscarUsuarios(String termo, Pageable pageable, Long usuarioLogadoId) {
         Sort sort = Sort.by(Sort.Direction.DESC, "dataCriacao");
-        Pageable safePageable = PageRequest.of(
-                pageable.getPageNumber(),
-                pageable.getPageSize(),
-                sort
-        );
+        Pageable safePageable = Support.safePage(pageable, sort);
         return usuarioRepository.buscarUsuarios(termo, safePageable)
                 .map(usuario -> converterParaUsuarioSummaryDTO(usuario, usuarioLogadoId));
     }
@@ -88,7 +70,7 @@ public class UsuarioService {
     @Transactional
     public UsuarioResponseDTO atualizarUsuario(Long id, UsuarioUpdateDTO dto) {
         Usuario usuario = usuarioRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
+                .orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado"));
 
         if (dto.getNome() != null) {
             usuario.setNome(dto.getNome());
@@ -101,7 +83,6 @@ public class UsuarioService {
             salvarFotoDePerfil(usuario.getId(), dto.getFotoPerfil());
         }
 
-
         usuario = usuarioRepository.save(usuario);
         return converterParaUsuarioResponseDTO(usuario, usuario.getId());
     }
@@ -109,11 +90,7 @@ public class UsuarioService {
     @Transactional(readOnly = true)
     public Page<UsuarioSummaryDTO> buscarSeguidores(Long usuarioId, Pageable pageable, Long usuarioLogadoId) {
         Sort sort = Sort.by(Sort.Direction.DESC, "dataCriacao");
-        Pageable safePageable = PageRequest.of(
-                pageable.getPageNumber(),
-                pageable.getPageSize(),
-                sort
-        );
+        Pageable safePageable = Support.safePage(pageable, sort);
         return usuarioRepository.findSeguidoresByUsuarioId(usuarioId, safePageable)
                 .map(usuario -> converterParaUsuarioSummaryDTO(usuario, usuarioLogadoId));
     }
@@ -121,11 +98,7 @@ public class UsuarioService {
     @Transactional(readOnly = true)
     public Page<UsuarioSummaryDTO> buscarSeguidos(Long usuarioId, Pageable pageable, Long usuarioLogadoId) {
         Sort sort = Sort.by(Sort.Direction.DESC, "dataCriacao");
-        Pageable safePageable = PageRequest.of(
-                pageable.getPageNumber(),
-                pageable.getPageSize(),
-                sort
-        );
+        Pageable safePageable = Support.safePage(pageable, sort);
         return usuarioRepository.findSeguidosByUsuarioId(usuarioId, safePageable)
                 .map(usuario -> converterParaUsuarioSummaryDTO(usuario, usuarioLogadoId));
     }
@@ -133,11 +106,7 @@ public class UsuarioService {
     @Transactional(readOnly = true)
     public Page<UsuarioSummaryDTO> buscarSugestoesUsuarios(Long usuarioId, Pageable pageable) {
         Sort sort = Sort.by(Sort.Direction.DESC, "dataCriacao");
-        Pageable safePageable = PageRequest.of(
-                pageable.getPageNumber(),
-                pageable.getPageSize(),
-                sort
-        );
+        Pageable safePageable = Support.safePage(pageable, sort);
         Page<Usuario> sugestoes = usuarioRepository.findSugestoesUsuarios(usuarioId, safePageable);
         return sugestoes.map(usuario -> converterParaUsuarioSummaryDTO(usuario, usuarioId));
     }
@@ -145,25 +114,15 @@ public class UsuarioService {
     @Transactional(readOnly = true)
     public Page<UsuarioSummaryDTO> buscarUsuariosMaisFamosos(Long usuarioId, Pageable pageable) {
         Sort sort = Sort.by(Sort.Direction.DESC, "dataCriacao");
-        Pageable safePageable = PageRequest.of(
-                pageable.getPageNumber(),
-                pageable.getPageSize(),
-                sort
-        );
+        Pageable safePageable = Support.safePage(pageable, sort);
         Page<Usuario> famosos = usuarioRepository.findUsuariosMaisFamosos(safePageable, usuarioId);
         return famosos.map(usuario -> converterParaUsuarioSummaryDTO(usuario, usuarioId));
     }
 
-
-
     @Transactional(readOnly = true)
     public Page<UsuarioComumDTO> buscarUsuariosPorAmigosEmComum(Long usuarioId, Pageable pageable) {
         Sort sort = Sort.by(Sort.Direction.DESC, "dataCriacao");
-        Pageable safePageable = PageRequest.of(
-                pageable.getPageNumber(),
-                pageable.getPageSize(),
-                sort
-        );
+        Pageable safePageable = Support.safePage(pageable, sort);
         Page<Object[]> results = usuarioRepository.findUsuariosPorAmigosEmComum(usuarioId, safePageable);
         return results.map(result -> {
             Usuario usuario = (Usuario) result[0];
@@ -174,11 +133,15 @@ public class UsuarioService {
 
     public void salvarFotoDePerfil(Long id, MultipartFile file) {
         Usuario usuario = usuarioRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Nenhum usuario encontrado com o ID: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Nenhum usuario encontrado com o ID: " + id));
 
         var fotoPerfil = arquivoService.saveFile(file, usuario.getUsuarioName(), TipoArquivo.FOTO_PERFIL);
         usuario.setFotoPerfil(fotoPerfil);
         usuarioRepository.save(usuario);
+    }
+
+    private boolean segue(Long usuarioLogadoId, Long alvoId) {
+        return usuarioLogadoId != null && seguidorRepository.existsBySeguidorIdAndSeguidoId(usuarioLogadoId, alvoId);
     }
 
     private UsuarioComumDTO converterParaUsuarioComumDTO(Usuario usuario, int commonFollowers, Long usuarioLogadoId) {
@@ -188,11 +151,7 @@ public class UsuarioService {
         dto.setUsername(usuario.getUsuarioName());
         dto.setCommonFollowers(commonFollowers);
         dto.setFotoPerfil(s3StorageService.getFileUrl(usuario.getFotoPerfil()));
-        boolean seguindoUsuario = false;
-        if (usuario.getId() != null) {
-            seguindoUsuario = seguidorRepository.existsBySeguidorIdAndSeguidoId(usuarioLogadoId, usuario.getId());
-        }
-        dto.setSeguindoUsuario(seguindoUsuario);
+        dto.setSeguindoUsuario(segue(usuarioLogadoId, usuario.getId()));
         return dto;
     }
 
@@ -209,12 +168,8 @@ public class UsuarioService {
         dto.setFotoPerfil(s3StorageService.getFileUrl(usuario.getFotoPerfil()));
         dto.setNumeroSeguidores(seguidorRepository.countSeguidoresByUsuarioId(usuario.getId()));
         dto.setNumeroSeguindo(seguidorRepository.countSeguidosByUsuarioId(usuario.getId()));
-        dto.setNumeroPosts((long) usuario.getPosts().size());
-        boolean seguindoUsuario = false;
-        if (usuarioLogadoId != null) {
-            seguindoUsuario = seguidorRepository.existsBySeguidorIdAndSeguidoId(usuarioLogadoId, usuario.getId());
-        }
-        dto.setSeguindoUsuario(seguindoUsuario);
+        dto.setNumeroPosts(postRepository.countPostsByUsuarioId(usuario.getId()));
+        dto.setSeguindoUsuario(segue(usuarioLogadoId, usuario.getId()));
         return dto;
     }
 
@@ -225,18 +180,11 @@ public class UsuarioService {
         dto.setUsername(usuario.getUsuarioName());
         dto.setNumeroSeguidores(seguidorRepository.countSeguidoresByUsuarioId(usuario.getId()));
         dto.setNumeroSeguindo(seguidorRepository.countSeguidosByUsuarioId(usuario.getId()));
-        dto.setNumeroPosts((long) usuario.getPosts().size());
+        dto.setNumeroPosts(postRepository.countPostsByUsuarioId(usuario.getId()));
 
         dto.setFotoPerfil(s3StorageService.getFileUrl(usuario.getFotoPerfil()));
-        boolean seguindoUsuario = false;
-        if (usuarioLogadoId != null) {
-            seguindoUsuario = seguidorRepository.existsBySeguidorIdAndSeguidoId(usuarioLogadoId, usuario.getId());
-        }
-        dto.setSeguindoUsuario(seguindoUsuario);
-
+        dto.setSeguindoUsuario(segue(usuarioLogadoId, usuario.getId()));
 
         return dto;
     }
-
-
 }

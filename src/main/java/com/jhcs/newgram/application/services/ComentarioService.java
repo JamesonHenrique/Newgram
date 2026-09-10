@@ -18,16 +18,16 @@ import com.jhcs.newgram.infrastructure.exception.ResourceNotFoundException;
 import com.jhcs.newgram.infrastructure.exception.UnauthorizedException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
+import org.springframework.dao.DataIntegrityViolationException;
 
 @Service
 public class ComentarioService {
@@ -44,8 +44,6 @@ public class ComentarioService {
     @Autowired
     private CurtidaRepository curtidaRepository;
     @Autowired
-    private ArquivoService arquivoService;
-    @Autowired
     private S3StorageService s3StorageService;
 
     @Transactional
@@ -60,7 +58,7 @@ public class ComentarioService {
         comentario.setTexto(dto.getTexto());
         comentario.setAutor(autor);
         comentario.setPost(post);
-        comentario.setDataCriacao(new Date());
+        comentario.setDataCriacao(LocalDateTime.now());
 
         if (dto.getComentarioPaiId() != null) {
             Comentario comentarioPai = comentarioRepository.findById(dto.getComentarioPaiId())
@@ -120,11 +118,7 @@ public class ComentarioService {
 
     public Page<ComentarioResponseDTO> listarComentariosPorPost(Long postId, Pageable pageable, Long usuarioId) {
         Sort sort = Sort.by(Sort.Direction.DESC, "dataCriacao");
-        Pageable safePageable = PageRequest.of(
-                pageable.getPageNumber(),
-                pageable.getPageSize(),
-                sort
-        );
+        Pageable safePageable = Support.safePage(pageable, sort);
         if (!postRepository.existsById(postId)) {
             throw new ResourceNotFoundException("Post não encontrado");
         }
@@ -135,16 +129,24 @@ public class ComentarioService {
     }
 
     @Transactional(readOnly = true)
-    public List<ComentarioResponseDTO> listarRespostasPorComentario(Long comentarioId, Long usuarioId) {
+    public Page<ComentarioResponseDTO> listarRespostasPorComentario(Long comentarioId, Long usuarioId, Pageable pageable) {
         if (!comentarioRepository.existsById(comentarioId)) {
             throw new ResourceNotFoundException("Comentário não encontrado");
         }
 
         List<Comentario> respostas = comentarioRepository.findByComentarioPaiIdOrderByDataCriacaoAsc(comentarioId);
 
-        return respostas.stream()
+        List<ComentarioResponseDTO> dtos = respostas.stream()
                 .map(resposta -> converterParaResponseDTO(resposta, usuarioId))
                 .collect(Collectors.toList());
+        return Support.pageOf(dtos, pageable);
+    }
+
+    /** Mantido para compatibilidade: primeira pagina com 50 itens. */
+    @Transactional(readOnly = true)
+    public List<ComentarioResponseDTO> listarRespostasPorComentario(Long comentarioId, Long usuarioId) {
+        return listarRespostasPorComentario(comentarioId, usuarioId,
+                org.springframework.data.domain.PageRequest.of(0, Support.MAX_PAGE_SIZE)).getContent();
     }
 
     @Transactional
@@ -162,9 +164,13 @@ public class ComentarioService {
         Curtida curtida = new Curtida();
         curtida.setUsuario(usuario);
         curtida.setComentario(comentario);
-        curtida.setDataCriacao(new Date());
+        curtida.setDataCriacao(LocalDateTime.now());
 
-        curtidaRepository.save(curtida);
+        try {
+            curtidaRepository.saveAndFlush(curtida);
+        } catch (DataIntegrityViolationException e) {
+            throw new BusinessException("Você já curtiu este comentário", e);
+        }
 
         // Criar notificação para o autor do comentário
         // if (!comentario.getAutor().getId().equals(usuarioId)) {

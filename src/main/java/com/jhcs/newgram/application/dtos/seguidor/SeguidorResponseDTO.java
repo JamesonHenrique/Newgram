@@ -3,7 +3,7 @@ package com.jhcs.newgram.application.dtos.seguidor;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
-import java.util.Date;
+import java.time.LocalDateTime;
 
 @Data
 public class SeguidorResponseDTO {
@@ -11,7 +11,7 @@ public class SeguidorResponseDTO {
     private Long id;
 
     @Schema(description = "Data de criação da relação de seguidor", example = "2023-01-01T12:00:00Z")
-    private Date dataCriacao;
+    private LocalDateTime dataCriacao;
 
     @Schema(description = "Indica se as notificações estão ativadas", example = "true")
     private boolean notificacoesAtivadas;

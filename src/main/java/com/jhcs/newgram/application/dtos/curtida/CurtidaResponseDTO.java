@@ -4,7 +4,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import com.jhcs.newgram.application.dtos.usuario.UsuarioSummaryDTO;
 import lombok.Data;
 
-import java.util.Date;
+import java.time.LocalDateTime;
 
 @Data
 public class CurtidaResponseDTO {
@@ -21,5 +21,5 @@ public class CurtidaResponseDTO {
     private Long comentarioId;
 
     @Schema(description = "Data em que a curtida foi realizada", example = "2023-01-01T12:00:00Z")
-    private Date dataCriacao;
+    private LocalDateTime dataCriacao;
 }

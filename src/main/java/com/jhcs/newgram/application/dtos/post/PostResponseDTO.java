@@ -4,7 +4,7 @@ import com.jhcs.newgram.application.dtos.usuario.UsuarioSummaryDTO;
 import com.jhcs.newgram.core.domain.enums.TipoVisibilidade;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
-import java.util.Date;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Data
@@ -18,7 +18,7 @@ public class PostResponseDTO {
     private String legenda;
 
     @Schema(description = "Data de criação do post")
-    private Date dataCriacao;
+    private LocalDateTime dataCriacao;
 
     @Schema(description = "Localização associada ao post")
     private String localizacao;

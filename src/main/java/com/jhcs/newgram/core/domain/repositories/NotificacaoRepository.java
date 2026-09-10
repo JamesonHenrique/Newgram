@@ -16,6 +16,7 @@ public interface NotificacaoRepository extends JpaRepository<Notificacao, Long> 
 
     @Modifying(clearAutomatically = true)
     @Query("UPDATE Notificacao n SET n.lida = true WHERE n.destinatario.id = :usuarioId")
+    @org.springframework.transaction.annotation.Transactional
     int marcarTodasComoVisualizadas(@Param("usuarioId") Long usuarioId);
 
     @Query("SELECT n FROM Notificacao n WHERE n.destinatario.id = :usuarioId AND n.lida = false ORDER BY n.dataCriacao DESC")

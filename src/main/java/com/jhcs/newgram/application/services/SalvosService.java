@@ -13,9 +13,12 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Date;
+import com.jhcs.newgram.infrastructure.exception.BusinessException;
+import com.jhcs.newgram.infrastructure.exception.ResourceNotFoundException;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+import org.springframework.dao.DataIntegrityViolationException;
 
 @Service
 public class SalvosService {
@@ -31,13 +34,14 @@ public class SalvosService {
 
     @Transactional(readOnly = true)
     public Page<SalvosResponseDTO> listarPostsSalvosPorUsuario(Long usuarioId, Pageable pageable) {
-        Page<Salvos> salvos = salvosRepository.findByUsuarioIdOrderByDataSalvoDesc(usuarioId, pageable);
+        Page<Salvos> salvos = salvosRepository.findByUsuarioIdOrderByDataSalvoDesc(usuarioId, Support.safePage(pageable));
         return salvos.map(this::converterParaSalvosResponseDTO);
     }
 
     @Transactional(readOnly = true)
     public Page<SalvosResponseDTO> listarPostsSalvosPorColecao(Long usuarioId, String colecao, Pageable pageable) {
-        Page<Salvos> salvos = salvosRepository.findByUsuarioIdAndColecaoOrderByDataSalvoDesc(usuarioId, colecao, pageable);
+        Page<Salvos> salvos =
+                salvosRepository.findByUsuarioIdAndColecaoOrderByDataSalvoDesc(usuarioId, colecao, Support.safePage(pageable));
         return salvos.map(this::converterParaSalvosResponseDTO);
     }
 
@@ -63,10 +67,11 @@ public class SalvosService {
 
     @Transactional
     public void salvarPost(Long usuarioId, Long postId, String colecao) {
-        if (salvosRepository.existsByUsuarioIdAndPostId(usuarioId, postId)) {
-            Optional<Salvos> salvoExistente = salvosRepository.findByUsuarioIdAndPostId(usuarioId, postId);
-            if (salvoExistente.isPresent() && (colecao != null && !colecao.isEmpty())) {
-                Salvos salvo = salvoExistente.get();
+        // UPSERT idempotente: existe -> atualiza colecao; corre sob race via unique + catch.
+        Optional<Salvos> existente = salvosRepository.findByUsuarioIdAndPostId(usuarioId, postId);
+        if (existente.isPresent()) {
+            if (colecao != null && !colecao.isEmpty()) {
+                Salvos salvo = existente.get();
                 salvo.setColecao(colecao);
                 salvosRepository.save(salvo);
             }
@@ -74,21 +79,31 @@ public class SalvosService {
         }
 
         Usuario usuario = usuarioRepository.findById(usuarioId)
-                .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
+                .orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado"));
 
         Post post = postRepository.findById(postId)
-                .orElseThrow(() -> new RuntimeException("Post não encontrado"));
+                .orElseThrow(() -> new ResourceNotFoundException("Post não encontrado"));
 
         Salvos salvos = new Salvos();
         salvos.setUsuario(usuario);
         salvos.setPost(post);
-        salvos.setDataSalvo(new Date());
+        salvos.setDataSalvo(LocalDateTime.now());
 
         if (colecao != null && !colecao.isEmpty()) {
             salvos.setColecao(colecao);
         }
 
-        salvosRepository.save(salvos);
+        try {
+            salvosRepository.saveAndFlush(salvos);
+        } catch (DataIntegrityViolationException e) {
+            // Retry duplo concorrente: recarrega e atualiza a colecao.
+            Salvos concorrente = salvosRepository.findByUsuarioIdAndPostId(usuarioId, postId)
+                    .orElseThrow(() -> new BusinessException("Falha ao salvar post", e));
+            if (colecao != null && !colecao.isEmpty()) {
+                concorrente.setColecao(colecao);
+                salvosRepository.save(concorrente);
+            }
+        }
     }
 
     @Transactional

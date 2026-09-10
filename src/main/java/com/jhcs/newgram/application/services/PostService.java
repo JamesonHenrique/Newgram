@@ -12,8 +12,8 @@ import com.jhcs.newgram.infrastructure.aws.S3StorageService;
 import com.jhcs.newgram.infrastructure.exception.BusinessException;
 import com.jhcs.newgram.infrastructure.exception.ResourceNotFoundException;
 import com.jhcs.newgram.infrastructure.exception.UnauthorizedException;
-import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,7 +21,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -49,14 +48,7 @@ public class PostService {
     private SalvosRepository salvosRepository;
 
     @Autowired
-    private UsuarioService usuarioService;
-
-    @Autowired
     private ArquivoService arquivoService;
-    @Autowired
-    private SalvosService salvosService;
-    @Autowired
-    private CurtidaService curtidaService;
     @Autowired
     private S3StorageService s3StorageService;
     @Transactional
@@ -69,7 +61,7 @@ public class PostService {
         post.setLocalizacao(dto.getLocalizacao());
         post.setVisibilidade(dto.getVisibilidade());
         post.setAutor(autor);
-        post.setDataCriacao(new Date());
+        post.setDataCriacao(LocalDateTime.now());
         post.setArquivado(false);
 
         if (dto.getHashtags() != null && !dto.getHashtags().isEmpty()) {
@@ -174,11 +166,7 @@ public class PostService {
     @Transactional(readOnly = true)
     public Page<PostSummaryDTO> listarPostsRecomendados(Long usuarioId, Pageable pageable) {
 
-        Pageable safePageable = PageRequest.of(
-                pageable.getPageNumber(),
-                pageable.getPageSize(),
-                Sort.unsorted()
-        );
+        Pageable safePageable = Support.safePage(pageable, Sort.unsorted());
         Page<Post> posts = postRepository.buscarPostsRecomendadosParaUsuario(
                 usuarioId,
                 safePageable
@@ -190,33 +178,21 @@ public class PostService {
     @Transactional(readOnly = true)
     public Page<PostSummaryDTO> listarPostsPorLegenda(String termo, Pageable pageable, Long usuarioId) {
         Sort sort = Sort.by(Sort.Direction.DESC, "dataCriacao");
-        Pageable safePageable = PageRequest.of(
-                pageable.getPageNumber(),
-                pageable.getPageSize(),
-                sort
-        );
+        Pageable safePageable = Support.safePage(pageable, sort);
         Page<Post> posts = postRepository.buscarPostsPorLegenda(termo, safePageable);
         return posts.map(post -> converterParaSummaryDTO(post, usuarioId));
     }
     @Transactional(readOnly = true)
     public Page<PostSummaryDTO> listarPostsDoUsuario(Long usuarioId, Pageable pageable, Long usuarioLogadoId) {
         Sort sort = Sort.by(Sort.Direction.DESC, "dataCriacao");
-        Pageable safePageable = PageRequest.of(
-                pageable.getPageNumber(),
-                pageable.getPageSize(),
-                sort
-        );
+        Pageable safePageable = Support.safePage(pageable, sort);
         Page<Post> posts = postRepository.findByAutorId(usuarioId, safePageable);
         return posts.map(post -> converterParaSummaryDTO(post, usuarioLogadoId));
     }
 
     @Transactional(readOnly = true)
     public Page<PostSummaryDTO> listarFeedDoUsuario(Long usuarioId, Pageable pageable) {
-        Pageable safePageable = PageRequest.of(
-                pageable.getPageNumber(),
-                pageable.getPageSize(),
-                Sort.unsorted()
-        );
+        Pageable safePageable = Support.safePage(pageable, Sort.unsorted());
         Page<Post> posts = postRepository.findFeedByUsuarioId(usuarioId, safePageable);
         return posts.map(post -> converterParaSummaryDTO(post, usuarioId));
     }
@@ -224,11 +200,7 @@ public class PostService {
     @Transactional(readOnly = true)
     public Page<PostSummaryDTO> listarPostsPopulares(Pageable pageable, Long usuarioId) {
 
-        Pageable safePageable = PageRequest.of(
-                pageable.getPageNumber(),
-                pageable.getPageSize(),
-                Sort.unsorted()
-        );
+        Pageable safePageable = Support.safePage(pageable, Sort.unsorted());
         Page<Post> posts = postRepository.findPostsPopulares(safePageable);
         return posts.map(post -> converterParaSummaryDTO(post, usuarioId));
     }
@@ -237,29 +209,17 @@ public class PostService {
         LocalDateTime dataCorte = LocalDateTime.now().minusHours(48);
         int minimoInteracoes = 10;
 
-        List<Post> posts = postRepository.findPostsTendencias(
+        Page<Post> posts = postRepository.findPostsTendencias(
                 dataCorte,
                 minimoInteracoes,
-                pageable.getPageSize(),
-                (int) pageable.getOffset()
-        );
+                Support.safePage(pageable, Sort.unsorted()));
 
-        long total = postRepository.countPostsTendencias(dataCorte, minimoInteracoes);
-
-        List<PostSummaryDTO> dtos = posts.stream()
-                .map(post -> converterParaSummaryDTO(post, usuarioId))
-                .collect(Collectors.toList());
-
-        return new PageImpl<>(dtos, pageable, total);
+        return posts.map(post -> converterParaSummaryDTO(post, usuarioId));
     }
     @Transactional(readOnly = true)
     public Page<PostSummaryDTO> listarPostsPopularesSeguidores(Long usuarioId, Pageable pageable) {
         Sort sort = Sort.by(Sort.Direction.DESC, "dataCriacao");
-        Pageable safePageable = PageRequest.of(
-                pageable.getPageNumber(),
-                pageable.getPageSize(),
-                sort
-        );
+        Pageable safePageable = Support.safePage(pageable, sort);
 
         Page<Post> posts = postRepository.findPopularPostsFromFollowing(usuarioId, safePageable);
         return posts.map(post -> converterParaSummaryDTO(post, usuarioId));
@@ -267,11 +227,7 @@ public class PostService {
     @Transactional(readOnly = true)
     public Page<PostSummaryDTO> listarPostsPorHashtag(String hashtag, Pageable pageable, Long usuarioId) {
         Sort sort = Sort.by(Sort.Direction.DESC, "dataCriacao");
-        Pageable safePageable = PageRequest.of(
-                pageable.getPageNumber(),
-                pageable.getPageSize(),
-                sort
-        );
+        Pageable safePageable = Support.safePage(pageable, sort);
         Page<Post> posts = postRepository.findByHashtag(hashtag, safePageable);
         return posts.map(post -> converterParaSummaryDTO(post, usuarioId));
     }
@@ -279,11 +235,7 @@ public class PostService {
     @Transactional(readOnly = true)
     public Page<PostSummaryDTO> listarPostsPorLocalizacao(String localizacao, Pageable pageable, Long usuarioId) {
         Sort sort = Sort.by(Sort.Direction.DESC, "dataCriacao");
-        Pageable safePageable = PageRequest.of(
-                pageable.getPageNumber(),
-                pageable.getPageSize(),
-                sort
-        );
+        Pageable safePageable = Support.safePage(pageable, sort);
         Page<Post> posts = postRepository.findByLocalizacao(localizacao, safePageable);
         return posts.map(post -> converterParaSummaryDTO(post, usuarioId));
     }
@@ -291,11 +243,7 @@ public class PostService {
     @Transactional(readOnly = true)
     public Page<PostSummaryDTO> listarPostsSalvos(Long usuarioId, Pageable pageable) {
         Sort sort = Sort.by(Sort.Direction.DESC, "dataCriacao");
-        Pageable safePageable = PageRequest.of(
-                pageable.getPageNumber(),
-                pageable.getPageSize(),
-                sort
-        );
+        Pageable safePageable = Support.safePage(pageable, sort);
         Page<Post> posts = postRepository.findSalvosByUsuarioId(usuarioId, safePageable);
         return posts.map(post -> converterParaSummaryDTO(post, usuarioId));
     }
@@ -303,11 +251,7 @@ public class PostService {
     @Transactional(readOnly = true)
     public Page<PostSummaryDTO> listarPostsSalvosPorColecao(Long usuarioId, String colecao, Pageable pageable) {
         Sort sort = Sort.by(Sort.Direction.DESC, "dataCriacao");
-        Pageable safePageable = PageRequest.of(
-                pageable.getPageNumber(),
-                pageable.getPageSize(),
-                sort
-        );
+        Pageable safePageable = Support.safePage(pageable, sort);
         Page<Post> posts = postRepository.findSalvosByUsuarioIdAndColecao(usuarioId, colecao, safePageable);
         return posts.map(post -> converterParaSummaryDTO(post, usuarioId));
     }
@@ -320,35 +264,31 @@ public class PostService {
         Usuario usuario = usuarioRepository.findById(usuarioId)
                 .orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado"));
 
-        if (curtidaRepository.existsByUsuarioIdAndPostId(usuarioId, postId)) {
-            throw new BusinessException("Você já curtiu este post");
-        }
-
         Curtida curtida = new Curtida();
         curtida.setUsuario(usuario);
         curtida.setPost(post);
-        curtida.setDataCriacao(new Date());
+        curtida.setDataCriacao(LocalDateTime.now());
 
-        curtidaRepository.save(curtida);
-
-        // Criar notificação para o autor do post
-        // notificacaoService.criarNotificacaoCurtida(usuario, post);
+        try {
+            curtidaRepository.saveAndFlush(curtida);
+        } catch (DataIntegrityViolationException e) {
+            throw new BusinessException("Você já curtiu este post", e);
+        }
 
         return converterParaResponseDTO(post, usuarioId);
     }
 
     @Transactional
-    public PostResponseDTO descurtirPost(Long postId, Long usuarioId) {
-        Post post = postRepository.findById(postId)
-                .orElseThrow(() -> new ResourceNotFoundException("Post não encontrado"));
+    public void descurtirPost(Long postId, Long usuarioId) {
+        if (!postRepository.existsById(postId)) {
+            throw new ResourceNotFoundException("Post não encontrado");
+        }
 
         if (!curtidaRepository.existsByUsuarioIdAndPostId(usuarioId, postId)) {
             throw new BusinessException("Você não curtiu este post");
         }
 
         curtidaRepository.deleteByUsuarioIdAndPostId(usuarioId, postId);
-
-        return converterParaResponseDTO(post, usuarioId);
     }
 
     @Transactional
@@ -359,17 +299,28 @@ public class PostService {
         Usuario usuario = usuarioRepository.findById(usuarioId)
                 .orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado"));
 
+        // UPSERT idempotente (mesma semantica do SalvosService).
         if (salvosRepository.existsByUsuarioIdAndPostId(usuarioId, postId)) {
-            throw new BusinessException("Você já salvou este post");
+            if (colecao != null && !colecao.isEmpty()) {
+                Salvos existente = salvosRepository.findByUsuarioIdAndPostId(usuarioId, postId)
+                        .orElseThrow(() -> new BusinessException("Falha ao salvar post"));
+                existente.setColecao(colecao);
+                salvosRepository.save(existente);
+            }
+            return;
         }
 
         Salvos salvo = new Salvos();
         salvo.setUsuario(usuario);
         salvo.setPost(post);
-        salvo.setDataSalvo(new Date());
+        salvo.setDataSalvo(LocalDateTime.now());
         salvo.setColecao(colecao);
 
-        salvosRepository.save(salvo);
+        try {
+            salvosRepository.saveAndFlush(salvo);
+        } catch (DataIntegrityViolationException e) {
+            throw new BusinessException("Você já salvou este post", e);
+        }
     }
 
     @Transactional
@@ -384,14 +335,13 @@ public class PostService {
     @Transactional
     public void salvarImagemDoPost(Long postId, MultipartFile file, Long usuarioId) {
         Usuario usuario = usuarioRepository.findById(usuarioId)
-                .orElseThrow(() -> new EntityNotFoundException("Nenhum usuário encontrado com o ID: " + usuarioId));
+                .orElseThrow(() -> new ResourceNotFoundException("Nenhum usuário encontrado com o ID: " + usuarioId));
 
         Post post = postRepository.findById(postId)
-                .orElseThrow(() -> new EntityNotFoundException("Nenhum post encontrado com o ID: " + postId));
+                .orElseThrow(() -> new ResourceNotFoundException("Nenhum post encontrado com o ID: " + postId));
 
-        if (!post.getAutor().getId().equals(usuarioId)) {
-            throw new UnauthorizedException("Você não tem permissão para adicionar imagem a este post");
-        }
+        Support.requireOwner(post.getAutor().getId(), usuarioId,
+                "Você não tem permissão para adicionar imagem a este post");
 
         var imagemPost = arquivoService.saveFile(file, usuario.getUsuarioName(), TipoArquivo.POST);
         post.setImagemUrl(imagemPost);
@@ -505,10 +455,10 @@ public class PostService {
         dto.setNumeroCurtidas(curtidaRepository.countByPostId(post.getId()));
         dto.setNumeroComentarios(comentarioRepository.countByPostId(post.getId()));
         if (usuarioLogadoId != null) {
-            boolean curtidoPeloUsuario = curtidaService.verificarCurtidaPost(post.getId(), usuarioLogadoId);
+            boolean curtidoPeloUsuario = curtidaRepository.existsByUsuarioIdAndPostId(usuarioLogadoId, post.getId());
             dto.setCurtidoPeloUsuario(curtidoPeloUsuario);
 
-            boolean salvoPeloUsuario = salvosService.verificarPostSalvo(usuarioLogadoId, post.getId());
+            boolean salvoPeloUsuario = salvosRepository.existsByUsuarioIdAndPostId(usuarioLogadoId, post.getId());
             dto.setSalvoPeloUsuario(salvoPeloUsuario);
         } else {
             dto.setCurtidoPeloUsuario(false);

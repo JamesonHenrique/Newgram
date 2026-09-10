@@ -12,7 +12,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Date;
+import com.jhcs.newgram.infrastructure.exception.ResourceNotFoundException;
+import java.time.LocalDateTime;
 
 @Service
 public class NotificacaoService {
@@ -46,10 +47,12 @@ public class NotificacaoService {
     }
 
     @Transactional
-    public void marcarComoVisualizada(Long notificacaoId) {
+    public void marcarComoVisualizada(Long notificacaoId, Long usuarioId) {
         Notificacao notificacao = notificacaoRepository.findById(notificacaoId)
-                .orElseThrow(() -> new RuntimeException("Notificação não encontrada"));
+                .orElseThrow(() -> new ResourceNotFoundException("Notificação não encontrada"));
 
+        Support.requireOwner(notificacao.getDestinatario().getId(), usuarioId,
+                "Você não tem permissão para alterar esta notificação");
         notificacao.setLida(true);
         notificacaoRepository.save(notificacao);
     }
@@ -57,25 +60,29 @@ public class NotificacaoService {
     @Transactional
     public void criarNotificacao(Long destinatarioId, Long remetenteId, TipoNotificacao tipo, String conteudo) {
         Usuario destinatario = usuarioRepository.findById(destinatarioId)
-                .orElseThrow(() -> new RuntimeException("Destinatário não encontrado"));
+                .orElseThrow(() -> new ResourceNotFoundException("Destinatário não encontrado"));
 
         Usuario remetente = usuarioRepository.findById(remetenteId)
-                .orElseThrow(() -> new RuntimeException("Remetente não encontrado"));
+                .orElseThrow(() -> new ResourceNotFoundException("Remetente não encontrado"));
 
         Notificacao notificacao = new Notificacao();
         notificacao.setDestinatario(destinatario);
         notificacao.setRemetente(remetente);
         notificacao.setTipo(tipo);
         notificacao.setConteudo(conteudo);
-        notificacao.setDataCriacao(new Date());
+        notificacao.setDataCriacao(LocalDateTime.now());
         notificacao.setLida(false);
 
         notificacaoRepository.save(notificacao);
     }
 
     @Transactional
-    public void deletarNotificacao(Long notificacaoId) {
-        notificacaoRepository.deleteById(notificacaoId);
+    public void deletarNotificacao(Long notificacaoId, Long usuarioId) {
+        Notificacao notificacao = notificacaoRepository.findById(notificacaoId)
+                .orElseThrow(() -> new ResourceNotFoundException("Notificação não encontrada"));
+        Support.requireOwner(notificacao.getDestinatario().getId(), usuarioId,
+                "Você não tem permissão para excluir esta notificação");
+        notificacaoRepository.delete(notificacao);
     }
 
     private NotificacaoResponseDTO converterParaNotificacaoResponseDTO(Notificacao notificacao) {

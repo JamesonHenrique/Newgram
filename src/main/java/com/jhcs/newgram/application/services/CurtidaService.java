@@ -13,13 +13,13 @@ import com.jhcs.newgram.core.domain.repositories.PostRepository;
 import com.jhcs.newgram.core.domain.repositories.UsuarioRepository;
 import com.jhcs.newgram.infrastructure.exception.BusinessException;
 import com.jhcs.newgram.infrastructure.exception.ResourceNotFoundException;
+import java.time.LocalDateTime;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.Date;
 
 @Service
 public class CurtidaService {
@@ -36,9 +36,6 @@ public class CurtidaService {
     @Autowired
     private ComentarioRepository comentarioRepository;
 
-    @Autowired
-    private ArquivoService arquivoService;
-
     @Transactional
     public CurtidaResponseDTO curtir(CurtidaCreateDTO dto, Long usuarioId) {
         Usuario usuario = usuarioRepository.findById(usuarioId)
@@ -54,30 +51,25 @@ public class CurtidaService {
 
         Curtida curtida = new Curtida();
         curtida.setUsuario(usuario);
-        curtida.setDataCriacao(new Date());
+        curtida.setDataCriacao(LocalDateTime.now());
 
         if (dto.getPostId() != null) {
             Post post = postRepository.findById(dto.getPostId())
                     .orElseThrow(() -> new ResourceNotFoundException("Post não encontrado"));
-
-            if (curtidaRepository.existsByUsuarioIdAndPostId(usuarioId, dto.getPostId())) {
-                throw new BusinessException("Você já curtiu este post");
-            }
-
             curtida.setPost(post);
-        }
-        else {
+        } else {
             Comentario comentario = comentarioRepository.findById(dto.getComentarioId())
                     .orElseThrow(() -> new ResourceNotFoundException("Comentário não encontrado"));
-
-            if (curtidaRepository.existsByUsuarioIdAndComentarioId(usuarioId, dto.getComentarioId())) {
-                throw new BusinessException("Você já curtiu este comentário");
-            }
-
             curtida.setComentario(comentario);
         }
 
-        curtida = curtidaRepository.save(curtida);
+        // Idempotente sob concorrencia: unique(usuario,post|comentario) + catch 409.
+        try {
+            curtida = curtidaRepository.saveAndFlush(curtida);
+        } catch (DataIntegrityViolationException e) {
+            throw new BusinessException(
+                    dto.getPostId() != null ? "Você já curtiu este post" : "Você já curtiu este comentário", e);
+        }
 
         return converterParaResponseDTO(curtida);
     }
@@ -105,7 +97,7 @@ public class CurtidaService {
             throw new ResourceNotFoundException("Post não encontrado");
         }
 
-        Page<Curtida> curtidas = curtidaRepository.findByPostIdOrderByDataCriacaoDesc(postId, pageable);
+        Page<Curtida> curtidas = curtidaRepository.findByPostIdOrderByDataCriacaoDesc(postId, Support.safePage(pageable));
         return curtidas.map(this::converterParaResponseDTO);
     }
 
@@ -115,7 +107,8 @@ public class CurtidaService {
             throw new ResourceNotFoundException("Comentário não encontrado");
         }
 
-        Page<Curtida> curtidas = curtidaRepository.findByComentarioIdOrderByDataCriacaoDesc(comentarioId, pageable);
+        Page<Curtida> curtidas =
+                curtidaRepository.findByComentarioIdOrderByDataCriacaoDesc(comentarioId, Support.safePage(pageable));
         return curtidas.map(this::converterParaResponseDTO);
     }
 

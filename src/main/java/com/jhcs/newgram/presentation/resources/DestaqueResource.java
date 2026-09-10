@@ -1,9 +1,9 @@
 package com.jhcs.newgram.presentation.resources;
 
 
+import com.jhcs.newgram.application.dtos.destaque.ContagemStoriesDTO;
 import com.jhcs.newgram.application.dtos.destaque.DestaqueCreateDTO;
 import com.jhcs.newgram.application.dtos.destaque.DestaqueResponseDTO;
-import com.jhcs.newgram.application.dtos.destaque.DestaqueSummaryDTO;
 import com.jhcs.newgram.application.dtos.destaque.DestaqueUpdateDTO;
 import com.jhcs.newgram.application.dtos.storie.StorieResponseDTO;
 import com.jhcs.newgram.application.services.DestaqueService;
@@ -17,6 +17,9 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -24,10 +27,8 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.List;
-
 @RestController
-@RequestMapping("destaques")
+@RequestMapping("/destaques")
 @Tag(name = "Destaques", description = "Operações relacionadas a destaques de stories")
 public class DestaqueResource {
 
@@ -57,15 +58,17 @@ public class DestaqueResource {
             @ApiResponse(responseCode = "200", description = "Destaques listados com sucesso"),
             @ApiResponse(responseCode = "404", description = "Usuário não encontrado")
     })
-    public ResponseEntity<List<DestaqueResponseDTO>> listarDestaquesPorUsername(
+    public ResponseEntity<Page<DestaqueResponseDTO>> listarDestaquesPorUsername(
             @Parameter(description = "Username do usuário", required = true)
-            @PathVariable("username") String username) {
+            @PathVariable("username") String username,
+            @Parameter(description = "Parâmetros de paginação (page=0, size=20)")
+            @PageableDefault(page = 0, size = 20) Pageable pageable) {
 
-        List<DestaqueResponseDTO> destaques = destaqueService.listarDestaquesPorUsuario(username);
+        Page<DestaqueResponseDTO> destaques = destaqueService.listarDestaquesPorUsuario(username, pageable);
         return ResponseEntity.ok(destaques);
     }
 
-    @GetMapping("/{id}")
+    @GetMapping("/{id:\\d+}")
     @Operation(summary = "Buscar destaque por ID", description = "Busca um destaque específico pelo seu ID")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Destaque encontrado com sucesso"),
@@ -80,7 +83,7 @@ public class DestaqueResource {
         return ResponseEntity.ok(destaque);
     }
 
-    @PutMapping(value = "/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
+    @PutMapping(value = "/{id:\\d+}", consumes = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Atualizar destaque", description = "Atualiza informações de um destaque existente")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Destaque atualizado com sucesso"),
@@ -97,7 +100,7 @@ public class DestaqueResource {
         return ResponseEntity.ok(responseDTO);
     }
 
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/{id:\\d+}")
     @Operation(summary = "Excluir destaque", description = "Remove um destaque existente")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "204", description = "Destaque excluído com sucesso"),
@@ -112,7 +115,7 @@ public class DestaqueResource {
         return ResponseEntity.noContent().build();
     }
 
-    @GetMapping("/{id}/stories")
+    @GetMapping("/{id:\\d+}/stories")
     @Operation(summary = "Listar stories de um destaque", description = "Lista todas as stories presentes em um destaque específico")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Stories listadas com sucesso"),
@@ -120,15 +123,18 @@ public class DestaqueResource {
             @ApiResponse(responseCode = "403", description = "Acesso negado"),
             @ApiResponse(responseCode = "404", description = "Destaque não encontrado")
     })
-    public ResponseEntity<List<StorieResponseDTO>> listarStoriesPorDestaque(
+    public ResponseEntity<Page<StorieResponseDTO>> listarStoriesPorDestaque(
             @Parameter(description = "ID do destaque", required = true) @PathVariable("id") Long id,
-            @AuthenticationPrincipal Usuario usuarioAutenticado) {
+            @AuthenticationPrincipal Usuario usuarioAutenticado,
+            @Parameter(description = "Parâmetros de paginação (page=0, size=20)")
+            @PageableDefault(page = 0, size = 20) Pageable pageable) {
 
-        List<StorieResponseDTO> stories = destaqueService.listarStoriesPorDestaque(id, usuarioAutenticado.getId());
+        Page<StorieResponseDTO> stories =
+                destaqueService.listarStoriesPorDestaque(id, usuarioAutenticado.getId(), pageable);
         return ResponseEntity.ok(stories);
     }
 
-    @PostMapping(value = "/{id}/capa", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PutMapping(value = "/{id:\\d+}/capa", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @Operation(summary = "Adicionar capa ao destaque", description = "Adiciona ou atualiza a imagem de capa do destaque")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Capa adicionada com sucesso"),
@@ -142,22 +148,23 @@ public class DestaqueResource {
             @RequestParam("arquivo") MultipartFile arquivo,
             @AuthenticationPrincipal Usuario usuarioAutenticado) {
 
-        destaqueService.salvarCapaDeDestaque(id, usuarioAutenticado.getId(), arquivo);
-        DestaqueResponseDTO responseDTO = destaqueService.buscarDestaquePorId(id, usuarioAutenticado.getId());
+        DestaqueResponseDTO responseDTO =
+                destaqueService.adicionarCapaDestaque(id, arquivo, usuarioAutenticado.getId());
         return ResponseEntity.ok(responseDTO);
     }
 
-    @GetMapping("/{id}/contagem-stories")
+    @GetMapping("/{id:\\d+}/contagem-stories")
     @Operation(summary = "Contar stories em um destaque", description = "Retorna o número de stories em um destaque específico")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Contagem realizada com sucesso"),
             @ApiResponse(responseCode = "401", description = "Não autorizado"),
             @ApiResponse(responseCode = "404", description = "Destaque não encontrado")
     })
-    public ResponseEntity<Long> contarStoriesPorDestaque(
+    public ResponseEntity<ContagemStoriesDTO> contarStoriesPorDestaque(
             @Parameter(description = "ID do destaque", required = true) @PathVariable("id") Long id) {
 
-        Long quantidade = destaqueService.contarStoriesPorDestaque(id);
-        return ResponseEntity.ok(quantidade);
+        ContagemStoriesDTO dto = new ContagemStoriesDTO();
+        dto.setQuantidade(destaqueService.contarStoriesPorDestaque(id));
+        return ResponseEntity.ok(dto);
     }
 }

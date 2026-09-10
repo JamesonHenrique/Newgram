@@ -16,36 +16,27 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.core.io.Resource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
-
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
-import java.util.List;
 
 @RestController
 @RequestMapping("/usuarios")
 @RequiredArgsConstructor
 @Tag(name = "Usuários", description = "API para gerenciamento de usuários")
 public class UsuarioResource {
-    private final ArquivoService arquivoService;
     private final UsuarioService usuarioService;
 
-    @GetMapping("/{id}")
+    @GetMapping("/{id:\\d+}")
     @Operation(summary = "Buscar usuário por ID", description = "Retorna os detalhes de um usuário específico pelo ID")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Usuário encontrado com sucesso",
-                    content = @Content(schema = @Schema(implementation = UsuarioResponseDTO.class))),
+                    content = @Content(schema = @Schema(implementation = UsuarioSummaryDTO.class))),
             @ApiResponse(responseCode = "401", description = "Não autorizado",
                     content = @Content),
             @ApiResponse(responseCode = "404", description = "Usuário não encontrado",
@@ -145,7 +136,7 @@ public class UsuarioResource {
         Page<UsuarioComumDTO> usuarios = usuarioService.buscarUsuariosPorAmigosEmComum(usuarioLogado.getId(), pageable);
         return ResponseEntity.ok(usuarios);
     }
-    @PutMapping(path = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PutMapping(path = "/{id:\\d+}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @Operation(summary = "Atualizar usuário", description = "Atualiza os dados de um usuário existente")
 
     @ApiResponses(value = {
@@ -167,14 +158,14 @@ public class UsuarioResource {
             @AuthenticationPrincipal Usuario usuarioLogado) {
 
         if (!usuarioLogado.getId().equals(id)) {
-            return ResponseEntity.status(403).build();
+            throw new AccessDeniedException("Você só pode editar o próprio perfil");
         }
 
         UsuarioResponseDTO usuarioAtualizado = usuarioService.atualizarUsuario(id, dto);
         return ResponseEntity.ok(usuarioAtualizado);
     }
 
-    @GetMapping("/{id}/seguidores")
+    @GetMapping("/{id:\\d+}/seguidores")
     @Operation(summary = "Listar seguidores", description = "Retorna os usuários que seguem um usuário específico")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Seguidores listados com sucesso",
@@ -195,7 +186,7 @@ public class UsuarioResource {
         return ResponseEntity.ok(seguidores);
     }
 
-    @GetMapping("/{id}/seguindo")
+    @GetMapping("/{id:\\d+}/seguindo")
     @Operation(summary = "Listar seguidos", description = "Retorna os usuários que um usuário específico segue")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Seguidos listados com sucesso",

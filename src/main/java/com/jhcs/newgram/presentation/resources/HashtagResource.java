@@ -11,37 +11,27 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Max;
+import jakarta.validation.Min;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
 @RequestMapping("/hashtags")
+@Validated
 @Tag(name = "Hashtags", description = "Operações relacionadas a hashtags")
 public class HashtagResource {
 
     @Autowired
     private HashtagService hashtagService;
-
-    @GetMapping("/{nome}")
-    @Operation(summary = "Buscar hashtag por nome", description = "Busca uma hashtag específica pelo seu nome")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Hashtag encontrada com sucesso",
-                    content = @Content(schema = @Schema(implementation = HashtagResponseDTO.class))),
-            @ApiResponse(responseCode = "404", description = "Hashtag não encontrada")
-    })
-    public ResponseEntity<HashtagResponseDTO> buscarPorNome(
-            @Parameter(description = "Nome da hashtag", required = true) @PathVariable("nome") String nome) {
-
-        HashtagResponseDTO hashtag = hashtagService.buscarPorNome(nome);
-        return ResponseEntity.ok(hashtag);
-    }
 
     @GetMapping("/populares")
     @Operation(summary = "Listar hashtags populares", description = "Lista as hashtags mais utilizadas na plataforma")
@@ -62,7 +52,8 @@ public class HashtagResource {
     })
     public ResponseEntity<List<HashtagSummaryDTO>> sugerirHashtags(
             @Parameter(description = "Termo de busca", required = true) @RequestParam("termo") String termo,
-            @Parameter(description = "Limite de resultados") @RequestParam(value = "limite", defaultValue = "5") int limite) {
+            @Parameter(description = "Limite de resultados (1-50)") @RequestParam(value = "limite", defaultValue = "5")
+            @Min(1) @Max(50) int limite) {
 
         List<HashtagSummaryDTO> sugestoes = hashtagService.sugerirHashtags(termo, limite);
         return ResponseEntity.ok(sugestoes);
@@ -81,7 +72,7 @@ public class HashtagResource {
         return ResponseEntity.ok(hashtags);
     }
 
-    @GetMapping("/post/{postId}")
+    @GetMapping("/post/{postId:\\d+}")
     @Operation(summary = "Listar hashtags por post", description = "Lista todas as hashtags associadas a um post específico")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Hashtags do post listadas com sucesso"),
@@ -92,5 +83,19 @@ public class HashtagResource {
 
         List<HashtagSummaryDTO> hashtags = hashtagService.listarHashtagsPorPostId(postId);
         return ResponseEntity.ok(hashtags);
+    }
+
+    @GetMapping("/{nome}")
+    @Operation(summary = "Buscar hashtag por nome", description = "Busca uma hashtag específica pelo seu nome")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Hashtag encontrada com sucesso",
+                    content = @Content(schema = @Schema(implementation = HashtagResponseDTO.class))),
+            @ApiResponse(responseCode = "404", description = "Hashtag não encontrada")
+    })
+    public ResponseEntity<HashtagResponseDTO> buscarPorNome(
+            @Parameter(description = "Nome da hashtag", required = true) @PathVariable("nome") String nome) {
+
+        HashtagResponseDTO hashtag = hashtagService.buscarPorNome(nome);
+        return ResponseEntity.ok(hashtag);
     }
 }

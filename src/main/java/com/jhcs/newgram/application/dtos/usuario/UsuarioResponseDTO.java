@@ -3,7 +3,7 @@ package com.jhcs.newgram.application.dtos.usuario;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
-import java.util.Date;
+import java.time.LocalDateTime;
 
 @Data
 public class UsuarioResponseDTO {
@@ -26,7 +26,7 @@ public class UsuarioResponseDTO {
     private String fotoPerfilUrl;
 
     @Schema(description = "Data de cadastro do usuário", example = "2023-01-01T12:00:00Z")
-    private Date dataCadastro;
+    private LocalDateTime dataCadastro;
 
     @Schema(description = "Número de seguidores do usuário", example = "100")
     private Long numeroSeguidores;

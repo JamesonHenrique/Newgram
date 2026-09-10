@@ -9,7 +9,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Date;
+import com.jhcs.newgram.infrastructure.exception.BusinessException;
+import com.jhcs.newgram.infrastructure.exception.ResourceNotFoundException;
+import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -26,7 +29,7 @@ public class StatusUsuarioService {
     @Transactional(readOnly = true)
     public StatusUsuarioResponseDTO buscarStatusPorUsuarioId(Long usuarioId) {
         StatusUsuario statusUsuario = statusUsuarioRepository.findByUsuarioId(usuarioId)
-                .orElseThrow(() -> new RuntimeException("Status do usuário não encontrado"));
+                .orElseThrow(() -> new ResourceNotFoundException("Status do usuário não encontrado"));
 
         return converterParaDTO(statusUsuario);
     }
@@ -40,7 +43,7 @@ public class StatusUsuarioService {
     }
 
     @Transactional(readOnly = true)
-    public List<StatusUsuarioResponseDTO> listarUsuariosRecentementeAtivos(Date dataLimite, List<Long> usuariosIds) {
+    public List<StatusUsuarioResponseDTO> listarUsuariosRecentementeAtivos(LocalDateTime dataLimite, List<Long> usuariosIds) {
         List<StatusUsuario> statusRecentes = statusUsuarioRepository.findUsuariosRecentementeAtivos(dataLimite, usuariosIds);
         return statusRecentes.stream()
                 .map(this::converterParaDTO)
@@ -60,19 +63,19 @@ public class StatusUsuarioService {
         if (statusExistente.isPresent()) {
             statusUsuario = statusExistente.get();
             statusUsuario.setOnline(online);
-            statusUsuario.setUltimoAcesso(new Date());
+            statusUsuario.setUltimoAcesso(LocalDateTime.now());
 
             if (statusPersonalizado != null) {
                 statusUsuario.setStatusPersonalizado(statusPersonalizado);
             }
         } else {
             Usuario usuario = usuarioRepository.findById(usuarioId)
-                    .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
+                    .orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado"));
 
             statusUsuario = new StatusUsuario();
             statusUsuario.setUsuario(usuario);
             statusUsuario.setOnline(online);
-            statusUsuario.setUltimoAcesso(new Date());
+            statusUsuario.setUltimoAcesso(LocalDateTime.now());
             statusUsuario.setStatusPersonalizado(statusPersonalizado);
         }
 
@@ -83,20 +86,26 @@ public class StatusUsuarioService {
     @Transactional
     public void registrarAcesso(Long usuarioId) {
         Optional<StatusUsuario> statusExistente = statusUsuarioRepository.findByUsuarioId(usuarioId);
+        // Debounce de 5 min: evita UPDATE a cada request no feed.
+        LocalDateTime agora = LocalDateTime.now();
         StatusUsuario statusUsuario;
-
         if (statusExistente.isPresent()) {
             statusUsuario = statusExistente.get();
-            statusUsuario.setUltimoAcesso(new Date());
+            if (statusUsuario.isOnline()
+                    && statusUsuario.getUltimoAcesso() != null
+                    && Duration.between(statusUsuario.getUltimoAcesso(), agora).toMinutes() < 5) {
+                return;
+            }
+            statusUsuario.setUltimoAcesso(agora);
             statusUsuario.setOnline(true);
         } else {
             Usuario usuario = usuarioRepository.findById(usuarioId)
-                    .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
+                    .orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado"));
 
             statusUsuario = new StatusUsuario();
             statusUsuario.setUsuario(usuario);
             statusUsuario.setOnline(true);
-            statusUsuario.setUltimoAcesso(new Date());
+            statusUsuario.setUltimoAcesso(agora);
         }
 
         statusUsuarioRepository.save(statusUsuario);
@@ -107,9 +116,9 @@ public class StatusUsuarioService {
         Optional<StatusUsuario> statusExistente = statusUsuarioRepository.findByUsuarioId(usuarioId);
 
         if (statusExistente.isPresent()) {
-            StatusUsuario statusUsuario = statusExistente.get();
+            statusUsuario = statusExistente.get();
             statusUsuario.setOnline(false);
-            statusUsuario.setUltimoAcesso(new Date());
+            statusUsuario.setUltimoAcesso(LocalDateTime.now());
             statusUsuarioRepository.save(statusUsuario);
         }
     }

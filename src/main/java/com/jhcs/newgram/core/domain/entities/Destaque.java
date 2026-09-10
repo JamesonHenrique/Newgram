@@ -1,32 +1,47 @@
 package com.jhcs.newgram.core.domain.entities;
 
-import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
-import lombok.Data;
-
+import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import org.hibernate.annotations.CreationTimestamp;
 
-@Data
+@Getter
+@Setter
+@NoArgsConstructor
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 @Entity
 @Table(name = "destaque")
 public class Destaque {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @EqualsAndHashCode.Include
     private Long id;
+
+    @Column(nullable = false, length = 100)
     private String nome;
+
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "usuario_id")
+    @JoinColumn(name = "usuario_id", nullable = false)
     private Usuario usuario;
-    private Date dataCriacao;
+
+    @CreationTimestamp
+    @Column(name = "data_criacao", nullable = false, updatable = false)
+    private LocalDateTime dataCriacao;
+
     private String destaqueFotoDeCapaUrl;
+
     @ManyToMany
     @JoinTable(
             name = "destaque_storie",
             joinColumns = @JoinColumn(name = "destaque_id"),
-            inverseJoinColumns = @JoinColumn(name = "storie_id")
+            inverseJoinColumns = @JoinColumn(name = "storie_id"),
+            uniqueConstraints = @UniqueConstraint(columnNames = {"destaque_id", "storie_id"})
     )
     private List<Storie> stories = new ArrayList<>();
 }

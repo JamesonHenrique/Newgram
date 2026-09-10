@@ -5,11 +5,19 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.MalformedJwtException;
-import io.jsonwebtoken.SignatureAlgorithm;
-import io.jsonwebtoken.UnsupportedJwtException;
-import io.jsonwebtoken.security.SignatureException;
+import io.jsonwebtoken.security.Keys;
 import jakarta.annotation.PostConstruct;
+import java.nio.charset.StandardCharsets;
+import java.security.SecureRandom;
+import java.util.Base64;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Function;
+import javax.crypto.SecretKey;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -17,26 +25,39 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.stereotype.Service;
 
-import java.security.*;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.Function;
-
+/**
+ * Emissao e validacao de JWT (HMAC-SHA256).
+ *
+ * <p>Modelo: access curto + refresh longo com rotacao. O segredo vem de
+ * {@code JWT_SECRET} (Base64 ou texto com ao menos 256 bits). Sem segredo
+ * configurado, uma chave efemera e gerada apenas para desenvolvimento
+ * (tokens nao sobrevivem ao restart — nunca usar em prod).
+ */
 @Service
 public class JwtService {
     private static final Logger logger = LoggerFactory.getLogger(JwtService.class);
 
-    @Value("${jwt.access.expiration:86400000}")
+    static final String CLAIM_TOKEN_TYPE = "tokenType";
+    static final String TYPE_ACCESS = "access";
+    static final String TYPE_REFRESH = "refresh";
+
+    @Value("${jwt.secret:}")
+    private String secret;
+
+    @Value("${jwt.access.expiration:900000}")
     private long accessTokenExpiration;
 
     @Value("${jwt.refresh.expiration:604800000}")
     private long refreshTokenExpiration;
 
-    private PrivateKey privateKey;
-    private PublicKey publicKey;
+    @Value("${jwt.clock-skew-seconds:60}")
+    private long clockSkewSeconds;
+
+    @Value("${jwt.issuer:newgram}")
+    private String issuer;
+
+    private SecretKey signingKey;
+
     private final UserDetailsService userDetailsService;
 
     private final Set<String> blacklistedTokens = ConcurrentHashMap.newKeySet();
@@ -47,21 +68,26 @@ public class JwtService {
 
     @PostConstruct
     public void init() {
-        try {
-            generateKeyPair();
-        } catch (Exception e) {
-            logger.error("Falha ao inicializar chaves JWT", e);
-            throw new RuntimeException("Falha ao inicializar serviço JWT", e);
+        if (secret == null || secret.isBlank()) {
+            byte[] random = new byte[32];
+            new SecureRandom().nextBytes(random);
+            this.signingKey = Keys.hmacShaKeyFor(random);
+            logger.warn("JWT_SECRET nao configurado: usando chave efemera (apenas desenvolvimento)");
+            return;
         }
+        byte[] keyBytes = decodeSecret(secret);
+        if (keyBytes.length < 32) {
+            throw new IllegalStateException("JWT_SECRET precisa de ao menos 256 bits (32 bytes)");
+        }
+        this.signingKey = Keys.hmacShaKeyFor(keyBytes);
     }
 
-    private void generateKeyPair() throws NoSuchAlgorithmException {
-        KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance("EC");
-        keyPairGenerator.initialize(256);
-        KeyPair keyPair = keyPairGenerator.generateKeyPair();
-        this.privateKey = keyPair.getPrivate();
-        this.publicKey = keyPair.getPublic();
-        logger.info("Par de chaves JWT gerado com sucesso");
+    private static byte[] decodeSecret(String value) {
+        try {
+            return Base64.getDecoder().decode(value.trim());
+        } catch (IllegalArgumentException notBase64) {
+            return value.trim().getBytes(StandardCharsets.UTF_8);
+        }
     }
 
     public String extractUsername(String token) {
@@ -69,98 +95,103 @@ public class JwtService {
     }
 
     public String generateToken(UserDetails userDetails) {
-        return generateToken(new HashMap<>(), userDetails, accessTokenExpiration);
+        Map<String, Object> claims = new HashMap<>();
+        claims.put(CLAIM_TOKEN_TYPE, TYPE_ACCESS);
+        return generateToken(claims, userDetails, accessTokenExpiration);
     }
 
     public String generateRefreshToken(UserDetails userDetails) {
         Map<String, Object> claims = new HashMap<>();
-        claims.put("tokenType", "refresh");
+        claims.put(CLAIM_TOKEN_TYPE, TYPE_REFRESH);
         return generateToken(claims, userDetails, refreshTokenExpiration);
     }
 
     public String generateToken(Map<String, Object> extraClaims, UserDetails userDetails, long expirationTime) {
-        if (!(userDetails instanceof Usuario)) {
-            throw new IllegalArgumentException("UserDetails deve ser uma instância de Usuario");
+        Map<String, Object> claims = new HashMap<>(extraClaims);
+        if (userDetails instanceof Usuario usuario) {
+            claims.putIfAbsent("nome", usuario.getNome());
+            claims.putIfAbsent("id", usuario.getId());
         }
-
-        Usuario usuario = (Usuario) userDetails;
         Date now = new Date();
         Date expiration = new Date(now.getTime() + expirationTime);
-
-        extraClaims.put("nome", usuario.getNome());
-        extraClaims.put("id", usuario.getId());
-
         return Jwts.builder()
-                .setClaims(extraClaims)
-                .setSubject(userDetails.getUsername())
-                .setIssuedAt(now)
-                .setExpiration(expiration)
-                .signWith(privateKey, SignatureAlgorithm.ES256)
+                .claims(claims)
+                .subject(userDetails.getUsername())
+                .issuer(issuer)
+                .id(UUID.randomUUID().toString())
+                .issuedAt(now)
+                .expiration(expiration)
+                .signWith(signingKey)
                 .compact();
     }
 
+    /** Access token valido: assinatura ok, nao expirado, nao revogado, issuer e tipo conferem. */
     public boolean isTokenValid(String token, UserDetails userDetails) {
         try {
             if (blacklistedTokens.contains(token)) {
                 return false;
             }
-
-            final String username = extractUsername(token);
-            return username.equals(userDetails.getUsername()) && !isTokenExpired(token);
-        } catch (JwtException e) {
-            logger.warn("Token JWT inválido: {}", e.getMessage());
+            Claims claims = extractAllClaims(token);
+            if (!TYPE_ACCESS.equals(claims.get(CLAIM_TOKEN_TYPE))) {
+                return false;
+            }
+            if (!issuer.equals(claims.getIssuer())) {
+                return false;
+            }
+            final String username = claims.getSubject();
+            return username != null
+                    && username.equals(userDetails.getUsername())
+                    && claims.getExpiration().after(new Date());
+        } catch (JwtException | IllegalArgumentException e) {
+            logger.warn("Token JWT invalido");
             return false;
         }
     }
 
     public boolean isRefreshTokenValid(String token) {
         try {
-            if (blacklistedTokens.contains(token) || isTokenExpired(token)) {
+            if (blacklistedTokens.contains(token)) {
                 return false;
             }
-
-            Object tokenType = extractAllClaims(token).get("tokenType");
-            return tokenType != null && tokenType.equals("refresh");
+            Claims claims = extractAllClaims(token);
+            if (!TYPE_REFRESH.equals(claims.get(CLAIM_TOKEN_TYPE))) {
+                return false;
+            }
+            if (!issuer.equals(claims.getIssuer())) {
+                return false;
+            }
+            return claims.getExpiration().after(new Date());
         } catch (ExpiredJwtException e) {
             logger.warn("Refresh token expirado");
             return false;
-        } catch (JwtException e) {
-            logger.warn("Refresh token inválido: {}", e.getMessage());
+        } catch (JwtException | IllegalArgumentException e) {
+            logger.warn("Refresh token invalido");
             return false;
         }
     }
 
+    /**
+     * Rotaciona o par de tokens: invalida o refresh antigo e emite access +
+     * refresh novos. Reuso do refresh antigo apos a rotacao e rejeitado
+     * (sem reemissao em cadeia — sinal de possivel roubo).
+     */
     public Map<String, String> refreshToken(String refreshToken) {
         if (!isRefreshTokenValid(refreshToken)) {
             throw new JwtAuthenticationException("Refresh token inválido ou expirado");
         }
-
         String email = extractUsername(refreshToken);
         UserDetails userDetails = userDetailsService.loadUserByUsername(email);
 
-        // Invalidar o refresh token antigo
         blacklistedTokens.add(refreshToken);
 
-        String newAccessToken = generateToken(userDetails);
-        String newRefreshToken = generateRefreshToken(userDetails);
-
         Map<String, String> tokens = new HashMap<>();
-        tokens.put("accessToken", newAccessToken);
-        tokens.put("refreshToken", newRefreshToken);
-
+        tokens.put("accessToken", generateToken(userDetails));
+        tokens.put("refreshToken", generateRefreshToken(userDetails));
         return tokens;
     }
 
     public void invalidateToken(String token) {
         blacklistedTokens.add(token);
-    }
-
-    private boolean isTokenExpired(String token) {
-        return extractExpiration(token).before(new Date());
-    }
-
-    private Date extractExpiration(String token) {
-        return extractClaim(token, Claims::getExpiration);
     }
 
     public <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
@@ -170,25 +201,18 @@ public class JwtService {
 
     private Claims extractAllClaims(String token) {
         try {
-            return Jwts.parserBuilder()
-                    .setSigningKey(publicKey)
+            return Jwts.parser()
+                    .verifyWith(signingKey)
+                    .clockSkewSeconds(clockSkewSeconds)
                     .build()
-                    .parseClaimsJws(token)
-                    .getBody();
+                    .parseSignedClaims(token)
+                    .getPayload();
         } catch (ExpiredJwtException e) {
-            logger.warn("Token JWT expirado: {}", e.getMessage());
+            logger.warn("Token JWT expirado");
             throw e;
-        } catch (UnsupportedJwtException e) {
-            logger.error("Token JWT não suportado: {}", e.getMessage());
-            throw new JwtAuthenticationException("Formato de token não suportado", e);
-        } catch (MalformedJwtException e) {
-            logger.error("Token JWT inválido: {}", e.getMessage());
-            throw new JwtAuthenticationException("Token mal formatado", e);
-        } catch (SignatureException e) {
-            logger.error("Assinatura JWT inválida: {}", e.getMessage());
-            throw new JwtAuthenticationException("Assinatura do token inválida", e);
+        } catch (JwtException e) {
+            throw new JwtAuthenticationException("Token inválido", e);
         } catch (IllegalArgumentException e) {
-            logger.error("String de claims JWT vazia: {}", e.getMessage());
             throw new JwtAuthenticationException("Token vazio ou inválido", e);
         }
     }

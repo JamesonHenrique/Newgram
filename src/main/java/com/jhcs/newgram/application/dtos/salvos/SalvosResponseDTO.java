@@ -3,7 +3,7 @@ package com.jhcs.newgram.application.dtos.salvos;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
-import java.util.Date;
+import java.time.LocalDateTime;
 
 @Data
 public class SalvosResponseDTO {
@@ -17,7 +17,7 @@ public class SalvosResponseDTO {
     private Long usuarioId;
 
     @Schema(description = "Data em que o post foi salvo", example = "2023-01-01T12:00:00Z")
-    private Date dataSalvo;
+    private LocalDateTime dataSalvo;
 
     @Schema(description = "Coleção onde o post foi salvo", example = "Favoritos")
     private String colecao;

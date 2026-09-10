@@ -5,7 +5,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-import java.util.Date;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -17,7 +17,7 @@ public interface StatusUsuarioRepository extends JpaRepository<StatusUsuario, Lo
     List<StatusUsuario> findUsuariosOnline(@Param("usuariosIds") List<Long> usuariosIds);
 
     @Query("SELECT s FROM StatusUsuario s WHERE s.ultimoAcesso > :data AND s.usuario.id IN :usuariosIds")
-    List<StatusUsuario> findUsuariosRecentementeAtivos(@Param("data") Date data, @Param("usuariosIds") List<Long> usuariosIds);
+    List<StatusUsuario> findUsuariosRecentementeAtivos(@Param("data") LocalDateTime data, @Param("usuariosIds") List<Long> usuariosIds);
 
     @Query("SELECT s.usuario.id FROM StatusUsuario s WHERE s.online = true")
     List<Long> findAllUsuariosOnlineIds();

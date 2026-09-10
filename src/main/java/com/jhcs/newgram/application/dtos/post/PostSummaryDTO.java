@@ -3,7 +3,7 @@ package com.jhcs.newgram.application.dtos.post;
 import com.jhcs.newgram.application.dtos.usuario.UsuarioSummaryDTO;
 import lombok.Data;
 
-import java.util.Date;
+import java.time.LocalDateTime;
 
 
 
@@ -11,7 +11,7 @@ import java.util.Date;
 public class PostSummaryDTO {
     private Long id;
 
-    private Date dataCriacao;
+    private LocalDateTime dataCriacao;
     private UsuarioSummaryDTO autor;
     private String localizacao;
     private String legenda;
