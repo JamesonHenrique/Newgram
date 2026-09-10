@@ -15,10 +15,12 @@ import { DateFormatPipe } from '../services/pipes/date-format-pipe';
 import { Pageable, UsuarioSummaryDto } from '../services/models';
 import {
   ComentariosService,
+  ModeracaoService,
   PostsService,
   UsuariosService,
 } from '../services/services';
 import { TokenService } from '../services/token/token.service';
+import { ToastrService } from 'ngx-toastr';
 import { CommentsComponent } from '../comments/comments.component';
 import { finalize, map, Subject, takeUntil } from 'rxjs';
 
@@ -44,6 +46,8 @@ export class PostDetailsComponent {
 
   private postsService = inject(PostsService);
   private tokenService = inject(TokenService);
+  private moderacaoService = inject(ModeracaoService);
+  private toastr = inject(ToastrService);
   get postPertenceAoUsuarioLogado(): boolean {
     return this.post?.autorId === this.tokenService.userId;
   }
@@ -101,6 +105,23 @@ export class PostDetailsComponent {
           post.isFavorite = wasFavorite;
           post.numeroFavoritos += wasFavorite ? 1 : -1;
         },
+      });
+  }
+
+  denunciarPost(event: Event): void {
+    event.stopPropagation();
+    const postId = this.postSelected?.id;
+    if (!postId) {
+      return;
+    }
+    this.moderacaoService
+      .denunciar({
+        body: { tipoAlvo: 'POST', alvoId: postId, motivo: 'Conteúdo inadequado' },
+      })
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: () => this.toastr.success('Denúncia registrada. Obrigado pelo aviso.'),
+        error: () => {},
       });
   }
   ngOnChanges(changes: SimpleChanges): void {

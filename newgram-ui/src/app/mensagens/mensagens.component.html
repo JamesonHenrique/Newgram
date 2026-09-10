@@ -1,0 +1,60 @@
+<div class="mensagens-container flex h-full">
+  <aside class="conversas-lista w-1/3 min-w-52 border-r border-gray-800 overflow-y-auto">
+    <h1 class="h3-bold p-4">Mensagens</h1>
+    <div *ngIf="!conversas?.length" class="p-4 text-gray-500 text-sm">
+      Nenhuma conversa ainda.
+    </div>
+    <div
+      *ngFor="let conversa of conversas"
+      (click)="abrirConversa(conversa)"
+      class="conversa-item p-3 border-b border-gray-800 cursor-pointer"
+      [class.bg-gray-800]="conversaAtiva?.id === conversa.id"
+    >
+      <div class="flex items-center justify-between">
+        <span class="font-semibold">{{ conversa.outroParticipanteNome || conversa.outroParticipanteUsername }}</span>
+        <span *ngIf="conversa.naoLidas" class="bg-primary-500 text-white text-xs rounded-full px-2 py-0.5">
+          {{ conversa.naoLidas }}
+        </span>
+      </div>
+      <p class="text-sm text-gray-500 truncate">{{ conversa.ultimaMensagem || '' }}</p>
+    </div>
+  </aside>
+
+  <section class="thread flex-1 flex flex-col min-w-0">
+    <div *ngIf="!conversaAtiva" class="flex-1 flex items-center justify-center text-gray-500">
+      Selecione uma conversa.
+    </div>
+    <div *ngIf="conversaAtiva" class="flex-1 flex flex-col min-h-0">
+      <div class="p-3 border-b border-gray-800 font-semibold">
+        {{ conversaAtiva.outroParticipanteNome || conversaAtiva.outroParticipanteUsername }}
+      </div>
+      <div class="flex-1 overflow-y-auto p-4 space-y-2">
+        <div
+          *ngFor="let mensagem of mensagens"
+          class="max-w-[80%] p-2 rounded-lg text-sm"
+          [class.ml-auto]="mensagem.minha"
+          [class.bg-primary-500]="mensagem.minha"
+          [class.bg-gray-800]="!mensagem.minha"
+        >
+          {{ mensagem.texto }}
+        </div>
+        <div *ngIf="!mensagens?.length" class="text-gray-500 text-sm">
+          Nenhuma mensagem ainda. Diga oi!
+        </div>
+      </div>
+      <form (ngSubmit)="enviar()" class="flex gap-2 p-3 border-t border-gray-800">
+        <input
+          type="text"
+          [(ngModel)]="novoTexto"
+          name="novoTexto"
+          maxlength="1000"
+          placeholder="Escrever mensagem..."
+          class="flex-1 p-2 bg-gray-800 border border-gray-700 rounded text-sm"
+        />
+        <button type="submit" class="btn btn-primary" [disabled]="!novoTexto.trim() || enviando">
+          Enviar
+        </button>
+      </form>
+    </div>
+  </section>
+</div>

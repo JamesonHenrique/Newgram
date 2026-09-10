@@ -1,0 +1,4 @@
+.mensagens-container {
+  height: calc(100dvh - 120px);
+  min-height: 400px;
+}

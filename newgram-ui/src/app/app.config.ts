@@ -6,13 +6,14 @@ import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { provideToastr } from 'ngx-toastr';
 import { provideAnimations } from '@angular/platform-browser/animations';
 import { tokenInterceptor } from './services/http-interceptor/http-token.interceptor';
+import { erroInterceptor } from './services/http-interceptor/erro.interceptor';
 
 export const appConfig: ApplicationConfig = {
   providers: [
     provideZoneChangeDetection({ eventCoalescing: true }),
     provideRouter(routes),
     provideHttpClient(
-      withInterceptors([tokenInterceptor])
+      withInterceptors([tokenInterceptor, erroInterceptor])
     ),
 
     provideAnimations(),

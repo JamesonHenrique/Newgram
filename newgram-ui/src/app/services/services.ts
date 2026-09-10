@@ -10,3 +10,6 @@ export { StoriesService } from './services/stories.service';
 export { AutenticacaoService } from './services/autenticacao.service';
 export { SeguidoresService } from './services/seguidores.service';
 export { HashtagsService } from './services/hashtags.service';
+export { NotificacoesService } from './services/notificacoes.service';
+export { ModeracaoService } from './services/moderacao.service';
+export { ConversasService } from './services/conversas.service';

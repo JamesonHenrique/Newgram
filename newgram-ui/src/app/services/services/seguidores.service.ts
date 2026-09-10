@@ -13,16 +13,23 @@ import { StrictHttpResponse } from '../strict-http-response';
 
 import { alterarNotificacoes } from '../fn/seguidores/alterar-notificacoes';
 import { AlterarNotificacoes$Params } from '../fn/seguidores/alterar-notificacoes';
+import { aceitarSolicitacao } from '../fn/seguidores/aceitar-solicitacao';
+import { AceitarSolicitacao$Params } from '../fn/seguidores/aceitar-solicitacao';
 import { buscarSeguidosAleatorios } from '../fn/seguidores/buscar-seguidos-aleatorios';
 import { BuscarSeguidosAleatorios$Params } from '../fn/seguidores/buscar-seguidos-aleatorios';
+import { contarSolicitacoes } from '../fn/seguidores/contar-solicitacoes';
 import { contarSeguidoresESeguidos } from '../fn/seguidores/contar-seguidores-e-seguidos';
 import { ContarSeguidoresESeguidos$Params } from '../fn/seguidores/contar-seguidores-e-seguidos';
 import { deixarDeSeguir } from '../fn/seguidores/deixar-de-seguir';
 import { DeixarDeSeguir$Params } from '../fn/seguidores/deixar-de-seguir';
+import { listarSolicitacoes } from '../fn/seguidores/listar-solicitacoes';
+import { ListarSolicitacoes$Params } from '../fn/seguidores/listar-solicitacoes';
 import { listarSeguidores1 } from '../fn/seguidores/listar-seguidores-1';
 import { ListarSeguidores1$Params } from '../fn/seguidores/listar-seguidores-1';
 import { listarSeguidos1 } from '../fn/seguidores/listar-seguidos-1';
 import { ListarSeguidos1$Params } from '../fn/seguidores/listar-seguidos-1';
+import { rejeitarSolicitacao } from '../fn/seguidores/rejeitar-solicitacao';
+import { RejeitarSolicitacao$Params } from '../fn/seguidores/rejeitar-solicitacao';
 import { ContagemSeguidoresDto } from '../models/contagem-seguidores-dto';
 import { Page } from '../models/page';
 import { SeguidorResponseDto } from '../models/seguidor-response-dto';
@@ -303,6 +310,146 @@ export class SeguidoresService extends BaseService {
    */
   deixarDeSeguir(params: DeixarDeSeguir$Params, context?: HttpContext): Observable<void> {
     return this.deixarDeSeguir$Response(params, context).pipe(
+      map((r: StrictHttpResponse<void>): void => r.body)
+    );
+  }
+
+  /** Path part for operation `listarSolicitacoes()` */
+  static readonly ListarSolicitacoesPath = '/seguidores/solicitacoes';
+
+  /**
+   * Listar solicitações de seguimento.
+   *
+   * Solicitações pendentes para contas privadas
+   *
+   * This method provides access to the full `HttpResponse`, allowing access to response headers.
+   * To access only the response body, use `listarSolicitacoes()` instead.
+   *
+   * This method doesn't expect any request body.
+   */
+  listarSolicitacoes$Response(params: ListarSolicitacoes$Params, context?: HttpContext): Observable<StrictHttpResponse<Page>> {
+    return listarSolicitacoes(this.http, this.rootUrl, params, context);
+  }
+
+  /**
+   * Listar solicitações de seguimento.
+   *
+   * Solicitações pendentes para contas privadas
+   *
+   * This method provides access only to the response body.
+   * To access the full response (for headers, for example), `listarSolicitacoes$Response()` instead.
+   *
+   * This method doesn't expect any request body.
+   */
+  listarSolicitacoes(params: ListarSolicitacoes$Params, context?: HttpContext): Observable<Page> {
+    return this.listarSolicitacoes$Response(params, context).pipe(
+      map((r: StrictHttpResponse<Page>): Page => r.body)
+    );
+  }
+
+  /** Path part for operation `contarSolicitacoes()` */
+  static readonly ContarSolicitacoesPath = '/seguidores/solicitacoes/contagem';
+
+  /**
+   * Contar solicitações pendentes.
+   *
+   * Badge de solicitações de seguimento
+   *
+   * This method provides access to the full `HttpResponse`, allowing access to response headers.
+   * To access only the response body, use `contarSolicitacoes()` instead.
+   *
+   * This method doesn't expect any request body.
+   */
+  contarSolicitacoes$Response(context?: HttpContext): Observable<StrictHttpResponse<{
+[key: string]: number;
+}>> {
+    return contarSolicitacoes(this.http, this.rootUrl, context);
+  }
+
+  /**
+   * Contar solicitações pendentes.
+   *
+   * Badge de solicitações de seguimento
+   *
+   * This method provides access only to the response body.
+   * To access the full response (for headers, for example), `contarSolicitacoes$Response()` instead.
+   *
+   * This method doesn't expect any request body.
+   */
+  contarSolicitacoes(context?: HttpContext): Observable<{
+[key: string]: number;
+}> {
+    return this.contarSolicitacoes$Response(context).pipe(
+      map((r: StrictHttpResponse<{
+[key: string]: number;
+}>): {
+[key: string]: number;
+} => r.body)
+    );
+  }
+
+  /** Path part for operation `aceitarSolicitacao()` */
+  static readonly AceitarSolicitacaoPath = '/seguidores/solicitacoes/{id}/aceitar';
+
+  /**
+   * Aceitar solicitação.
+   *
+   * Aceita uma solicitação de seguimento pendente
+   *
+   * This method provides access to the full `HttpResponse`, allowing access to response headers.
+   * To access only the response body, use `aceitarSolicitacao()` instead.
+   *
+   * This method doesn't expect any request body.
+   */
+  aceitarSolicitacao$Response(params: AceitarSolicitacao$Params, context?: HttpContext): Observable<StrictHttpResponse<SeguidorResponseDto>> {
+    return aceitarSolicitacao(this.http, this.rootUrl, params, context);
+  }
+
+  /**
+   * Aceitar solicitação.
+   *
+   * Aceita uma solicitação de seguimento pendente
+   *
+   * This method provides access only to the response body.
+   * To access the full response (for headers, for example), `aceitarSolicitacao$Response()` instead.
+   *
+   * This method doesn't expect any request body.
+   */
+  aceitarSolicitacao(params: AceitarSolicitacao$Params, context?: HttpContext): Observable<SeguidorResponseDto> {
+    return this.aceitarSolicitacao$Response(params, context).pipe(
+      map((r: StrictHttpResponse<SeguidorResponseDto>): SeguidorResponseDto => r.body)
+    );
+  }
+
+  /** Path part for operation `rejeitarSolicitacao()` */
+  static readonly RejeitarSolicitacaoPath = '/seguidores/solicitacoes/{id}';
+
+  /**
+   * Rejeitar solicitação.
+   *
+   * Rejeita uma solicitação de seguimento pendente
+   *
+   * This method provides access to the full `HttpResponse`, allowing access to response headers.
+   * To access only the response body, use `rejeitarSolicitacao()` instead.
+   *
+   * This method doesn't expect any request body.
+   */
+  rejeitarSolicitacao$Response(params: RejeitarSolicitacao$Params, context?: HttpContext): Observable<StrictHttpResponse<void>> {
+    return rejeitarSolicitacao(this.http, this.rootUrl, params, context);
+  }
+
+  /**
+   * Rejeitar solicitação.
+   *
+   * Rejeita uma solicitação de seguimento pendente
+   *
+   * This method provides access only to the response body.
+   * To access the full response (for headers, for example), `rejeitarSolicitacao$Response()` instead.
+   *
+   * This method doesn't expect any request body.
+   */
+  rejeitarSolicitacao(params: RejeitarSolicitacao$Params, context?: HttpContext): Observable<void> {
+    return this.rejeitarSolicitacao$Response(params, context).pipe(
       map((r: StrictHttpResponse<void>): void => r.body)
     );
   }

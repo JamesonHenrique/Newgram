@@ -13,6 +13,8 @@ import { StrictHttpResponse } from '../strict-http-response';
 
 import { atualizarUsuario } from '../fn/usuarios/atualizar-usuario';
 import { AtualizarUsuario$Params } from '../fn/usuarios/atualizar-usuario';
+import { atualizarPrivado } from '../fn/usuarios/atualizar-privado';
+import { AtualizarPrivado$Params } from '../fn/usuarios/atualizar-privado';
 import { buscarUsuarioPorId } from '../fn/usuarios/buscar-usuario-por-id';
 import { BuscarUsuarioPorId$Params } from '../fn/usuarios/buscar-usuario-por-id';
 import { buscarUsuarioPorUsername } from '../fn/usuarios/buscar-usuario-por-username';
@@ -104,6 +106,39 @@ export class UsuariosService extends BaseService {
    */
   atualizarUsuario(params: AtualizarUsuario$Params, context?: HttpContext): Observable<UsuarioResponseDto> {
     return this.atualizarUsuario$Response(params, context).pipe(
+      map((r: StrictHttpResponse<UsuarioResponseDto>): UsuarioResponseDto => r.body)
+    );
+  }
+
+  /** Path part for operation `atualizarPrivado()` */
+  static readonly AtualizarPrivadoPath = '/usuarios/{id}/privado';
+
+  /**
+   * Alternar conta privada.
+   *
+   * Ativa ou desativa a privacidade da conta
+   *
+   * This method provides access to the full `HttpResponse`, allowing access to response headers.
+   * To access only the response body, use `atualizarPrivado()` instead.
+   *
+   * This method doesn't expect any request body.
+   */
+  atualizarPrivado$Response(params: AtualizarPrivado$Params, context?: HttpContext): Observable<StrictHttpResponse<UsuarioResponseDto>> {
+    return atualizarPrivado(this.http, this.rootUrl, params, context);
+  }
+
+  /**
+   * Alternar conta privada.
+   *
+   * Ativa ou desativa a privacidade da conta
+   *
+   * This method provides access only to the response body.
+   * To access the full response (for headers, for example), `atualizarPrivado$Response()` instead.
+   *
+   * This method doesn't expect any request body.
+   */
+  atualizarPrivado(params: AtualizarPrivado$Params, context?: HttpContext): Observable<UsuarioResponseDto> {
+    return this.atualizarPrivado$Response(params, context).pipe(
       map((r: StrictHttpResponse<UsuarioResponseDto>): UsuarioResponseDto => r.body)
     );
   }

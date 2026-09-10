@@ -36,6 +36,11 @@ export interface UsuarioSummaryDto {
   seguindoUsuario?: boolean;
 
   /**
+   * Indica se a conta é privada
+   */
+  privado?: boolean;
+
+  /**
    * Nome de usuário único
    */
   username?: string;

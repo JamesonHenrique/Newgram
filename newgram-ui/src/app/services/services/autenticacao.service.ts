@@ -13,6 +13,7 @@ import { StrictHttpResponse } from '../strict-http-response';
 
 import { login } from '../fn/autenticacao/login';
 import { Login$Params } from '../fn/autenticacao/login';
+import { recuperarSenha, RecuperarSenha$Params, redefinirSenha, RedefinirSenha$Params } from '../fn/autenticacao/recuperar-senha';
 import { refreshToken } from '../fn/autenticacao/refresh-token';
 import { RefreshToken$Params } from '../fn/autenticacao/refresh-token';
 import { registrar } from '../fn/autenticacao/registrar';
@@ -126,6 +127,72 @@ export class AutenticacaoService extends BaseService {
   login(params: Login$Params, context?: HttpContext): Observable<TokenDto> {
     return this.login$Response(params, context).pipe(
       map((r: StrictHttpResponse<TokenDto>): TokenDto => r.body)
+    );
+  }
+
+  /** Path part for operation `recuperarSenha()` */
+  static readonly RecuperarSenhaPath = '/auth/recuperar-senha';
+
+  /**
+   * Solicitar recuperação de senha.
+   *
+   * Resposta sempre genérica para não revelar se o e-mail existe
+   *
+   * This method provides access to the full `HttpResponse`, allowing access to response headers.
+   * To access only the response body, use `recuperarSenha()` instead.
+   *
+   * This method sends `application/json` and handles request body of type `application/json`.
+   */
+  recuperarSenha$Response(params: RecuperarSenha$Params, context?: HttpContext): Observable<StrictHttpResponse<void>> {
+    return recuperarSenha(this.http, this.rootUrl, params, context);
+  }
+
+  /**
+   * Solicitar recuperação de senha.
+   *
+   * Resposta sempre genérica para não revelar se o e-mail existe
+   *
+   * This method provides access only to the response body.
+   * To access the full response (for headers, for example), `recuperarSenha$Response()` instead.
+   *
+   * This method sends `application/json` and handles request body of type `application/json`.
+   */
+  recuperarSenha(params: RecuperarSenha$Params, context?: HttpContext): Observable<void> {
+    return this.recuperarSenha$Response(params, context).pipe(
+      map((r: StrictHttpResponse<void>): void => r.body)
+    );
+  }
+
+  /** Path part for operation `redefinirSenha()` */
+  static readonly RedefinirSenhaPath = '/auth/redefinir-senha';
+
+  /**
+   * Redefinir senha.
+   *
+   * Troca a senha com token single-use de 1h
+   *
+   * This method provides access to the full `HttpResponse`, allowing access to response headers.
+   * To access only the response body, use `redefinirSenha()` instead.
+   *
+   * This method sends `application/json` and handles request body of type `application/json`.
+   */
+  redefinirSenha$Response(params: RedefinirSenha$Params, context?: HttpContext): Observable<StrictHttpResponse<void>> {
+    return redefinirSenha(this.http, this.rootUrl, params, context);
+  }
+
+  /**
+   * Redefinir senha.
+   *
+   * Troca a senha com token single-use de 1h
+   *
+   * This method provides access only to the response body.
+   * To access the full response (for headers, for example), `redefinirSenha$Response()` instead.
+   *
+   * This method sends `application/json` and handles request body of type `application/json`.
+   */
+  redefinirSenha(params: RedefinirSenha$Params, context?: HttpContext): Observable<void> {
+    return this.redefinirSenha$Response(params, context).pipe(
+      map((r: StrictHttpResponse<void>): void => r.body)
     );
   }
 

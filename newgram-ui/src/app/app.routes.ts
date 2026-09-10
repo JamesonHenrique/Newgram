@@ -1,12 +1,15 @@
 import { Routes } from '@angular/router';
 import { HomeComponent } from './home/home.component';
 import { LoginComponent } from './auth/login/login.component';
+import { RecuperarSenhaComponent } from './auth/recuperar-senha/recuperar-senha.component';
+import { RedefinirSenhaComponent } from './auth/redefinir-senha/redefinir-senha.component';
 import { RegisterComponent } from './auth/register/register.component';
 import { ProfileComponent } from './profile/profile.component';
 import { CreatePostComponent } from './create-post/create-post.component';
 import { SearchProfileComponent } from './search-profile/search-profile.component';
 import { ExploreComponent } from './explore/explore.component';
 import { FavoriteComponent } from './favorite/favorite.component';
+import { MensagensComponent } from './mensagens/mensagens.component';
 
 import { AuthGuard } from './services/guard/auth.guard';
 import { UsuarioResolver } from './services/resolver/usuario.resolver';
@@ -55,12 +58,25 @@ export const routes: Routes = [
     canActivate: [AuthGuard]
   },
   {
+    path: 'mensagens',
+    component: MensagensComponent,
+    canActivate: [AuthGuard]
+  },
+  {
     path: 'login',
     component: LoginComponent
   },
   {
     path: 'register',
     component: RegisterComponent
+  },
+  {
+    path: 'recuperar-senha',
+    component: RecuperarSenhaComponent
+  },
+  {
+    path: 'redefinir-senha',
+    component: RedefinirSenhaComponent
   },
   {
     path: '**',

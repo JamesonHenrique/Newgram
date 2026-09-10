@@ -23,6 +23,7 @@ export class EditProfileModalComponent {
   selectedFile: File | null = null;
   loading = false;
   editForm!: FormGroup;
+  contaPrivada = false;
   errorMessage: string | null = null;
   errorMsg: Array<string> = [];
   constructor(private fb: FormBuilder, private usuariosService: UsuariosService, private tokenService: TokenService) {}
@@ -87,9 +88,30 @@ export class EditProfileModalComponent {
         bio: this.userProfile?.bio,
         username: this.userProfile?.username
       });
+      this.contaPrivada = !!this.userProfile?.privado;
       this.newProfileImage = null;
       this.selectedFile = null;
     }
+  }
+
+  alternarPrivacidade(): void {
+    const novoValor = !this.contaPrivada;
+    this.usuariosService
+      .atualizarPrivado({ id: this.userProfile.id, privado: novoValor })
+      .pipe(
+        tap((atualizado) => {
+          this.contaPrivada = !!atualizado?.privado;
+          if (this.userProfile) {
+            this.userProfile = { ...this.userProfile, privado: this.contaPrivada };
+          }
+        }),
+        catchError((error) => {
+          this.errorMessage = 'Erro ao alterar privacidade. Tente novamente.';
+          console.error('Erro ao alterar privacidade:', error);
+          return of(null);
+        })
+      )
+      .subscribe();
   }
 
   handleImageUpload(event: any) {

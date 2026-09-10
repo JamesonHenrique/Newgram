@@ -11,13 +11,15 @@ import { PostDetailsComponent } from '../post-details/post-details.component';
 import { CommonModule } from '@angular/common';
 import { FormatNumberPipe } from '../services/pipes/format-number.pipe';
 import {
+  ConversasService,
   DestaquesService,
+  ModeracaoService,
   PostsService,
   SeguidoresService,
   StoriesService,
   UsuariosService,
 } from '../services/services';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import {
   catchError,
   Subject,
@@ -58,6 +60,9 @@ export class ProfileComponent {
   userProfile: any = null;
   username: string = '';
 
+  solicitacoes: any[] = [];
+  totalSolicitacoes = 0;
+
   posts: any[] = [];
   postSelected: any = null;
   selectedIndex: number | null = null;
@@ -85,6 +90,9 @@ export class ProfileComponent {
     private seguidorService: SeguidoresService,
     private destaqueService: DestaquesService,
     private storiesService: StoriesService,
+    private moderacaoService: ModeracaoService,
+    private conversasService: ConversasService,
+    private router: Router,
     private cdr: ChangeDetectorRef
   ) {}
   @ViewChild('highlightsContainer') highlightsContainer!: ElementRef;
@@ -128,6 +136,7 @@ export class ProfileComponent {
             this.findAllPostsById(),
             this.findAllDestaquesByUsername(),
             this.findAllStoriesAtivosByUserId(),
+            this.carregarSolicitacoes(),
           ])
         ),
         takeUntil(this.destroy$),
@@ -141,6 +150,56 @@ export class ProfileComponent {
       });
   }
 
+  /** Solicitações pendentes só fazem sentido no próprio perfil. */
+  private carregarSolicitacoes() {
+    if (!this.userProfile?.id || this.userProfile.id !== this.tokenService.userId) {
+      this.solicitacoes = [];
+      this.totalSolicitacoes = 0;
+      return of([]);
+    }
+    return this.seguidorService
+      .listarSolicitacoes({ pageable: { page: 0, size: 20, sort: [''] } })
+      .pipe(
+        map((page) => (page.content as any[] | undefined) || []),
+        tap((lista) => {
+          this.solicitacoes = lista;
+          this.totalSolicitacoes = lista.length;
+        }),
+        catchError(() => {
+          this.solicitacoes = [];
+          return of([]);
+        })
+      );
+  }
+
+  aceitarSolicitacao(solicitacao: any, event: Event): void {
+    event.stopPropagation();
+    this.seguidorService
+      .aceitarSolicitacao({ id: solicitacao.id })
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: () => {
+          this.solicitacoes = this.solicitacoes.filter((s) => s.id !== solicitacao.id);
+          this.totalSolicitacoes = this.solicitacoes.length;
+        },
+        error: (error) => console.error('Erro ao aceitar solicitação:', error),
+      });
+  }
+
+  rejeitarSolicitacao(solicitacao: any, event: Event): void {
+    event.stopPropagation();
+    this.seguidorService
+      .rejeitarSolicitacao({ id: solicitacao.id })
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: () => {
+          this.solicitacoes = this.solicitacoes.filter((s) => s.id !== solicitacao.id);
+          this.totalSolicitacoes = this.solicitacoes.length;
+        },
+        error: (error) => console.error('Erro ao rejeitar solicitação:', error),
+      });
+  }
+
   private carregarPerfil() {
     if (!this.username) {
       this.error = 'Username não definido';
@@ -151,12 +210,83 @@ export class ProfileComponent {
       .buscarUsuarioPorUsername({ username: this.username })
       .pipe(
         tap((usuario) => (this.userProfile = usuario)),
+        tap((usuario) => this.carregarEstadoSeguimento(usuario)),
         catchError((err) => {
           console.error('Erro ao carregar perfil:', err);
           this.error = 'Usuário não encontrado';
           return throwError(() => err);
         })
       );
+  }
+
+  /** Preenche solicitacaoPendente para exibir "Solicitado" em conta privada. */
+  private carregarEstadoSeguimento(usuario: any): void {
+    if (!usuario?.id || usuario.id === this.tokenService.userId || usuario.seguindoUsuario) {
+      return;
+    }
+    this.seguidorService
+      .verificarSeguimento({ usuarioId: usuario.id })
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (estado) => {
+          if (this.userProfile) {
+            this.userProfile = {
+              ...this.userProfile,
+              seguindoUsuario: estado.seguindo,
+              solicitacaoPendente: estado.solicitacaoPendente,
+            };
+          }
+        },
+        error: () => {},
+      });
+    this.moderacaoService
+      .verificarBloqueio({ usuarioId: usuario.id })
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (estado) => {
+          if (this.userProfile) {
+            this.userProfile = { ...this.userProfile, bloqueado: !!estado.bloqueado };
+          }
+        },
+        error: () => {},
+      });
+  }
+
+  toggleBloqueio(event: Event): void {
+    event.stopPropagation();
+    const user = this.userProfile;
+    if (!user?.id) {
+      return;
+    }
+    const acao$ = user.bloqueado
+      ? this.moderacaoService.desbloquear({ usuarioId: user.id })
+      : this.moderacaoService.bloquear({ usuarioId: user.id });
+    acao$.pipe(takeUntil(this.destroy$)).subscribe({
+      next: () => {
+        this.userProfile = {
+          ...user,
+          bloqueado: !user.bloqueado,
+          seguindoUsuario: false,
+          solicitacaoPendente: false,
+        };
+      },
+      error: (error) => console.error('Erro ao alternar bloqueio:', error),
+    });
+  }
+
+  conversar(event: Event): void {
+    event.stopPropagation();
+    const user = this.userProfile;
+    if (!user?.id) {
+      return;
+    }
+    this.conversasService
+      .iniciarConversa({ usuarioId: user.id })
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: () => this.router.navigate(['/mensagens']),
+        error: (error) => console.error('Erro ao abrir conversa:', error),
+      });
   }
 
   private findAllPostsById() {
@@ -306,6 +436,16 @@ export class ProfileComponent {
     );
   }
 
+  /** Conta privada de outro usuário sem vínculo: mostra cadeado em vez dos posts. */
+  get isContaPrivadaFechada(): boolean {
+    return (
+      !!this.userProfile &&
+      !!this.userProfile.privado &&
+      !this.isPerfilDoUsuarioLogado &&
+      !this.userProfile.seguindoUsuario
+    );
+  }
+
   get nomeDoUsuario(): string {
     return this.userProfile?.nome || '';
   }
@@ -352,9 +492,11 @@ export class ProfileComponent {
 
   toggleFollow(user: any, event: Event) {
     event.stopPropagation();
-    user.seguindoUsuario
-      ? this.deixarDeSeguir(user, event)
-      : this.seguir(user, event);
+    if (user.seguindoUsuario || user.solicitacaoPendente) {
+      this.deixarDeSeguir(user, event);
+    } else {
+      this.seguir(user, event);
+    }
   }
 
   private seguir(user: any, event: Event) {
@@ -363,7 +505,14 @@ export class ProfileComponent {
       .seguirUsuario({ usuarioId: user.id })
       .pipe(takeUntil(this.destroy$))
       .subscribe({
-        next: () => (user.seguindoUsuario = true),
+        next: () => {
+          // Conta privada: vira solicitação pendente em vez de follow imediato.
+          if (user.privado) {
+            user.solicitacaoPendente = true;
+          } else {
+            user.seguindoUsuario = true;
+          }
+        },
         error: (error) => console.error('Erro ao seguir:', error),
       });
   }
@@ -374,7 +523,10 @@ export class ProfileComponent {
       .deixarDeSeguir({ usuarioId: user.id })
       .pipe(takeUntil(this.destroy$))
       .subscribe({
-        next: () => (user.seguindoUsuario = false),
+        next: () => {
+          user.seguindoUsuario = false;
+          user.solicitacaoPendente = false;
+        },
         error: (error) => console.error('Erro ao deixar de seguir:', error),
       });
   }

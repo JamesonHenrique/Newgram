@@ -1,0 +1,41 @@
+<div class="auth-container">
+  <h1 class="h3-bold">Recuperar senha</h1>
+  <p class="small-medium text-light-3" *ngIf="!enviado">
+    Informe seu e-mail. Se a conta existir, você recebe o link de redefinição.
+  </p>
+  <p class="small-medium text-light-3" *ngIf="enviado">
+    Se o e-mail estiver cadastrado, o link foi enviado. Verifique sua caixa de entrada.
+  </p>
+
+  <form *ngIf="!enviado" [formGroup]="form" (ngSubmit)="enviar()">
+    <div class="form-group">
+      <label for="email">E-mail</label>
+      <input
+        id="email"
+        type="email"
+        formControlName="email"
+        placeholder="Digite seu e-mail"
+      />
+      <span *ngIf="form.get('email')?.invalid && (form.get('email')?.dirty || form.get('email')?.touched)">
+        <span *ngIf="form.get('email')?.errors?.['required']">E-mail é obrigatório.</span>
+        <span *ngIf="form.get('email')?.errors?.['email']">E-mail inválido.</span>
+      </span>
+    </div>
+
+    <button type="submit" class="btn btn-primary" [disabled]="form.invalid || isLoading">
+      <span *ngIf="!isLoading">Enviar link</span>
+      <span *ngIf="isLoading">Enviando...</span>
+    </button>
+
+    <div *ngIf="errorMessage" class="mt-6 p-4 bg-red-50 border border-red-200 rounded-lg text-red-600">
+      <span>{{ errorMessage }}</span>
+    </div>
+  </form>
+
+  <div class="signup-link">
+    <p class="small-medium text-light-3">
+      Lembrou a senha?
+      <a routerLink="/login" class="text-primary-500">Entrar</a>
+    </p>
+  </div>
+</div>

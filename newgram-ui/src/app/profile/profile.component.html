@@ -65,10 +65,26 @@
               (click)="toggleFollow(userProfile, $event)"
               id="followBtn"
               type="button"
-              [class.follow-btn]="!userProfile?.seguindoUsuario"
-              [class.following-btn]="userProfile?.seguindoUsuario"
+              [class.follow-btn]="!userProfile?.seguindoUsuario && !userProfile?.solicitacaoPendente"
+              [class.following-btn]="userProfile?.seguindoUsuario || userProfile?.solicitacaoPendente"
             >
-              {{ userProfile?.seguindoUsuario ? "Seguindo" : "Seguir" }}
+              {{ userProfile?.seguindoUsuario ? "Seguindo" : (userProfile?.solicitacaoPendente ? "Solicitado" : "Seguir") }}
+            </button>
+            <button
+              *ngIf="!isPerfilDoUsuarioLogado"
+              (click)="toggleBloqueio($event)"
+              type="button"
+              class="cancel-btn"
+            >
+              {{ userProfile?.bloqueado ? "Desbloquear" : "Bloquear" }}
+            </button>
+            <button
+              *ngIf="!isPerfilDoUsuarioLogado"
+              (click)="conversar($event)"
+              type="button"
+              class="cancel-btn"
+            >
+              Mensagem
             </button>
 
           </div>
@@ -138,6 +154,27 @@
           </div>
         </div>
 
+        <div
+          *ngIf="isPerfilDoUsuarioLogado && solicitacoes?.length"
+          class="solicitacoes-section w-full max-w-full mt-4"
+          id="solicitacoesSection"
+        >
+          <h3 class="h3-bold mb-2">Solicitações de seguimento ({{ totalSolicitacoes }})</h3>
+          <div
+            class="solicitacao-item flex items-center gap-3 py-2"
+            *ngFor="let solicitacao of solicitacoes"
+          >
+            <span class="font-semibold">{{ solicitacao?.seguidorNome || solicitacao?.seguidorUsername }}</span>
+            <span class="text-gray-500">@{{ solicitacao?.seguidorUsername }}</span>
+            <button type="button" class="follow-btn" (click)="aceitarSolicitacao(solicitacao, $event)">
+              Aceitar
+            </button>
+            <button type="button" class="cancel-btn" (click)="rejeitarSolicitacao(solicitacao, $event)">
+              Rejeitar
+            </button>
+          </div>
+        </div>
+
         <div class="profile-tabs animate-slideUp" style="animation-delay: 0.2s">
           <div class="profile-tab active" data-tab="posts">
             <i class="fas fa-th mr-1"></i>
@@ -146,9 +183,22 @@
         </div>
 
         <div
+          *ngIf="isContaPrivadaFechada"
+          class="empty-state col-span-3 text-center py-10"
+          id="privateGrid"
+        >
+          <div class="empty-state col-span-3">
+            <i class="fas fa-lock empty-state-icon"></i>
+            <h3 class="h3-bold mb-2">Esta conta é privada</h3>
+            <p class="text-gray-500">Siga esta conta para ver os posts.</p>
+          </div>
+        </div>
+
+        <div
           class="posts-grid animate-slideUp"
           style="animation-delay: 0.3s"
           id="postsGrid"
+          *ngIf="!isContaPrivadaFechada"
         >
           <div
             class="post-item"

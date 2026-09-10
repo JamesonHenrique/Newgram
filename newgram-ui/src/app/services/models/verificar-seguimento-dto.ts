@@ -4,4 +4,5 @@
 
 export interface VerificarSeguimentoDto {
   seguindo: boolean;
+  solicitacaoPendente?: boolean;
 }

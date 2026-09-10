@@ -7,6 +7,26 @@
         Salvos
       </h1>
 
+      <div *ngIf="colecoes?.length" class="flex flex-wrap gap-2 mb-6" id="collectionChips">
+        <button
+          type="button"
+          (click)="filtrarPorColecao(null)"
+          [class.follow-btn]="!colecaoAtiva"
+          [class.following-btn]="!!colecaoAtiva"
+        >
+          Todas
+        </button>
+        <button
+          type="button"
+          *ngFor="let colecao of colecoes"
+          (click)="filtrarPorColecao(colecao)"
+          [class.follow-btn]="colecaoAtiva !== colecao"
+          [class.following-btn]="colecaoAtiva === colecao"
+        >
+          {{ colecao }}
+        </button>
+      </div>
+
       <div
         id="collectionCreator"
         class="collection-creator mb-6 bg-gray-800 rounded-lg p-4"

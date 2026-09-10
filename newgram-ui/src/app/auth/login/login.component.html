@@ -97,7 +97,7 @@
               <span class="custom-checkbox"></span>
               <label for="rememberMe" class="small-medium">Lembrar-me</label>
             </div>
-            <a href="#" class="forgot-password">Esqueceu a senha?</a>
+            <a routerLink="/recuperar-senha" class="forgot-password">Esqueceu a senha?</a>
           </div>
 
           <button type="submit" class="btn btn-primary"  [disabled]="authForm.get('email')?.invalid || authForm.get('senha')?.invalid">

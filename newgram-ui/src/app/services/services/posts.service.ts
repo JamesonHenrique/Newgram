@@ -47,6 +47,7 @@ import { listarPostsSalvos } from '../fn/posts/listar-posts-salvos';
 import { ListarPostsSalvos$Params } from '../fn/posts/listar-posts-salvos';
 import { listarPostsSalvosPorColecao } from '../fn/posts/listar-posts-salvos-por-colecao';
 import { ListarPostsSalvosPorColecao$Params } from '../fn/posts/listar-posts-salvos-por-colecao';
+import { listarColecoes } from '../fn/posts/listar-colecoes';
 import { listarPostsTendencias } from '../fn/posts/listar-posts-tendencias';
 import { ListarPostsTendencias$Params } from '../fn/posts/listar-posts-tendencias';
 import { Page } from '../models/page';
@@ -519,6 +520,39 @@ export class PostsService extends BaseService {
   listarPostsSalvosPorColecao(params: ListarPostsSalvosPorColecao$Params, context?: HttpContext): Observable<Page> {
     return this.listarPostsSalvosPorColecao$Response(params, context).pipe(
       map((r: StrictHttpResponse<Page>): Page => r.body)
+    );
+  }
+
+  /** Path part for operation `listarColecoes()` */
+  static readonly ListarColecoesPath = '/posts/salvos/colecoes';
+
+  /**
+   * Listar coleções de salvos.
+   *
+   * Nomes das coleções do usuário autenticado
+   *
+   * This method provides access to the full `HttpResponse`, allowing access to response headers.
+   * To access only the response body, use `listarColecoes()` instead.
+   *
+   * This method doesn't expect any request body.
+   */
+  listarColecoes$Response(context?: HttpContext): Observable<StrictHttpResponse<Array<string>>> {
+    return listarColecoes(this.http, this.rootUrl, context);
+  }
+
+  /**
+   * Listar coleções de salvos.
+   *
+   * Nomes das coleções do usuário autenticado
+   *
+   * This method provides access only to the response body.
+   * To access the full response (for headers, for example), `listarColecoes$Response()` instead.
+   *
+   * This method doesn't expect any request body.
+   */
+  listarColecoes(context?: HttpContext): Observable<Array<string>> {
+    return this.listarColecoes$Response(context).pipe(
+      map((r: StrictHttpResponse<Array<string>>): Array<string> => r.body)
     );
   }
 

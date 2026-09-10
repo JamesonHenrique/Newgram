@@ -113,6 +113,14 @@
         {{ postSelected?.numeroFavoritos | formatNumber }}
       </span>
     </button>
+      <button
+        *ngIf="!postPertenceAoUsuarioLogado"
+        class="flex-center gap-1 text-light-1 hover:text-primary-custom transition"
+        (click)="denunciarPost($event)"
+        title="Denunciar post"
+      >
+        <i class="fa-flag btn-icon text-xl far"></i>
+      </button>
     </div>
 
     <app-comments [postId]="postSelected?.id"></app-comments>

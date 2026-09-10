@@ -56,6 +56,17 @@
                     rows="3"></textarea>
         </div>
 
+        <div class="form-group">
+          <label class="flex items-center gap-2 cursor-pointer">
+            <input
+              type="checkbox"
+              [checked]="contaPrivada"
+              (change)="alternarPrivacidade()"
+            />
+            <span>Conta privada (só seguidores aprovados veem posts e stories)</span>
+          </label>
+        </div>
+
         <div class="form-actions">
           <button type="button"
                   class="cancel-btn"

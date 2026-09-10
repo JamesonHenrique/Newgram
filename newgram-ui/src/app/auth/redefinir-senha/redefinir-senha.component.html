@@ -1,0 +1,52 @@
+<div class="auth-container">
+  <h1 class="h3-bold">Redefinir senha</h1>
+
+  <p class="small-medium text-light-3" *ngIf="sucesso">
+    Senha redefinida com sucesso. Redirecionando para o login...
+  </p>
+
+  <p class="small-medium text-light-3" *ngIf="!token && !sucesso">
+    Link inválido. Solicite um novo link de recuperação.
+  </p>
+
+  <form *ngIf="token && !sucesso" [formGroup]="form" (ngSubmit)="salvar()">
+    <div class="form-group">
+      <label for="novaSenha">Nova senha</label>
+      <input
+        id="novaSenha"
+        type="password"
+        formControlName="novaSenha"
+        placeholder="Mínimo 8 caracteres"
+      />
+      <span *ngIf="form.get('novaSenha')?.invalid && (form.get('novaSenha')?.dirty || form.get('novaSenha')?.touched)">
+        <span *ngIf="form.get('novaSenha')?.errors?.['required']">Nova senha é obrigatória.</span>
+        <span *ngIf="form.get('novaSenha')?.errors?.['minlength']">Mínimo 8 caracteres.</span>
+      </span>
+    </div>
+
+    <div class="form-group">
+      <label for="confirmacaoSenha">Confirmar nova senha</label>
+      <input
+        id="confirmacaoSenha"
+        type="password"
+        formControlName="confirmacaoSenha"
+        placeholder="Repita a nova senha"
+      />
+    </div>
+
+    <button type="submit" class="btn btn-primary" [disabled]="form.invalid || isLoading">
+      <span *ngIf="!isLoading">Salvar nova senha</span>
+      <span *ngIf="isLoading">Salvando...</span>
+    </button>
+
+    <div *ngIf="errorMessage" class="mt-6 p-4 bg-red-50 border border-red-200 rounded-lg text-red-600">
+      <span>{{ errorMessage }}</span>
+    </div>
+  </form>
+
+  <div class="signup-link">
+    <p class="small-medium text-light-3">
+      <a routerLink="/login" class="text-primary-500">Voltar ao login</a>
+    </p>
+  </div>
+</div>

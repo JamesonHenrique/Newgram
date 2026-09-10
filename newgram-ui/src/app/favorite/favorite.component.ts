@@ -22,6 +22,9 @@ export class FavoriteComponent {
   postSelected: any | null = null;
   selectedIndex: number | null = null;
 
+  colecoes: string[] = [];
+  colecaoAtiva: string | null = null;
+
   pageable: Pageable = {
     page: 0,
     size: 4,
@@ -37,6 +40,7 @@ export class FavoriteComponent {
 
   ngOnInit(): void {
     this.listSavedPosts();
+    this.listarColecoes();
   }
 
   ngOnDestroy(): void {
@@ -117,8 +121,14 @@ export class FavoriteComponent {
   private listSavedPosts(): void {
     this.loading = true;
 
-    this.postsService
-      .listarPostsSalvos({ pageable: this.pageable })
+    const req$ = this.colecaoAtiva
+      ? this.postsService.listarPostsSalvosPorColecao({
+          colecao: this.colecaoAtiva,
+          pageable: this.pageable,
+        })
+      : this.postsService.listarPostsSalvos({ pageable: this.pageable });
+
+    req$
       .pipe(
         takeUntil(this.destroy$),
         catchError((error) => {
@@ -158,6 +168,22 @@ export class FavoriteComponent {
         },
         error: (err) => console.error('Erro ao remover favorito:', err),
       });
+  }
+
+  private listarColecoes(): void {
+    this.postsService
+      .listarColecoes()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (colecoes) => (this.colecoes = colecoes || []),
+        error: (err) => console.error('Erro ao carregar coleções:', err),
+      });
+  }
+
+  filtrarPorColecao(colecao: string | null): void {
+    this.colecaoAtiva = colecao;
+    this.pageable.page = 0;
+    this.listSavedPosts();
   }
 
   trackByPostId(index: number, post: any): number {
