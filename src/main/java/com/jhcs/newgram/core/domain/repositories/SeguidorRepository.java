@@ -2,10 +2,8 @@ package com.jhcs.newgram.core.domain.repositories;
 
 import com.jhcs.newgram.core.domain.entities.Seguidor;
 import com.jhcs.newgram.core.domain.entities.Usuario;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -24,7 +22,7 @@ public interface SeguidorRepository extends JpaRepository<Seguidor, Long> {
     @Query(value = "SELECT u.* FROM usuario u " +
             "JOIN seguidor s ON u.id = s.seguido_id " +
             "WHERE s.seguidor_id = :usuarioId " +
-            "ORDER BY RANDOM() LIMIT :limite", nativeQuery = true)
+            "ORDER BY RAND() LIMIT :limite", nativeQuery = true)
     List<Usuario> findRandomSeguidosByUsuarioId(@Param("usuarioId") Long usuarioId, @Param("limite") int limite);
 
     @Query("SELECT COUNT(s) FROM Seguidor s WHERE s.seguido.id = :usuarioId")
@@ -33,12 +31,11 @@ public interface SeguidorRepository extends JpaRepository<Seguidor, Long> {
     @Query("SELECT COUNT(s) FROM Seguidor s WHERE s.seguidor.id = :usuarioId")
     Long countSeguidosByUsuarioId(@Param("usuarioId") Long usuarioId);
 
-    @Modifying
     void deleteBySeguidorIdAndSeguidoId(Long seguidorId, Long seguidoId);
 
     @Query("SELECT s.seguido FROM Seguidor s WHERE s.seguidor.id = :usuarioId")
-    Page<Usuario> findSeguidosByUsuarioId(@Param("usuarioId") Long usuarioId, Pageable pageable);
+    List<Usuario> findSeguidosByUsuarioId(@Param("usuarioId") Long usuarioId, Pageable pageable);
 
     @Query("SELECT s.seguidor FROM Seguidor s WHERE s.seguido.id = :usuarioId")
-    Page<Usuario> findSeguidoresByUsuarioId(@Param("usuarioId") Long usuarioId, Pageable pageable);
+    List<Usuario> findSeguidoresByUsuarioId(@Param("usuarioId") Long usuarioId, Pageable pageable);
 }

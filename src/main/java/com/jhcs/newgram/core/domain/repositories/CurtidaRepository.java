@@ -1,10 +1,15 @@
 package com.jhcs.newgram.core.domain.repositories;
 
 import com.jhcs.newgram.core.domain.entities.Curtida;
+import com.jhcs.newgram.core.domain.entities.Usuario;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+
+import java.util.List;
 
 public interface CurtidaRepository extends JpaRepository<Curtida, Long> {
 
@@ -12,10 +17,8 @@ public interface CurtidaRepository extends JpaRepository<Curtida, Long> {
 
     boolean existsByUsuarioIdAndComentarioId(Long usuarioId, Long comentarioId);
 
-    @Modifying
     void deleteByUsuarioIdAndPostId(Long usuarioId, Long postId);
 
-    @Modifying
     void deleteByUsuarioIdAndComentarioId(Long usuarioId, Long comentarioId);
 
     Long countByPostId(Long postId);

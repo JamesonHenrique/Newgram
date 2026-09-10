@@ -3,7 +3,7 @@ package com.jhcs.newgram.application.dtos.storie;
 import com.jhcs.newgram.application.dtos.usuario.UsuarioSummaryDTO;
 import lombok.Data;
 import io.swagger.v3.oas.annotations.media.Schema;
-import java.time.LocalDateTime;
+import java.util.Date;
 import java.util.List;
 
 @Data
@@ -14,10 +14,10 @@ public class StorieResponseDTO {
     private Long id;
 
     @Schema(description = "Data de criação da storie")
-    private LocalDateTime dataCriacao;
+    private Date dataCriacao;
 
     @Schema(description = "Data de expiração da storie")
-    private LocalDateTime dataExpiracao;
+    private Date dataExpiracao;
 
     @Schema(description = "Informações do autor da storie")
     private UsuarioSummaryDTO autor;

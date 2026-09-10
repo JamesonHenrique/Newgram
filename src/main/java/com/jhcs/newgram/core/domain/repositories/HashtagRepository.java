@@ -22,7 +22,7 @@ public interface HashtagRepository extends JpaRepository<Hashtag, Long> {
     Page<Object[]> findHashtagsPopulares(Pageable pageable);
 
     @Query("SELECT DISTINCT h FROM Hashtag h JOIN h.posts p WHERE p.autor.id = :usuarioId ORDER BY SIZE(h.posts) DESC")
-    Page<Hashtag> findHashtagsUsadasPorUsuario(@Param("usuarioId") Long usuarioId, Pageable pageable);
+    List<Hashtag> findHashtagsUsadasPorUsuario(@Param("usuarioId") Long usuarioId, Pageable pageable);
     @Query("SELECT h FROM Hashtag h JOIN h.posts p WHERE p.id = :postId")
     List<Hashtag> findByPostId(@Param("postId") Long postId);
 

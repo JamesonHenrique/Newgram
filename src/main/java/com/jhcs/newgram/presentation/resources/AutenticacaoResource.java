@@ -1,9 +1,9 @@
 package com.jhcs.newgram.presentation.resources;
 
 import com.jhcs.newgram.application.dtos.usuario.LoginDTO;
-import com.jhcs.newgram.application.dtos.usuario.RefreshTokenDTO;
 import com.jhcs.newgram.application.dtos.usuario.TokenDTO;
 import com.jhcs.newgram.application.dtos.usuario.UsuarioCreateDTO;
+import com.jhcs.newgram.application.services.ArquivoService;
 import com.jhcs.newgram.application.services.AutenticacaoService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -14,10 +14,13 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.core.io.Resource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequestMapping("/auth")
@@ -47,7 +50,7 @@ public class AutenticacaoResource {
     })
     public ResponseEntity<TokenDTO> login(
             @Parameter(description = "Credenciais de login do usuário", required = true)
-            @Valid @RequestBody LoginDTO loginDTO) {
+            @RequestBody LoginDTO loginDTO) {
         TokenDTO tokenDTO = autenticacaoService.autenticar(loginDTO.getEmail(), loginDTO.getSenha());
         return ResponseEntity.ok(tokenDTO);
     }
@@ -62,8 +65,8 @@ public class AutenticacaoResource {
     })
     public ResponseEntity<TokenDTO> refreshToken(
             @Parameter(description = "Refresh token para renovação", required = true)
-            @Valid @RequestBody RefreshTokenDTO dto) {
-        TokenDTO tokenDTO = autenticacaoService.renovarToken(dto.getRefreshToken());
+            @RequestBody  String refreshToken) {
+        TokenDTO tokenDTO = autenticacaoService.renovarToken(refreshToken);
         return ResponseEntity.ok(tokenDTO);
     }
 

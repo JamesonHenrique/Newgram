@@ -4,6 +4,7 @@ import com.jhcs.newgram.application.dtos.usuario.UsuarioComumDTO;
 import com.jhcs.newgram.application.dtos.usuario.UsuarioResponseDTO;
 import com.jhcs.newgram.application.dtos.usuario.UsuarioSummaryDTO;
 import com.jhcs.newgram.application.dtos.usuario.UsuarioUpdateDTO;
+import com.jhcs.newgram.application.services.ArquivoService;
 import com.jhcs.newgram.application.services.UsuarioService;
 import com.jhcs.newgram.core.domain.entities.Usuario;
 import io.swagger.v3.oas.annotations.Operation;
@@ -15,27 +16,36 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.core.io.Resource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+import java.util.List;
 
 @RestController
 @RequestMapping("/usuarios")
 @RequiredArgsConstructor
 @Tag(name = "Usuários", description = "API para gerenciamento de usuários")
 public class UsuarioResource {
+    private final ArquivoService arquivoService;
     private final UsuarioService usuarioService;
 
-    @GetMapping("/{id:\\d+}")
+    @GetMapping("/{id}")
     @Operation(summary = "Buscar usuário por ID", description = "Retorna os detalhes de um usuário específico pelo ID")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Usuário encontrado com sucesso",
-                    content = @Content(schema = @Schema(implementation = UsuarioSummaryDTO.class))),
+                    content = @Content(schema = @Schema(implementation = UsuarioResponseDTO.class))),
             @ApiResponse(responseCode = "401", description = "Não autorizado",
                     content = @Content),
             @ApiResponse(responseCode = "404", description = "Usuário não encontrado",
@@ -135,7 +145,7 @@ public class UsuarioResource {
         Page<UsuarioComumDTO> usuarios = usuarioService.buscarUsuariosPorAmigosEmComum(usuarioLogado.getId(), pageable);
         return ResponseEntity.ok(usuarios);
     }
-    @PutMapping(path = "/{id:\\d+}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PutMapping(path = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @Operation(summary = "Atualizar usuário", description = "Atualiza os dados de um usuário existente")
 
     @ApiResponses(value = {
@@ -157,14 +167,14 @@ public class UsuarioResource {
             @AuthenticationPrincipal Usuario usuarioLogado) {
 
         if (!usuarioLogado.getId().equals(id)) {
-            throw new AccessDeniedException("Acesso negado: você só pode atualizar o próprio usuário.");
+            return ResponseEntity.status(403).build();
         }
 
         UsuarioResponseDTO usuarioAtualizado = usuarioService.atualizarUsuario(id, dto);
         return ResponseEntity.ok(usuarioAtualizado);
     }
 
-    @GetMapping("/{id:\\d+}/seguidores")
+    @GetMapping("/{id}/seguidores")
     @Operation(summary = "Listar seguidores", description = "Retorna os usuários que seguem um usuário específico")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Seguidores listados com sucesso",
@@ -185,7 +195,7 @@ public class UsuarioResource {
         return ResponseEntity.ok(seguidores);
     }
 
-    @GetMapping("/{id:\\d+}/seguindo")
+    @GetMapping("/{id}/seguindo")
     @Operation(summary = "Listar seguidos", description = "Retorna os usuários que um usuário específico segue")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Seguidos listados com sucesso",

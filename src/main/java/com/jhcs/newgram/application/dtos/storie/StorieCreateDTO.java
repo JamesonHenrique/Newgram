@@ -10,7 +10,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 public class StorieCreateDTO {
 
     @Schema(description = "Indica se a storie deve ser destacada")
-    private Boolean destacar;
+    private boolean destacar;
 
     @Schema(description = "Imagem do Storie", type = "string", format = "binary")
     private MultipartFile imagem;

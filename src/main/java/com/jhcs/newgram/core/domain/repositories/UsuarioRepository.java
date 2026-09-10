@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
@@ -47,10 +48,10 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
     Page<Usuario> findSugestoesUsuarios(@Param("usuarioId") Long usuarioId, Pageable pageable);
     @Query("SELECT u FROM Usuario u " +
             "LEFT JOIN Seguidor s ON u.id = s.seguido.id " +
-            "WHERE u.id <> :usuarioId " +
+            "AND u.id <> :usuarioId " +
             "GROUP BY u.id " +
             "ORDER BY COUNT(s) DESC")
     Page<Usuario> findUsuariosMaisFamosos(Pageable pageable, @Param("usuarioId") Long usuarioId);
 @Query("SELECT u FROM Usuario u WHERE u.id = :publicId")
-Optional<Usuario>  findByPublicId(@Param("publicId") Long receiverId);
+Optional<Usuario>  findByPublicId(@Param("publicId") String receiverId);
 }

@@ -15,15 +15,15 @@ import com.jhcs.newgram.core.domain.repositories.UsuarioRepository;
 import com.jhcs.newgram.infrastructure.aws.S3StorageService;
 import com.jhcs.newgram.infrastructure.exception.BusinessException;
 import com.jhcs.newgram.infrastructure.exception.ResourceNotFoundException;
+import com.jhcs.newgram.infrastructure.exception.UnauthorizedException;
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.ArrayList;
-import java.time.LocalDateTime;
+import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -50,7 +50,7 @@ public class DestaqueService {
 
         Destaque destaque = new Destaque();
         destaque.setNome(dto.getNome());
-        destaque.setDataCriacao(LocalDateTime.now());
+        destaque.setDataCriacao(new Date());
         destaque.setUsuario(usuario);
         destaque.setStories(new ArrayList<>());
 
@@ -78,10 +78,12 @@ public class DestaqueService {
     @Transactional
     public void salvarCapaDeDestaque(Long destaqueId, Long usuarioId, MultipartFile file) {
         Usuario usuario = usuarioRepository.findById(usuarioId)
-                .orElseThrow(() -> new ResourceNotFoundException("Nenhum usuario encontrado com o ID: " + usuarioId));
+                .orElseThrow(() -> new EntityNotFoundException("Nenhum usuario encontrado com o ID: " + usuarioId));
         Destaque destaque = destaqueRepository.findById(destaqueId)
-                .orElseThrow(() -> new ResourceNotFoundException("Nenhum destaque encontrado com o ID: " + destaqueId));
-        Support.requireOwner(destaque.getUsuario().getId(), usuarioId, "Você não tem permissão para adicionar capa a este destaque");
+                .orElseThrow(() -> new EntityNotFoundException("Nenhum destaque encontrado com o ID: " + destaqueId));
+        if (!destaque.getUsuario().getId().equals(usuarioId)) {
+            throw new UnauthorizedException("Você não tem permissão para adicionar capa a este destaque");
+        }
         var capaDeDestaque = arquivoService.saveFile(file, usuario.getUsuarioName(), TipoArquivo.FOTO_DESTAQUE);
         destaque.setDestaqueFotoDeCapaUrl(capaDeDestaque);
         destaqueRepository.save(destaque);
@@ -89,8 +91,11 @@ public class DestaqueService {
 
     @Transactional
     public DestaqueResponseDTO atualizarDestaque(Long destaqueId, DestaqueUpdateDTO dto, Long usuarioId) {
-        Destaque destaque = destaqueRepository.findByIdWithStories(destaqueId)
-                .orElseThrow(() -> new ResourceNotFoundException("Destaque não encontrado"));
+        Destaque destaque = destaqueRepository.findByIdWithStories(destaqueId);
+
+        if (destaque == null) {
+            throw new ResourceNotFoundException("Destaque não encontrado");
+        }
 
         if (!destaque.getUsuario().getId().equals(usuarioId)) {
             throw new BusinessException("Você não tem permissão para editar este destaque");
@@ -151,14 +156,12 @@ public class DestaqueService {
     }
 
     @Transactional(readOnly = true)
-    public Page<DestaqueResponseDTO> listarDestaquesPorUsuario(String username, Pageable pageable) {
-        return Support.pageOf(listarDestaquesPorUsuario(username), pageable);
-    }
-
-    @Transactional(readOnly = true)
     public DestaqueResponseDTO buscarDestaquePorId(Long destaqueId, Long usuarioLogadoId) {
-        Destaque destaque = destaqueRepository.findByIdWithStories(destaqueId)
-                .orElseThrow(() -> new ResourceNotFoundException("Destaque não encontrado"));
+        Destaque destaque = destaqueRepository.findByIdWithStories(destaqueId);
+
+        if (destaque == null) {
+            throw new ResourceNotFoundException("Destaque não encontrado");
+        }
 
         boolean mostrarDetalhes = destaque.getUsuario().getId().equals(usuarioLogadoId);
 
@@ -170,15 +173,12 @@ public class DestaqueService {
         Destaque destaque = destaqueRepository.findById(destaqueId)
                 .orElseThrow(() -> new ResourceNotFoundException("Destaque não encontrado"));
 
-        Support.requireOwner(destaque.getUsuario().getId(), usuarioId, "Você não tem permissão para editar este destaque");
+        if (!destaque.getUsuario().getId().equals(usuarioId)) {
+            throw new BusinessException("Você não tem permissão para editar este destaque");
+        }
 
-        Usuario usuario = usuarioRepository.findById(usuarioId)
-                .orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado"));
-        String capaUrl = arquivoService.saveFile(arquivo, usuario.getUsuarioName(), TipoArquivo.FOTO_DESTAQUE);
-        destaque.setDestaqueFotoDeCapaUrl(capaUrl);
-        destaque = destaqueRepository.save(destaque);
 
-        return converterParaResponseDTO(destaque, true);
+        return buscarDestaquePorId(destaqueId, usuarioId);
     }
 
     @Transactional(readOnly = true)
@@ -203,11 +203,6 @@ public class DestaqueService {
         return stories.stream()
                 .map(storie -> converterParaStorieResponseDTO(storie, usuarioLogadoId))
                 .collect(Collectors.toList());
-    }
-
-    @Transactional(readOnly = true)
-    public Page<StorieResponseDTO> listarStoriesPorDestaque(Long destaqueId, Long usuarioLogadoId, Pageable pageable) {
-        return Support.pageOf(listarStoriesPorDestaque(destaqueId, usuarioLogadoId), pageable);
     }
 
     private DestaqueSummaryDTO converterParaSummaryDTO(Destaque destaque) {

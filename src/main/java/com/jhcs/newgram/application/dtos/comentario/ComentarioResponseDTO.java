@@ -3,7 +3,7 @@ package com.jhcs.newgram.application.dtos.comentario;
 import io.swagger.v3.oas.annotations.media.Schema;
 import com.jhcs.newgram.application.dtos.usuario.UsuarioSummaryDTO;
 import lombok.Data;
-import java.time.LocalDateTime;
+import java.util.Date;
 
 @Data
 public class ComentarioResponseDTO {
@@ -14,7 +14,7 @@ public class ComentarioResponseDTO {
     private String texto;
 
     @Schema(description = "Data de criação do comentário", example = "2023-01-01T12:00:00Z")
-    private LocalDateTime dataCriacao;
+    private Date dataCriacao;
 
     @Schema(description = "Informações do autor do comentário")
     private UsuarioSummaryDTO autor;

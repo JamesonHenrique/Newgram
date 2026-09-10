@@ -7,23 +7,17 @@ import com.jhcs.newgram.core.domain.entities.Usuario;
 import com.jhcs.newgram.core.domain.enums.TipoNotificacao;
 import com.jhcs.newgram.core.domain.repositories.SeguidorRepository;
 import com.jhcs.newgram.core.domain.repositories.UsuarioRepository;
-import com.jhcs.newgram.infrastructure.exception.BusinessException;
-import com.jhcs.newgram.infrastructure.exception.ResourceNotFoundException;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
-@Slf4j
 public class SeguidorService {
 
     @Autowired
@@ -34,11 +28,14 @@ public class SeguidorService {
 
     @Autowired
     private NotificacaoService notificacaoService;
+    @Autowired
+    private ArquivoService arquivoService;
 
     @Transactional(readOnly = true)
-    public Page<SeguidorResponseDTO> listarSeguidores(Long usuarioId, Pageable pageable) {
-        Page<Usuario> seguidores = seguidorRepository.findSeguidoresByUsuarioId(usuarioId, Support.safePage(pageable));
-        return seguidores.map(seguidor -> {
+    public List<SeguidorResponseDTO> listarSeguidores(Long usuarioId, Pageable pageable) {
+        List<Usuario> seguidores = seguidorRepository.findSeguidoresByUsuarioId(usuarioId, pageable);
+        return seguidores.stream()
+                .map(seguidor -> {
                     Optional<Seguidor> relacao = seguidorRepository.findBySeguidorIdAndSeguidoId(seguidor.getId(), usuarioId);
                     SeguidorResponseDTO dto = new SeguidorResponseDTO();
                     if (relacao.isPresent()) {
@@ -52,13 +49,14 @@ public class SeguidorService {
 
                     dto.setSeguidoId(usuarioId);
                     return dto;
-                });
+                }).collect(Collectors.toList());
     }
 
     @Transactional(readOnly = true)
-    public Page<SeguidorResponseDTO> listarSeguidos(Long usuarioId, Pageable pageable) {
-        Page<Usuario> seguidos = seguidorRepository.findSeguidosByUsuarioId(usuarioId, Support.safePage(pageable));
-        return seguidos.map(seguido -> {
+    public List<SeguidorResponseDTO> listarSeguidos(Long usuarioId, Pageable pageable) {
+        List<Usuario> seguidos = seguidorRepository.findSeguidosByUsuarioId(usuarioId, pageable);
+        return seguidos.stream()
+                .map(seguido -> {
                     Optional<Seguidor> relacao = seguidorRepository.findBySeguidorIdAndSeguidoId(usuarioId, seguido.getId());
                     SeguidorResponseDTO dto = new SeguidorResponseDTO();
                     if (relacao.isPresent()) {
@@ -72,7 +70,7 @@ public class SeguidorService {
 
                     dto.setSeguidorId(usuarioId);
                     return dto;
-                });
+                }).collect(Collectors.toList());
     }
 
     @Transactional(readOnly = true)
@@ -93,39 +91,33 @@ public class SeguidorService {
     @Transactional
     public SeguidorResponseDTO seguir(Long seguidorId, Long seguidoId) {
         if (seguidorId.equals(seguidoId)) {
-            throw new BusinessException("Não é possível seguir a si mesmo");
+            throw new RuntimeException("Não é possível seguir a si mesmo");
+        }
+
+        if (seguidorRepository.existsBySeguidorIdAndSeguidoId(seguidorId, seguidoId)) {
+            throw new RuntimeException("Já está seguindo este usuário");
         }
 
         Usuario seguidor = usuarioRepository.findById(seguidorId)
-                .orElseThrow(() -> new ResourceNotFoundException("Seguidor não encontrado"));
+                .orElseThrow(() -> new RuntimeException("Seguidor não encontrado"));
 
         Usuario seguido = usuarioRepository.findById(seguidoId)
-                .orElseThrow(() -> new ResourceNotFoundException("Seguido não encontrado"));
+                .orElseThrow(() -> new RuntimeException("Seguido não encontrado"));
 
         Seguidor relacao = new Seguidor();
         relacao.setSeguidor(seguidor);
         relacao.setSeguido(seguido);
-        relacao.setDataCriacao(LocalDateTime.now());
+        relacao.setDataCriacao(new Date());
         relacao.setNotificacoesAtivadas(true);
 
-        // Save direto (sem exists prévio): idempotência via constraint única + catch.
-        try {
-            relacao = seguidorRepository.saveAndFlush(relacao);
-        } catch (DataIntegrityViolationException e) {
-            throw new BusinessException("Já está seguindo este usuário", e);
-        }
+        relacao = seguidorRepository.save(relacao);
 
-        // Notificação desacoplada: falha aqui não desfaz o follow.
-        try {
-            notificacaoService.criarNotificacao(
-                    seguidoId,
-                    seguidorId,
-                    TipoNotificacao.NOVO_SEGUIDOR,
-                    seguidor.getUsername() + " começou a seguir você"
-            );
-        } catch (RuntimeException e) {
-            log.warn("Follow {}->{} persistido, mas notificação falhou: {}", seguidorId, seguidoId, e.getMessage());
-        }
+        notificacaoService.criarNotificacao(
+                seguidoId,
+                seguidorId,
+                TipoNotificacao.NOVO_SEGUIDOR,
+                seguidor.getUsername() + " começou a seguir você"
+        );
 
         return converterParaDTO(relacao);
     }
@@ -133,7 +125,7 @@ public class SeguidorService {
     @Transactional
     public void deixarDeSeguir(Long seguidorId, Long seguidoId) {
         if (!seguidorRepository.existsBySeguidorIdAndSeguidoId(seguidorId, seguidoId)) {
-            throw new BusinessException("Não está seguindo este usuário");
+            throw new RuntimeException("Não está seguindo este usuário");
         }
 
         seguidorRepository.deleteBySeguidorIdAndSeguidoId(seguidorId, seguidoId);
@@ -144,7 +136,7 @@ public class SeguidorService {
         Optional<Seguidor> relacaoOpt = seguidorRepository.findBySeguidorIdAndSeguidoId(seguidorId, seguidoId);
 
         if (relacaoOpt.isEmpty()) {
-            throw new BusinessException("Não está seguindo este usuário");
+            throw new RuntimeException("Não está seguindo este usuário");
         }
 
         Seguidor relacao = relacaoOpt.get();
@@ -154,7 +146,7 @@ public class SeguidorService {
 
     @Transactional(readOnly = true)
     public List<UsuarioSummaryDTO> buscarSeguidosAleatorios(Long usuarioId, int limite) {
-        List<Usuario> seguidosAleatorios = seguidorRepository.findRandomSeguidosByUsuarioId(usuarioId, Support.safeLimit(limite));
+        List<Usuario> seguidosAleatorios = seguidorRepository.findRandomSeguidosByUsuarioId(usuarioId, limite);
 
         return seguidosAleatorios.stream()
                 .map(seguido -> {
@@ -167,23 +159,6 @@ public class SeguidorService {
                     return dto;
                 })
                 .collect(Collectors.toList());
-    }
-
-    @Transactional(readOnly = true)
-    public Page<UsuarioSummaryDTO> buscarSeguidosAleatorios(Long usuarioId, Pageable pageable) {
-        List<Usuario> seguidosAleatorios = seguidorRepository.findRandomSeguidosByUsuarioId(
-                usuarioId, Support.safePage(pageable).getPageSize());
-
-        List<UsuarioSummaryDTO> dtos = seguidosAleatorios.stream()
-                .map(seguido -> {
-                    UsuarioSummaryDTO dto = new UsuarioSummaryDTO();
-                    dto.setId(seguido.getId());
-                    dto.setNome(seguido.getNome());
-                    dto.setUsername(seguido.getUsername());
-                    return dto;
-                })
-                .collect(Collectors.toList());
-        return Support.pageOf(dtos, pageable);
     }
 
     private SeguidorResponseDTO converterParaDTO(Seguidor seguidor) {

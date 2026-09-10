@@ -2,9 +2,7 @@ package com.jhcs.newgram.presentation.resources;
 
 
 
-import com.jhcs.newgram.application.dtos.seguidor.ContagemSeguidoresDTO;
 import com.jhcs.newgram.application.dtos.seguidor.SeguidorResponseDTO;
-import com.jhcs.newgram.application.dtos.seguidor.VerificarSeguimentoDTO;
 import com.jhcs.newgram.application.dtos.usuario.UsuarioSummaryDTO;
 import com.jhcs.newgram.application.services.SeguidorService;
 import com.jhcs.newgram.core.domain.entities.Usuario;
@@ -15,96 +13,94 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.validation.constraints.Max;
-import jakarta.validation.constraints.Min;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
-@RequestMapping("/seguidores")
-@Validated
+@RequestMapping("seguidores")
 @Tag(name = "Seguidores", description = "Operações para gerenciamento de seguidores")
 public class SeguidorResource {
 
     @Autowired
     private SeguidorService seguidorService;
 
-    @GetMapping("/seguindo/{usuarioId:\\d+}")
+    @GetMapping("/seguindo/{usuarioId}")
     @Operation(summary = "Verificar seguimento", description = "Verifica se um usuário está seguindo outro")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Verificação realizada com sucesso"),
             @ApiResponse(responseCode = "401", description = "Não autorizado", content = @Content)
     })
-    public ResponseEntity<VerificarSeguimentoDTO> verificarSeguimento(
+    public ResponseEntity<Boolean> verificarSeguimento(
             @Parameter(description = "ID do usuário que está sendo seguido", required = true)
             @PathVariable Long usuarioId,
             @AuthenticationPrincipal Usuario usuario) {
 
         boolean seguindo = seguidorService.verificarSeguimento(usuario.getId(), usuarioId);
-        return ResponseEntity.ok(new VerificarSeguimentoDTO(seguindo));
+        return ResponseEntity.ok(seguindo);
     }
 
-    @GetMapping("/seguidores/{usuarioId:\\d+}")
+    @GetMapping("/seguidores/{usuarioId}")
     @Operation(summary = "Listar seguidores", description = "Retorna a lista de seguidores de um usuário")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Seguidores listados com sucesso"),
             @ApiResponse(responseCode = "401", description = "Não autorizado", content = @Content)
     })
-    public ResponseEntity<Page<SeguidorResponseDTO>> listarSeguidores(
+    public ResponseEntity<List<SeguidorResponseDTO>> listarSeguidores(
             @Parameter(description = "ID do usuário", required = true)
             @PathVariable Long usuarioId,
             @Parameter(description = "Parâmetros de paginação (page=0, size=20)")
             @PageableDefault(page = 0, size = 20) Pageable pageable) {
 
-        Page<SeguidorResponseDTO> seguidores = seguidorService.listarSeguidores(usuarioId, pageable);
+        List<SeguidorResponseDTO> seguidores = seguidorService.listarSeguidores(usuarioId, pageable);
         return ResponseEntity.ok(seguidores);
     }
 
-    @GetMapping("/seguidos/{usuarioId:\\d+}")
+    @GetMapping("/seguidos/{usuarioId}")
     @Operation(summary = "Listar seguidos", description = "Retorna a lista de usuários que um usuário segue")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Seguidos listados com sucesso"),
             @ApiResponse(responseCode = "401", description = "Não autorizado", content = @Content)
     })
-    public ResponseEntity<Page<SeguidorResponseDTO>> listarSeguidos(
+    public ResponseEntity<List<SeguidorResponseDTO>> listarSeguidos(
             @Parameter(description = "ID do usuário", required = true)
             @PathVariable Long usuarioId,
             @Parameter(description = "Parâmetros de paginação (page=0, size=20)")
             @PageableDefault(page = 0, size = 20) Pageable pageable) {
 
-        Page<SeguidorResponseDTO> seguidos = seguidorService.listarSeguidos(usuarioId, pageable);
+        List<SeguidorResponseDTO> seguidos = seguidorService.listarSeguidos(usuarioId, pageable);
         return ResponseEntity.ok(seguidos);
     }
 
-    @GetMapping("/contagem/{usuarioId:\\d+}")
+    @GetMapping("/contagem/{usuarioId}")
     @Operation(summary = "Contagem de seguidores e seguidos", description = "Retorna a quantidade de seguidores e seguidos de um usuário")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Contagem realizada com sucesso"),
             @ApiResponse(responseCode = "401", description = "Não autorizado", content = @Content)
     })
-    public ResponseEntity<ContagemSeguidoresDTO> contarSeguidoresESeguidos(
+    public ResponseEntity<Map<String, Long>> contarSeguidoresESeguidos(
             @Parameter(description = "ID do usuário", required = true)
             @PathVariable Long usuarioId) {
 
         Long seguidores = seguidorService.contarSeguidores(usuarioId);
         Long seguidos = seguidorService.contarSeguidos(usuarioId);
 
-        return ResponseEntity.ok(new ContagemSeguidoresDTO(seguidores, seguidos));
+        return ResponseEntity.ok(Map.of(
+                "seguidores", seguidores,
+                "seguidos", seguidos
+        ));
     }
 
-    @PostMapping("/{usuarioId:\\d+}/seguir")
+    @PostMapping("/{usuarioId}/seguir")
     @Operation(summary = "Seguir usuário", description = "Começa a seguir um usuário")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "201", description = "Usuário seguido com sucesso",
+            @ApiResponse(responseCode = "200", description = "Usuário seguido com sucesso",
                     content = @Content(schema = @Schema(implementation = SeguidorResponseDTO.class))),
             @ApiResponse(responseCode = "400", description = "Não é possível seguir a si mesmo ou já está seguindo",
                     content = @Content),
@@ -117,10 +113,10 @@ public class SeguidorResource {
             @AuthenticationPrincipal Usuario usuario) {
 
         SeguidorResponseDTO relacao = seguidorService.seguir(usuario.getId(), usuarioId);
-        return ResponseEntity.status(HttpStatus.CREATED).body(relacao);
+        return ResponseEntity.ok(relacao);
     }
 
-    @DeleteMapping("/{usuarioId:\\d+}/deixar-de-seguir")
+    @DeleteMapping("/{usuarioId}/deixar-de-seguir")
     @Operation(summary = "Deixar de seguir", description = "Deixa de seguir um usuário")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "204", description = "Deixou de seguir com sucesso"),
@@ -138,7 +134,7 @@ public class SeguidorResource {
         return ResponseEntity.noContent().build();
     }
 
-    @PatchMapping("/{usuarioId:\\d+}/notificacoes")
+    @PatchMapping("/{usuarioId}/notificacoes")
     @Operation(summary = "Alterar notificações", description = "Ativa ou desativa notificações de um seguido")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "204", description = "Notificações alteradas com sucesso"),
@@ -166,7 +162,7 @@ public class SeguidorResource {
     })
     public ResponseEntity<List<UsuarioSummaryDTO>> buscarSeguidosAleatorios(
             @Parameter(description = "Quantidade de seguidos a retornar")
-            @RequestParam(defaultValue = "5") @Min(1) @Max(50) int limite,
+            @RequestParam(defaultValue = "5") int limite,
             @AuthenticationPrincipal Usuario usuario) {
 
         List<UsuarioSummaryDTO> seguidosAleatorios = seguidorService.buscarSeguidosAleatorios(usuario.getId(), limite);

@@ -17,13 +17,11 @@ public class PostCreateDTO {
     private String legenda;
 
     @Schema(description = "Localização associada ao post")
-    @Size(max = 255, message = "A localização deve ter no máximo 255 caracteres")
     private String localizacao;
 
     @Schema(description = "Visibilidade do post (padrão: público)")
     private TipoVisibilidade visibilidade = TipoVisibilidade.PUBLICO;
 
     @Schema(description = "Lista de hashtags associadas ao post")
-    @Size(max = 10, message = "O post deve ter no máximo 10 hashtags")
     private List<String> hashtags;
 }

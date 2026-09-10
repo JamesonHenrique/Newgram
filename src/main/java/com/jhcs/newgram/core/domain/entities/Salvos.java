@@ -1,33 +1,20 @@
 package com.jhcs.newgram.core.domain.entities;
 
 import jakarta.persistence.*;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import org.hibernate.annotations.CreationTimestamp;
+import lombok.Data;
 
-import java.time.LocalDateTime;
+import java.util.Date;
 
-@Getter
-@Setter
-@NoArgsConstructor
-@EqualsAndHashCode(onlyExplicitlyIncluded = true)
+@Data
 @Entity
-@Table(name = "salvos", uniqueConstraints = {
-        @UniqueConstraint(columnNames = {"usuario_id", "post_id"})
-})
+@Table(name = "salvos")
 public class Salvos {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @EqualsAndHashCode.Include
     private Long id;
 
-    @CreationTimestamp
-    @Column(name = "data_salvo", nullable = false, updatable = false)
-    private LocalDateTime dataSalvo;
-
+    private Date dataSalvo;
     private String colecao;
 
     @ManyToOne(fetch = FetchType.LAZY)

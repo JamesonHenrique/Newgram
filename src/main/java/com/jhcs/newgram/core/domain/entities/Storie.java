@@ -1,38 +1,28 @@
 package com.jhcs.newgram.core.domain.entities;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import org.hibernate.annotations.CreationTimestamp;
+import lombok.Data;
 
-import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
 
-@Getter
-@Setter
-@NoArgsConstructor
-@EqualsAndHashCode(onlyExplicitlyIncluded = true)
+@Data
 @Entity
 @Table(name = "storie")
 public class Storie {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @EqualsAndHashCode.Include
     private Long id;
-
-    @CreationTimestamp
-    @Column(name = "data_criacao", nullable = false, updatable = false)
-    private LocalDateTime dataCriacao;
-
-    @Column(name = "data_expiracao", nullable = false)
-    private LocalDateTime dataExpiracao;
-
+    private Date dataCriacao;
+    private Date dataExpiracao;
     private boolean destacado;
     private String storieImagemUrl;
-
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "autor_id")
     @JsonIgnoreProperties({"stories", "destaques"})

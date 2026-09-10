@@ -5,23 +5,17 @@ import com.jhcs.newgram.core.domain.entities.StatusUsuario;
 import com.jhcs.newgram.core.domain.entities.Usuario;
 import com.jhcs.newgram.core.domain.repositories.StatusUsuarioRepository;
 import com.jhcs.newgram.core.domain.repositories.UsuarioRepository;
-import com.jhcs.newgram.infrastructure.exception.ResourceNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.Duration;
-import java.time.LocalDateTime;
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
 public class StatusUsuarioService {
-
-    private static final long DEBOUNCE_ACESSO_MS = 5 * 60 * 1000L;
 
     @Autowired
     private StatusUsuarioRepository statusUsuarioRepository;
@@ -32,7 +26,7 @@ public class StatusUsuarioService {
     @Transactional(readOnly = true)
     public StatusUsuarioResponseDTO buscarStatusPorUsuarioId(Long usuarioId) {
         StatusUsuario statusUsuario = statusUsuarioRepository.findByUsuarioId(usuarioId)
-                .orElseThrow(() -> new ResourceNotFoundException("Status do usuário não encontrado"));
+                .orElseThrow(() -> new RuntimeException("Status do usuário não encontrado"));
 
         return converterParaDTO(statusUsuario);
     }
@@ -46,13 +40,7 @@ public class StatusUsuarioService {
     }
 
     @Transactional(readOnly = true)
-    public Page<StatusUsuarioResponseDTO> listarUsuariosOnline(List<Long> usuariosIds, Pageable pageable) {
-        List<StatusUsuarioResponseDTO> todos = listarUsuariosOnline(usuariosIds);
-        return Support.pageOf(todos, pageable);
-    }
-
-    @Transactional(readOnly = true)
-    public List<StatusUsuarioResponseDTO> listarUsuariosRecentementeAtivos(LocalDateTime dataLimite, List<Long> usuariosIds) {
+    public List<StatusUsuarioResponseDTO> listarUsuariosRecentementeAtivos(Date dataLimite, List<Long> usuariosIds) {
         List<StatusUsuario> statusRecentes = statusUsuarioRepository.findUsuariosRecentementeAtivos(dataLimite, usuariosIds);
         return statusRecentes.stream()
                 .map(this::converterParaDTO)
@@ -60,19 +48,8 @@ public class StatusUsuarioService {
     }
 
     @Transactional(readOnly = true)
-    public Page<StatusUsuarioResponseDTO> listarUsuariosRecentementeAtivos(LocalDateTime dataLimite, List<Long> usuariosIds, Pageable pageable) {
-        List<StatusUsuarioResponseDTO> todos = listarUsuariosRecentementeAtivos(dataLimite, usuariosIds);
-        return Support.pageOf(todos, pageable);
-    }
-
-    @Transactional(readOnly = true)
     public List<Long> listarTodosUsuariosOnlineIds() {
         return statusUsuarioRepository.findAllUsuariosOnlineIds();
-    }
-
-    @Transactional(readOnly = true)
-    public Page<Long> listarTodosUsuariosOnlineIds(Pageable pageable) {
-        return Support.pageOf(listarTodosUsuariosOnlineIds(), pageable);
     }
 
     @Transactional
@@ -83,19 +60,19 @@ public class StatusUsuarioService {
         if (statusExistente.isPresent()) {
             statusUsuario = statusExistente.get();
             statusUsuario.setOnline(online);
-            statusUsuario.setUltimoAcesso(LocalDateTime.now());
+            statusUsuario.setUltimoAcesso(new Date());
 
             if (statusPersonalizado != null) {
                 statusUsuario.setStatusPersonalizado(statusPersonalizado);
             }
         } else {
             Usuario usuario = usuarioRepository.findById(usuarioId)
-                    .orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado"));
+                    .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
 
             statusUsuario = new StatusUsuario();
             statusUsuario.setUsuario(usuario);
             statusUsuario.setOnline(online);
-            statusUsuario.setUltimoAcesso(LocalDateTime.now());
+            statusUsuario.setUltimoAcesso(new Date());
             statusUsuario.setStatusPersonalizado(statusPersonalizado);
         }
 
@@ -110,22 +87,16 @@ public class StatusUsuarioService {
 
         if (statusExistente.isPresent()) {
             statusUsuario = statusExistente.get();
-            // Debounce: evita write a cada request se já está online com acesso recente.
-            if (statusUsuario.isOnline()
-                    && statusUsuario.getUltimoAcesso() != null
-                    && Duration.between(statusUsuario.getUltimoAcesso(), LocalDateTime.now()).toMillis() < DEBOUNCE_ACESSO_MS) {
-                return;
-            }
-            statusUsuario.setUltimoAcesso(LocalDateTime.now());
+            statusUsuario.setUltimoAcesso(new Date());
             statusUsuario.setOnline(true);
         } else {
             Usuario usuario = usuarioRepository.findById(usuarioId)
-                    .orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado"));
+                    .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
 
             statusUsuario = new StatusUsuario();
             statusUsuario.setUsuario(usuario);
             statusUsuario.setOnline(true);
-            statusUsuario.setUltimoAcesso(LocalDateTime.now());
+            statusUsuario.setUltimoAcesso(new Date());
         }
 
         statusUsuarioRepository.save(statusUsuario);
@@ -138,7 +109,7 @@ public class StatusUsuarioService {
         if (statusExistente.isPresent()) {
             StatusUsuario statusUsuario = statusExistente.get();
             statusUsuario.setOnline(false);
-            statusUsuario.setUltimoAcesso(LocalDateTime.now());
+            statusUsuario.setUltimoAcesso(new Date());
             statusUsuarioRepository.save(statusUsuario);
         }
     }

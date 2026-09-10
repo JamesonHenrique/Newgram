@@ -1,56 +1,91 @@
 package com.jhcs.newgram.infrastructure.config;
 
 import io.swagger.v3.oas.models.Components;
+import io.swagger.v3.oas.models.ExternalDocumentation;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Contact;
 import io.swagger.v3.oas.models.info.Info;
 import io.swagger.v3.oas.models.info.License;
+import io.swagger.v3.oas.models.media.MediaType;
 import io.swagger.v3.oas.models.media.Schema;
+import io.swagger.v3.oas.models.responses.ApiResponse;
 import io.swagger.v3.oas.models.security.SecurityRequirement;
 import io.swagger.v3.oas.models.security.SecurityScheme;
 import io.swagger.v3.oas.models.servers.Server;
 import io.swagger.v3.oas.models.tags.Tag;
-import java.util.Arrays;
-import java.util.List;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.env.Environment;
+import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.web.multipart.MultipartFile;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
 @Configuration
 public class OpenApiConfig {
 
+    private final Environment environment;
+
     @Value("${spring.application.name:Newgram}")
     private String applicationName;
 
+    public OpenApiConfig(Environment environment) {
+        this.environment = environment;
+    }
+
     @Bean
     public OpenAPI customOpenAPI() {
-        Components components = new Components()
-                .addSchemas("MultipartFile", new Schema<MultipartFile>().type("string").format("binary"))
-                .addSecuritySchemes("bearerAuth", createJwtSecurityScheme())
-                .addSecuritySchemes("refreshToken", createRefreshTokenSecurityScheme());
+        boolean isSecurityEnabled = !Arrays.asList(environment.getActiveProfiles()).contains("basic");
 
-        return new OpenAPI()
-                .components(components)
-                .addSecurityItem(new SecurityRequirement().addList("bearerAuth"))
+        OpenAPI openAPI = new OpenAPI()
+                .components(new Components()
+                        .addSchemas("MultipartFile", new Schema<MultipartFile>()
+                                .type("string")
+                                .format("binary")))
+
                 .info(new Info()
                         .title(applicationName + " API")
                         .version("1.0.0")
-                        .description("API para Newgram, uma aplicação de rede social.")
+                        .description("API para Newgram, uma aplicação de rede social inspirada no Instagram.")
+                        .termsOfService("https://example.com/terms")
                         .contact(new Contact()
-                                .name("Newgram")
-                                .url("https://example.com"))
+                                .name("Jameson Henrique")
+                                .url("https://jamesonhenrique-portfolio.vercel.app/")
+                                .email("jamesonhenrique14@gmail.com"))
                         .license(new License()
-                                .name("MIT")
-                                .url("https://opensource.org/licenses/MIT")))
+                                .name("Apache 2.0")
+                                .url("https://www.apache.org/licenses/LICENSE-2.0")))
+                .externalDocs(new ExternalDocumentation()
+                        .description("Documentação adicional")
+                        .url("https://example.com/docs"))
                 .servers(getServers())
                 .tags(getApplicationTags());
+
+        Components components = new Components();
+
+
+        if (isSecurityEnabled) {
+            openAPI.addSecurityItem(new SecurityRequirement().addList("bearerAuth"))
+                    .components(new Components()
+                            .addSecuritySchemes("bearerAuth", createJwtSecurityScheme())
+                            .addSecuritySchemes("refreshToken", createRefreshTokenSecurityScheme()));
+        }
+
+        return openAPI;
     }
 
     private List<Server> getServers() {
-        return Arrays.asList(
-                new Server().url("http://localhost:8080").description("Servidor de desenvolvimento"),
-                new Server().url("https://api.newgram.example.com").description("Servidor de produção"));
+        Server localServer = new Server()
+                .url("http://localhost:8080")
+                .description("Servidor de desenvolvimento");
+
+
+
+        return Collections.singletonList(localServer);
     }
 
     private List<Tag> getApplicationTags() {
@@ -59,7 +94,9 @@ public class OpenApiConfig {
                 new Tag().name("Usuários").description("Gerenciamento de usuários"),
                 new Tag().name("Posts").description("Operações com posts"),
                 new Tag().name("Comentários").description("Gerenciamento de comentários"),
-                new Tag().name("Stories").description("Operações com stories"));
+                new Tag().name("Stories").description("Operações com stories")
+
+        );
     }
 
     private SecurityScheme createJwtSecurityScheme() {
@@ -68,7 +105,7 @@ public class OpenApiConfig {
                 .type(SecurityScheme.Type.HTTP)
                 .scheme("bearer")
                 .bearerFormat("JWT")
-                .description("Access token JWT (expira em 15 minutos).");
+                .description("Insira um token JWT válido aqui. Expira em 24h.");
     }
 
     private SecurityScheme createRefreshTokenSecurityScheme() {
@@ -77,6 +114,6 @@ public class OpenApiConfig {
                 .type(SecurityScheme.Type.HTTP)
                 .scheme("bearer")
                 .bearerFormat("JWT")
-                .description("Refresh token para obter novos tokens (validade de 7 dias).");
+                .description("Insira um refresh token válido para obter novos tokens. Validade de 7 dias.");
     }
 }

@@ -18,6 +18,7 @@ import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
@@ -28,6 +29,8 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/posts")
@@ -59,21 +62,9 @@ public class PostResource {
         return ResponseEntity.status(HttpStatus.CREATED).body(post);
     }
 
-    @PutMapping(path = "/{postId:\\d+}/imagem", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    @Operation(summary = "Adicionar imagem ao post", description = "Adiciona ou atualiza a imagem de um post existente")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Imagem adicionada com sucesso"),
-            @ApiResponse(responseCode = "400", description = "Arquivo inválido",
-                    content = @Content),
-            @ApiResponse(responseCode = "401", description = "Não autorizado",
-                    content = @Content),
-            @ApiResponse(responseCode = "404", description = "Post não encontrado",
-                    content = @Content)
-    })
+    @PostMapping(path = "/{postId}/imagem", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<Void> uploadImagemPost(
-            @Parameter(description = "ID do post", required = true)
             @PathVariable Long postId,
-            @Parameter(description = "Arquivo de imagem", required = true)
             @RequestParam("file") MultipartFile file,
             @AuthenticationPrincipal UserDetails userDetails) {
         Usuario usuario = usuarioRepository.findByEmail(userDetails.getUsername())
@@ -81,11 +72,11 @@ public class PostResource {
 
         postService.salvarImagemDoPost(postId, file, usuario.getId());
 
-        return ResponseEntity.ok()
+        return ResponseEntity.accepted()
                 .build();
 
     }
-    @GetMapping("/usuario/{usuarioId:\\d+}")
+    @GetMapping("/usuario/{usuarioId}")
     @Operation(summary = "Listar posts de um usuário", description = "Retorna os posts publicados por um usuário específico")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Posts listados com sucesso",
@@ -282,7 +273,7 @@ public class PostResource {
         return ResponseEntity.ok(posts);
     }
 
-    @GetMapping("/{id:\\d+}")
+    @GetMapping("/{id}")
     @Operation(summary = "Buscar post por ID", description = "Retorna os detalhes de um post específico")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Post encontrado com sucesso",
@@ -301,7 +292,7 @@ public class PostResource {
         return ResponseEntity.ok(post);
     }
 
-    @PutMapping("/{id:\\d+}")
+    @PutMapping("/{id}")
     @Operation(summary = "Atualizar post", description = "Atualiza um post existente")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Post atualizado com sucesso",
@@ -326,7 +317,7 @@ public class PostResource {
         return ResponseEntity.ok(post);
     }
 
-    @DeleteMapping("/{id:\\d+}")
+    @DeleteMapping("/{id}")
     @Operation(summary = "Excluir post", description = "Remove permanentemente um post")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "204", description = "Post excluído com sucesso"),
@@ -346,10 +337,10 @@ public class PostResource {
         return ResponseEntity.noContent().build();
     }
 
-    @PostMapping("/{id:\\d+}/curtir")
+    @PostMapping("/{id}/curtir")
     @Operation(summary = "Curtir post", description = "Adiciona uma curtida ao post")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "201", description = "Post curtido com sucesso",
+            @ApiResponse(responseCode = "200", description = "Post curtido com sucesso",
                     content = @Content(schema = @Schema(implementation = PostResponseDTO.class))),
             @ApiResponse(responseCode = "400", description = "Post já curtido pelo usuário",
                     content = @Content),
@@ -364,13 +355,14 @@ public class PostResource {
             @AuthenticationPrincipal Usuario usuario) {
 
         PostResponseDTO post = postService.curtirPost(id, usuario.getId());
-        return ResponseEntity.status(HttpStatus.CREATED).body(post);
+        return ResponseEntity.ok(post);
     }
 
-    @DeleteMapping("/{id:\\d+}/descurtir")
+    @DeleteMapping("/{id}/descurtir")
     @Operation(summary = "Remover curtida", description = "Remove a curtida do usuário em um post")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "204", description = "Curtida removida com sucesso"),
+            @ApiResponse(responseCode = "200", description = "Curtida removida com sucesso",
+                    content = @Content(schema = @Schema(implementation = PostResponseDTO.class))),
             @ApiResponse(responseCode = "400", description = "Post não foi curtido pelo usuário",
                     content = @Content),
             @ApiResponse(responseCode = "401", description = "Não autorizado",
@@ -378,16 +370,16 @@ public class PostResource {
             @ApiResponse(responseCode = "404", description = "Post não encontrado",
                     content = @Content)
     })
-    public ResponseEntity<Void> descurtirPost(
+    public ResponseEntity<PostResponseDTO> descurtirPost(
             @Parameter(description = "ID do post", required = true)
             @PathVariable Long id,
             @AuthenticationPrincipal Usuario usuario) {
 
-        postService.descurtirPost(id, usuario.getId());
-        return ResponseEntity.noContent().build();
+        PostResponseDTO post = postService.descurtirPost(id, usuario.getId());
+        return ResponseEntity.ok(post);
     }
 
-    @PostMapping("/{id:\\d+}/salvar")
+    @PostMapping("/{id}/salvar")
     @Operation(summary = "Salvar post", description = "Salva um post, opcionalmente em uma coleção específica")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "Post salvo com sucesso"),
@@ -409,7 +401,7 @@ public class PostResource {
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
-    @DeleteMapping("/{id:\\d+}/remover-salvo")
+    @DeleteMapping("/{id}/remover-salvo")
     @Operation(summary = "Remover post salvo", description = "Remove um post da lista de salvos do usuário")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "204", description = "Post removido dos salvos com sucesso"),
@@ -429,7 +421,7 @@ public class PostResource {
         return ResponseEntity.noContent().build();
     }
 
-    @PatchMapping("/{id:\\d+}/arquivar")
+    @PatchMapping("/{id}/arquivar")
     @Operation(summary = "Arquivar post", description = "Arquiva um post sem removê-lo")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "204", description = "Post arquivado com sucesso"),
@@ -449,7 +441,7 @@ public class PostResource {
         return ResponseEntity.noContent().build();
     }
 
-    @PatchMapping("/{id:\\d+}/desarquivar")
+    @PatchMapping("/{id}/desarquivar")
     @Operation(summary = "Desarquivar post", description = "Desarquiva um post anteriormente arquivado")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "204", description = "Post desarquivado com sucesso"),

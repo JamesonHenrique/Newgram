@@ -8,7 +8,9 @@ import com.jhcs.newgram.core.domain.repositories.PostRepository;
 import com.jhcs.newgram.infrastructure.exception.ResourceNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -35,7 +37,11 @@ public class HashtagService {
     @Transactional(readOnly = true)
     public Page<HashtagSummaryDTO> listarHashtagsPopulares(Pageable pageable) {
 
-        Pageable safePageable = Support.safePage(pageable);
+        Pageable safePageable = PageRequest.of(
+                pageable.getPageNumber(),
+                pageable.getPageSize(),
+                Sort.unsorted()
+        );
         Page<Object[]> hashtagsPopulares = hashtagRepository.findHashtagsPopulares(safePageable);
 
         return hashtagsPopulares.map(resultado -> {
@@ -55,13 +61,8 @@ public class HashtagService {
     }
 
     @Transactional(readOnly = true)
-    public Page<HashtagSummaryDTO> listarHashtagsPorPostId(Long postId, Pageable pageable) {
-        return Support.pageOf(listarHashtagsPorPostId(postId), pageable);
-    }
-
-    @Transactional(readOnly = true)
     public List<HashtagSummaryDTO> sugerirHashtags(String termo, int limite) {
-        return hashtagRepository.findByNomeContainingIgnoreCase(termo, Pageable.ofSize(Support.safeLimit(limite)))
+        return hashtagRepository.findByNomeContainingIgnoreCase(termo, Pageable.ofSize(limite))
                 .getContent()
                 .stream()
                 .map(this::converterParaSummaryDTO)
@@ -69,14 +70,12 @@ public class HashtagService {
     }
 
     @Transactional(readOnly = true)
-    public Page<HashtagSummaryDTO> sugerirHashtags(String termo, Pageable pageable) {
-        Page<Hashtag> hashtags = hashtagRepository.findByNomeContainingIgnoreCase(termo, Support.safePage(pageable));
-        return hashtags.map(this::converterParaSummaryDTO);
-    }
-
-    @Transactional(readOnly = true)
     public Page<HashtagSummaryDTO> buscarHashtags(String termo, Pageable pageable) {
-        Pageable safePageable = Support.safePage(pageable);
+        Pageable safePageable = PageRequest.of(
+                pageable.getPageNumber(),
+                pageable.getPageSize(),
+                Sort.unsorted()
+        );
         Page<Hashtag> hashtags = hashtagRepository.findByNomeContainingIgnoreCase(termo, safePageable);
 
         return hashtags.map(this::converterParaSummaryDTO);

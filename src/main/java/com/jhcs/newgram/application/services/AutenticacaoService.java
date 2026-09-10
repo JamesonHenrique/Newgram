@@ -2,15 +2,14 @@ package com.jhcs.newgram.application.services;
 
 import com.jhcs.newgram.application.dtos.usuario.TokenDTO;
 import com.jhcs.newgram.application.dtos.usuario.UsuarioCreateDTO;
+import com.jhcs.newgram.application.dtos.usuario.UsuarioResponseDTO;
 import com.jhcs.newgram.core.domain.entities.StatusUsuario;
 import com.jhcs.newgram.core.domain.entities.Usuario;
-import com.jhcs.newgram.core.domain.enums.TipoArquivo;
+import com.jhcs.newgram.core.domain.repositories.SeguidorRepository;
 import com.jhcs.newgram.core.domain.repositories.StatusUsuarioRepository;
 import com.jhcs.newgram.core.domain.repositories.UsuarioRepository;
-import com.jhcs.newgram.infrastructure.exception.BusinessException;
 import com.jhcs.newgram.infrastructure.security.JwtService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -18,7 +17,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
+import java.util.Date;
 
 @Service
 @RequiredArgsConstructor
@@ -29,27 +28,21 @@ public class AutenticacaoService {
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
     private final StatusUsuarioRepository statusUsuarioRepository;
-    private final ArquivoService arquivoService;
+    private final SeguidorRepository seguidorRepository;
+    private final UsuarioService usuarioService;
 
     @Transactional
     public TokenDTO registrar(UsuarioCreateDTO dto) {
         if (!dto.getSenha().equals(dto.getConfirmacaoSenha())) {
-            throw new BusinessException("As senhas não conferem");
+            throw new RuntimeException("As senhas não conferem");
         }
 
         if (usuarioRepository.existsByEmail(dto.getEmail())) {
-            throw new BusinessException("Email já cadastrado");
+            throw new RuntimeException("Email já cadastrado");
         }
 
         if (usuarioRepository.existsByUsername(dto.getUsername())) {
-            throw new BusinessException("Nome de usuário já utilizado");
-        }
-
-        // Upload ANTES do save para não segurar a transação durante I/O de rede.
-        // Se o save falhar, o arquivo fica órfão no storage (aceitável; limpeza via job).
-        String fotoPerfilPath = null;
-        if (dto.getFotoPerfil() != null && !dto.getFotoPerfil().isEmpty()) {
-            fotoPerfilPath = arquivoService.saveFile(dto.getFotoPerfil(), dto.getUsername(), TipoArquivo.FOTO_PERFIL);
+            throw new RuntimeException("Nome de usuário já utilizado");
         }
 
         Usuario usuario = new Usuario();
@@ -58,20 +51,17 @@ public class AutenticacaoService {
         usuario.setEmail(dto.getEmail());
         usuario.setSenha(passwordEncoder.encode(dto.getSenha()));
         usuario.setBio(dto.getBio());
-        usuario.setDataCriacao(LocalDateTime.now());
-        usuario.setFotoPerfil(fotoPerfilPath);
+        usuario.setDataCriacao(new Date());
 
-        try {
-            usuarioRepository.save(usuario);
-        } catch (DataIntegrityViolationException e) {
-            // Corrida entre exists e save (email/username únicos).
-            throw new BusinessException("Email ou nome de usuário já em uso", e);
+        usuarioRepository.save(usuario);
+        if (dto.getFotoPerfil() != null && !dto.getFotoPerfil().isEmpty()) {
+            usuarioService.salvarFotoDePerfil(usuario.getId(), dto.getFotoPerfil());
         }
 
         StatusUsuario statusUsuario = new StatusUsuario();
         statusUsuario.setUsuario(usuario);
         statusUsuario.setOnline(false);
-        statusUsuario.setUltimoAcesso(LocalDateTime.now());
+        statusUsuario.setUltimoAcesso(new Date());
         statusUsuarioRepository.save(statusUsuario);
 
 
@@ -83,7 +73,7 @@ public class AutenticacaoService {
 
     public TokenDTO autenticar(String email, String senha) {
         if (senha == null || senha.isEmpty()) {
-            throw new BusinessException("Senha não pode estar vazia");
+            throw new IllegalArgumentException("Senha não pode estar vazia");
         }
 
         authenticationManager.authenticate(
@@ -103,7 +93,6 @@ public class AutenticacaoService {
     }
 
     public TokenDTO renovarToken(String refreshToken) {
-        // JwtService lança exceção tipada (JwtException) para token malformado/expirado.
         String username = jwtService.extractUsername(refreshToken);
 
         if (username != null) {
@@ -117,7 +106,7 @@ public class AutenticacaoService {
             }
         }
 
-        throw new BusinessException("Token de atualização inválido ou expirado");
+        throw new RuntimeException("Token de atualização inválido ou expirado");
     }
 
     private TokenDTO criarTokenDTO(String token, String refreshToken) {
@@ -126,5 +115,22 @@ public class AutenticacaoService {
         tokenDTO.setRefreshToken(refreshToken);
         return tokenDTO;
     }
+
+    private UsuarioResponseDTO converterParaUsuarioResponseDTO(Usuario usuario) {
+        UsuarioResponseDTO dto = new UsuarioResponseDTO();
+        dto.setId(usuario.getId());
+        dto.setNome(usuario.getNome());
+        dto.setUsername(usuario.getUsername());
+        dto.setEmail(usuario.getEmail());
+        dto.setBio(usuario.getBio());
+        dto.setDataCadastro(usuario.getDataCriacao());
+        dto.setFotoPerfilUrl("/api/usuarios/" + usuario.getId() + "/foto");
+        dto.setNumeroSeguidores(seguidorRepository.countSeguidoresByUsuarioId(usuario.getId()));
+        dto.setNumeroSeguindo(seguidorRepository.countSeguidosByUsuarioId(usuario.getId()));
+        dto.setNumeroPosts((long) usuario.getPosts().size());
+
+        return dto;
+    }
+
 
 }

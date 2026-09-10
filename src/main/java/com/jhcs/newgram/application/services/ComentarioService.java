@@ -17,14 +17,15 @@ import com.jhcs.newgram.infrastructure.exception.BusinessException;
 import com.jhcs.newgram.infrastructure.exception.ResourceNotFoundException;
 import com.jhcs.newgram.infrastructure.exception.UnauthorizedException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -43,6 +44,8 @@ public class ComentarioService {
     @Autowired
     private CurtidaRepository curtidaRepository;
     @Autowired
+    private ArquivoService arquivoService;
+    @Autowired
     private S3StorageService s3StorageService;
 
     @Transactional
@@ -57,7 +60,7 @@ public class ComentarioService {
         comentario.setTexto(dto.getTexto());
         comentario.setAutor(autor);
         comentario.setPost(post);
-        comentario.setDataCriacao(LocalDateTime.now());
+        comentario.setDataCriacao(new Date());
 
         if (dto.getComentarioPaiId() != null) {
             Comentario comentarioPai = comentarioRepository.findById(dto.getComentarioPaiId())
@@ -90,7 +93,9 @@ public class ComentarioService {
         Comentario comentario = comentarioRepository.findById(comentarioId)
                 .orElseThrow(() -> new ResourceNotFoundException("Comentário não encontrado"));
 
-        Support.requireOwner(comentario.getAutor().getId(), usuarioId, "Você não tem permissão para editar este comentário");
+        if (!comentario.getAutor().getId().equals(usuarioId)) {
+            throw new UnauthorizedException("Você não tem permissão para editar este comentário");
+        }
 
         comentario.setTexto(dto.getTexto());
         comentario = comentarioRepository.save(comentario);
@@ -115,7 +120,11 @@ public class ComentarioService {
 
     public Page<ComentarioResponseDTO> listarComentariosPorPost(Long postId, Pageable pageable, Long usuarioId) {
         Sort sort = Sort.by(Sort.Direction.DESC, "dataCriacao");
-        Pageable safePageable = Support.safePage(pageable, sort);
+        Pageable safePageable = PageRequest.of(
+                pageable.getPageNumber(),
+                pageable.getPageSize(),
+                sort
+        );
         if (!postRepository.existsById(postId)) {
             throw new ResourceNotFoundException("Post não encontrado");
         }
@@ -138,12 +147,6 @@ public class ComentarioService {
                 .collect(Collectors.toList());
     }
 
-    @Transactional(readOnly = true)
-    public Page<ComentarioResponseDTO> listarRespostasPorComentario(Long comentarioId, Pageable pageable, Long usuarioId) {
-        List<ComentarioResponseDTO> todas = listarRespostasPorComentario(comentarioId, usuarioId);
-        return Support.pageOf(todas, pageable);
-    }
-
     @Transactional
     public ComentarioResponseDTO curtirComentario(Long comentarioId, Long usuarioId) {
         Comentario comentario = comentarioRepository.findById(comentarioId)
@@ -152,17 +155,16 @@ public class ComentarioService {
         Usuario usuario = usuarioRepository.findById(usuarioId)
                 .orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado"));
 
+        if (curtidaRepository.existsByUsuarioIdAndComentarioId(usuarioId, comentarioId)) {
+            throw new BusinessException("Você já curtiu este comentário");
+        }
+
         Curtida curtida = new Curtida();
         curtida.setUsuario(usuario);
         curtida.setComentario(comentario);
-        curtida.setDataCriacao(LocalDateTime.now());
+        curtida.setDataCriacao(new Date());
 
-        // Save direto (sem exists prévio): idempotência via constraint única + catch.
-        try {
-            curtidaRepository.saveAndFlush(curtida);
-        } catch (DataIntegrityViolationException e) {
-            throw new BusinessException("Você já curtiu este comentário", e);
-        }
+        curtidaRepository.save(curtida);
 
         // Criar notificação para o autor do comentário
         // if (!comentario.getAutor().getId().equals(usuarioId)) {
@@ -192,7 +194,7 @@ public class ComentarioService {
             throw new ResourceNotFoundException("Usuário não encontrado");
         }
 
-        Page<Comentario> comentarios = comentarioRepository.findByAutorId(usuarioId, Support.safePage(pageable));
+        Page<Comentario> comentarios = comentarioRepository.findByAutorId(usuarioId, pageable);
 
         return comentarios.map(comentario -> converterParaResponseDTO(comentario, usuarioLogadoId));
     }
@@ -222,6 +224,20 @@ public class ComentarioService {
 
         if (usuarioLogadoId != null) {
             dto.setCurtidoPeloUsuario(curtidaRepository.existsByUsuarioIdAndComentarioId(usuarioLogadoId, comentario.getId()));
+        }
+
+        return dto;
+    }
+
+    private ComentarioResponseDTO converterParaResponseDTOComRespostas(Comentario comentario, Long usuarioLogadoId) {
+        ComentarioResponseDTO dto = converterParaResponseDTO(comentario, usuarioLogadoId);
+
+        List<Comentario> respostas = comentarioRepository.findByComentarioPaiIdOrderByDataCriacaoAsc(comentario.getId());
+        List<ComentarioResponseDTO> respostasDTO = new ArrayList<>();
+
+        int limite = Math.min(respostas.size(), 3);
+        for (int i = 0; i < limite; i++) {
+            respostasDTO.add(converterParaResponseDTO(respostas.get(i), usuarioLogadoId));
         }
 
         return dto;

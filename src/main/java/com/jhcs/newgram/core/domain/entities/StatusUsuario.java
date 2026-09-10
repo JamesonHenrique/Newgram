@@ -1,36 +1,24 @@
 package com.jhcs.newgram.core.domain.entities;
 
 import jakarta.persistence.*;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.Data;
 
-import java.time.LocalDateTime;
+import java.util.Date;
 
-@Getter
-@Setter
-@NoArgsConstructor
-@EqualsAndHashCode(onlyExplicitlyIncluded = true)
+@Data
 @Entity
-@Table(name = "status_usuario", uniqueConstraints = {
-        @UniqueConstraint(columnNames = {"usuario_id"})
-})
+@Table(name = "status_usuario")
 public class StatusUsuario {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @EqualsAndHashCode.Include
     private Long id;
 
     private boolean online;
-
-    @Column(name = "ultimo_acesso")
-    private LocalDateTime ultimoAcesso;
-
+    private Date ultimoAcesso;
     private String statusPersonalizado;
 
     @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "usuario_id", unique = true)
+    @JoinColumn(name = "usuario_id")
     private Usuario usuario;
 }

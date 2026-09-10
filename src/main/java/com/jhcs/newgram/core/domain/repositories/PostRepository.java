@@ -9,6 +9,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 public interface PostRepository extends JpaRepository<Post, Long> {
 
@@ -35,16 +36,14 @@ public interface PostRepository extends JpaRepository<Post, Long> {
             "AND (SELECT COUNT(*) FROM curtida c WHERE c.post_id = p.id) >= :minimoInteracoes " +
             "ORDER BY ((SELECT COUNT(*) FROM curtida c WHERE c.post_id = p.id) + " +
             "(SELECT COUNT(*) FROM comentario cm WHERE cm.post_id = p.id)) DESC, " +
-            "p.data_criacao DESC",
-            countQuery = "SELECT COUNT(*) FROM post p " +
-                    "WHERE p.arquivado = false " +
-                    "AND p.data_criacao > :dataCorte " +
-                    "AND (SELECT COUNT(*) FROM curtida c WHERE c.post_id = p.id) >= :minimoInteracoes",
+            "p.data_criacao DESC " +
+            "LIMIT :limit OFFSET :offset",
             nativeQuery = true)
-    Page<Post> findPostsTendencias(
+    List<Post> findPostsTendencias(
             @Param("dataCorte") LocalDateTime dataCorte,
             @Param("minimoInteracoes") int minimoInteracoes,
-            Pageable pageable);
+            @Param("limit") int limit,
+            @Param("offset") int offset);
 
     @Query(value = "SELECT COUNT(*) FROM post p " +
             "WHERE p.arquivado = false " +
@@ -78,17 +77,11 @@ public interface PostRepository extends JpaRepository<Post, Long> {
             "JOIN curtida c ON p.id = c.post_id " +
             "WHERE p.arquivado = false " +
             "GROUP BY p.id " +
-            "ORDER BY COUNT(c.id) DESC, p.data_criacao DESC",
-            countQuery = "SELECT COUNT(DISTINCT p.id) FROM post p " +
-                    "JOIN curtida c ON p.id = c.post_id " +
-                    "WHERE p.arquivado = false",
-            nativeQuery = true)
-    Page<Post> findTopPostsByLikes(Pageable pageable);
+            "ORDER BY COUNT(c.id) DESC, p.data_criacao DESC LIMIT :limite", nativeQuery = true)
+    List<Post> findTopPostsByLikes(@Param("limite") int limite);
 
-    @Deprecated
-    default Page<Post> searchPostsByContent(String termo, Pageable pageable) {
-        return buscarPostsPorLegenda(termo, pageable);
-    }
+    @Query("SELECT p FROM Post p WHERE LOWER(p.legenda) LIKE LOWER(CONCAT('%', :termo, '%')) AND p.arquivado = false")
+    Page<Post> searchPostsByContent(@Param("termo") String termo, Pageable pageable);
 
 
     Page<Post> findByVisibilidadeAndArquivadoFalse(TipoVisibilidade visibilidade, Pageable pageable);

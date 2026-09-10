@@ -4,7 +4,7 @@ import com.jhcs.newgram.core.domain.enums.TipoNotificacao;
 import lombok.Data;
 import io.swagger.v3.oas.annotations.media.Schema;
 
-import java.time.LocalDateTime;
+import java.util.Date;
 
 @Data
 @Schema(description = "DTO para resposta de uma notificação")
@@ -12,7 +12,7 @@ public class  NotificacaoResponseDTO {
     private Long id;
     private TipoNotificacao tipo;
     private String conteudo;
-    private LocalDateTime dataCriacao;
+    private Date dataCriacao;
     private boolean lida;
     private Long destinatarioId;
     private Long remetenteId;

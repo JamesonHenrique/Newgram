@@ -7,15 +7,13 @@ import com.jhcs.newgram.core.domain.entities.Usuario;
 import com.jhcs.newgram.core.domain.repositories.PostRepository;
 import com.jhcs.newgram.core.domain.repositories.SalvosRepository;
 import com.jhcs.newgram.core.domain.repositories.UsuarioRepository;
-import com.jhcs.newgram.infrastructure.exception.ResourceNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
@@ -33,13 +31,13 @@ public class SalvosService {
 
     @Transactional(readOnly = true)
     public Page<SalvosResponseDTO> listarPostsSalvosPorUsuario(Long usuarioId, Pageable pageable) {
-        Page<Salvos> salvos = salvosRepository.findByUsuarioIdOrderByDataSalvoDesc(usuarioId, Support.safePage(pageable));
+        Page<Salvos> salvos = salvosRepository.findByUsuarioIdOrderByDataSalvoDesc(usuarioId, pageable);
         return salvos.map(this::converterParaSalvosResponseDTO);
     }
 
     @Transactional(readOnly = true)
     public Page<SalvosResponseDTO> listarPostsSalvosPorColecao(Long usuarioId, String colecao, Pageable pageable) {
-        Page<Salvos> salvos = salvosRepository.findByUsuarioIdAndColecaoOrderByDataSalvoDesc(usuarioId, colecao, Support.safePage(pageable));
+        Page<Salvos> salvos = salvosRepository.findByUsuarioIdAndColecaoOrderByDataSalvoDesc(usuarioId, colecao, pageable);
         return salvos.map(this::converterParaSalvosResponseDTO);
     }
 
@@ -65,11 +63,10 @@ public class SalvosService {
 
     @Transactional
     public void salvarPost(Long usuarioId, Long postId, String colecao) {
-        // UPSERT idempotente (unificado com PostService): já salvo apenas atualiza a coleção.
-        Optional<Salvos> salvoExistente = salvosRepository.findByUsuarioIdAndPostId(usuarioId, postId);
-        if (salvoExistente.isPresent()) {
-            Salvos salvo = salvoExistente.get();
-            if (colecao != null && !colecao.isEmpty()) {
+        if (salvosRepository.existsByUsuarioIdAndPostId(usuarioId, postId)) {
+            Optional<Salvos> salvoExistente = salvosRepository.findByUsuarioIdAndPostId(usuarioId, postId);
+            if (salvoExistente.isPresent() && (colecao != null && !colecao.isEmpty())) {
+                Salvos salvo = salvoExistente.get();
                 salvo.setColecao(colecao);
                 salvosRepository.save(salvo);
             }
@@ -77,31 +74,21 @@ public class SalvosService {
         }
 
         Usuario usuario = usuarioRepository.findById(usuarioId)
-                .orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado"));
+                .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
 
         Post post = postRepository.findById(postId)
-                .orElseThrow(() -> new ResourceNotFoundException("Post não encontrado"));
+                .orElseThrow(() -> new RuntimeException("Post não encontrado"));
 
         Salvos salvos = new Salvos();
         salvos.setUsuario(usuario);
         salvos.setPost(post);
-        salvos.setDataSalvo(LocalDateTime.now());
+        salvos.setDataSalvo(new Date());
 
         if (colecao != null && !colecao.isEmpty()) {
             salvos.setColecao(colecao);
         }
 
-        try {
-            salvosRepository.saveAndFlush(salvos);
-        } catch (DataIntegrityViolationException e) {
-            // Corrida: outro request salvou entre o find e o save → atualiza a coleção.
-            salvosRepository.findByUsuarioIdAndPostId(usuarioId, postId).ifPresent(s -> {
-                if (colecao != null && !colecao.isEmpty()) {
-                    s.setColecao(colecao);
-                    salvosRepository.save(s);
-                }
-            });
-        }
+        salvosRepository.save(salvos);
     }
 
     @Transactional
