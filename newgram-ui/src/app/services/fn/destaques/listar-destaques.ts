@@ -8,16 +8,23 @@ import { filter, map } from 'rxjs/operators';
 import { StrictHttpResponse } from '../../strict-http-response';
 import { RequestBuilder } from '../../request-builder';
 
-import { DestaqueResponseDto } from '../../models/destaque-response-dto';
+import { Page } from '../../models/page';
+import { Pageable } from '../../models/pageable';
 
 export interface ListarDestaquesPorUsername$Params {
   username: string;
+
+/**
+ * Parâmetros de paginação (page=0, size=20)
+ */
+  pageable: Pageable;
 }
 
-export function listarDestaquesPorUsername(http: HttpClient, rootUrl: string, params: ListarDestaquesPorUsername$Params, context?: HttpContext): Observable<StrictHttpResponse<Array<DestaqueResponseDto>>> {
+export function listarDestaquesPorUsername(http: HttpClient, rootUrl: string, params: ListarDestaquesPorUsername$Params, context?: HttpContext): Observable<StrictHttpResponse<Page>> {
   const rb = new RequestBuilder(rootUrl, listarDestaquesPorUsername.PATH, 'get');
   if (params) {
     rb.path('username', params.username, {});
+    rb.query('pageable', params.pageable, {});
   }
 
   return http.request(
@@ -25,7 +32,7 @@ export function listarDestaquesPorUsername(http: HttpClient, rootUrl: string, pa
   ).pipe(
     filter((r: any): r is HttpResponse<any> => r instanceof HttpResponse),
     map((r: HttpResponse<any>) => {
-      return r as StrictHttpResponse<Array<DestaqueResponseDto>>;
+      return r as StrictHttpResponse<Page>;
     })
   );
 }

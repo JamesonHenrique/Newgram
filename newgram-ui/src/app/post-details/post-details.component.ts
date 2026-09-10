@@ -20,7 +20,7 @@ import {
 } from '../services/services';
 import { TokenService } from '../services/token/token.service';
 import { CommentsComponent } from '../comments/comments.component';
-import { finalize, Subject, takeUntil } from 'rxjs';
+import { finalize, map, Subject, takeUntil } from 'rxjs';
 
 @Component({
   selector: 'app-post-details',
@@ -62,7 +62,7 @@ export class PostDetailsComponent {
 
     const likeAction$ = wasLiked
       ? this.postsService.descurtirPost({ id: post.id })
-      : this.postsService.curtirPost({ id: post.id });
+      : this.postsService.curtirPost({ id: post.id }).pipe(map(() => undefined));
 
     likeAction$
       .pipe(

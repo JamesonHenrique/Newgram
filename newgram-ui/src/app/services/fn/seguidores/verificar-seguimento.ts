@@ -8,6 +8,7 @@ import { filter, map } from 'rxjs/operators';
 import { StrictHttpResponse } from '../../strict-http-response';
 import { RequestBuilder } from '../../request-builder';
 
+import { VerificarSeguimentoDto } from '../../models/verificar-seguimento-dto';
 
 export interface VerificarSeguimento$Params {
 
@@ -17,7 +18,7 @@ export interface VerificarSeguimento$Params {
   usuarioId: number;
 }
 
-export function verificarSeguimento(http: HttpClient, rootUrl: string, params: VerificarSeguimento$Params, context?: HttpContext): Observable<StrictHttpResponse<boolean>> {
+export function verificarSeguimento(http: HttpClient, rootUrl: string, params: VerificarSeguimento$Params, context?: HttpContext): Observable<StrictHttpResponse<VerificarSeguimentoDto>> {
   const rb = new RequestBuilder(rootUrl, verificarSeguimento.PATH, 'get');
   if (params) {
     rb.path('usuarioId', params.usuarioId, {});
@@ -28,7 +29,7 @@ export function verificarSeguimento(http: HttpClient, rootUrl: string, params: V
   ).pipe(
     filter((r: any): r is HttpResponse<any> => r instanceof HttpResponse),
     map((r: HttpResponse<any>) => {
-      return (r as HttpResponse<any>).clone({ body: String((r as HttpResponse<any>).body) === 'true' }) as StrictHttpResponse<boolean>;
+      return r as StrictHttpResponse<VerificarSeguimentoDto>;
     })
   );
 }

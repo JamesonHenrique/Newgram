@@ -26,7 +26,7 @@ export interface AdicionarCapaDestaque$Params {
 }
 
 export function adicionarCapaDestaque(http: HttpClient, rootUrl: string, params: AdicionarCapaDestaque$Params, context?: HttpContext): Observable<StrictHttpResponse<DestaqueResponseDto>> {
-  const rb = new RequestBuilder(rootUrl, adicionarCapaDestaque.PATH, 'post');
+  const rb = new RequestBuilder(rootUrl, adicionarCapaDestaque.PATH, 'put');
   if (params) {
     rb.path('id', params.id, {});
     rb.body(params.body, 'multipart/form-data');

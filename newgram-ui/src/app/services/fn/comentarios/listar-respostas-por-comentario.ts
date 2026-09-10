@@ -8,6 +8,8 @@ import { filter, map } from 'rxjs/operators';
 import { StrictHttpResponse } from '../../strict-http-response';
 import { RequestBuilder } from '../../request-builder';
 
+import { Page } from '../../models/page';
+import { Pageable } from '../../models/pageable';
 
 export interface ListarRespostasPorComentario$Params {
 
@@ -15,12 +17,18 @@ export interface ListarRespostasPorComentario$Params {
  * ID do comentário
  */
   id: number;
+
+/**
+ * Parâmetros de paginação (page=0, size=10)
+ */
+  pageable: Pageable;
 }
 
-export function listarRespostasPorComentario(http: HttpClient, rootUrl: string, params: ListarRespostasPorComentario$Params, context?: HttpContext): Observable<StrictHttpResponse<string>> {
+export function listarRespostasPorComentario(http: HttpClient, rootUrl: string, params: ListarRespostasPorComentario$Params, context?: HttpContext): Observable<StrictHttpResponse<Page>> {
   const rb = new RequestBuilder(rootUrl, listarRespostasPorComentario.PATH, 'get');
   if (params) {
     rb.path('id', params.id, {});
+    rb.query('pageable', params.pageable, {});
   }
 
   return http.request(
@@ -28,7 +36,7 @@ export function listarRespostasPorComentario(http: HttpClient, rootUrl: string, 
   ).pipe(
     filter((r: any): r is HttpResponse<any> => r instanceof HttpResponse),
     map((r: HttpResponse<any>) => {
-      return r as StrictHttpResponse<string>;
+      return r as StrictHttpResponse<Page>;
     })
   );
 }

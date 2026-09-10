@@ -185,9 +185,12 @@ export class ProfileComponent {
   }
   private findAllDestaquesByUsername() {
     return this.destaqueService
-      .listarDestaquesPorUsername({ username: this.username })
+      .listarDestaquesPorUsername({
+        username: this.username,
+        pageable: { page: 0, size: 50, sort: [''] },
+      })
       .pipe(
-        tap((destaques) => (this.destaque = destaques || [])),
+        tap((page) => (this.destaque = (page.content as any[] | undefined) || [])),
         catchError((err) => {
           console.error('Erro ao buscar destaques:', err);
           return throwError(() => err);
@@ -200,14 +203,18 @@ export class ProfileComponent {
       return throwError(() => new Error('ID do usuário não disponível'));
 
     return this.storiesService
-      .listarStoriesDoUsuario({ autorId: this.userProfile.id })
+      .listarStoriesDoUsuario({
+        autorId: this.userProfile.id,
+        pageable: { page: 0, size: 50, sort: [''] },
+      })
       .pipe(
-        tap((stories) => {
+        tap((page) => {
+          const stories = (page.content as any[] | undefined) || [];
           if (stories.length !== this.lastStoriesCount) {
             this.viewed = false;
             this.lastStoriesCount = stories.length;
           }
-          this.storiesAtivos = stories || [];
+          this.storiesAtivos = stories;
           this.updateViewedStatus();
           this.saveViewedStoriesToStorage();
         }),

@@ -9,7 +9,7 @@ import { StrictHttpResponse } from '../../strict-http-response';
 import { RequestBuilder } from '../../request-builder';
 
 export interface  SalvarFotoDoPost$Params {
-  id: number;
+  postId: number;
   body?: FormData;
 }
 
@@ -18,23 +18,21 @@ export function salvarFotoDoPost(
   rootUrl: string,
   params: SalvarFotoDoPost$Params,
   context?: HttpContext
-): Observable<StrictHttpResponse<number>> {
-  const rb = new RequestBuilder(rootUrl, salvarFotoDoPost.PATH, 'post');
+): Observable<StrictHttpResponse<void>> {
+  const rb = new RequestBuilder(rootUrl, salvarFotoDoPost.PATH, 'put');
   if (params) {
-    rb.path('id', params.id, {});
+    rb.path('postId', params.postId, {});
     rb.body(params.body)
   }
 
   return http
-    .request(rb.build({ responseType: 'json', accept: '*/*', context }))
+    .request(rb.build({ responseType: 'text', accept: '*/*', context }))
     .pipe(
       filter((r: any): r is HttpResponse<any> => r instanceof HttpResponse),
       map((r: HttpResponse<any>) => {
-        return (r as HttpResponse<any>).clone({
-          body: parseFloat(String((r as HttpResponse<any>).body)),
-        }) as StrictHttpResponse<number>;
+        return (r as HttpResponse<any>).clone({ body: undefined }) as StrictHttpResponse<void>;
       })
     );
 }
 
-salvarFotoDoPost.PATH = '/posts/{id}/imagem';
+salvarFotoDoPost.PATH = '/posts/{postId}/imagem';

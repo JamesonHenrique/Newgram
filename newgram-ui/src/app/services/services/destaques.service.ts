@@ -27,6 +27,8 @@ import { excluirDestaque } from '../fn/destaques/excluir-destaque';
 import { ExcluirDestaque$Params } from '../fn/destaques/excluir-destaque';
 import { listarDestaquesPorUsername, ListarDestaquesPorUsername$Params } from '../fn/destaques/listar-destaques';
 import { listarStoriesPorDestaque, ListarStoriesPorDestaque$Params } from '../fn/destaques/listar-stories-por-destaque';
+import { ContagemStoriesDto } from '../models/contagem-stories-dto';
+import { Page } from '../models/page';
 import { StorieResponseDto } from '../models/storie-response-dto';
 
 
@@ -151,7 +153,7 @@ static readonly ListarDestaquesPorUsernamePath = '/destaques/usuario/{username}'
  *
  * This method doesn't expect any request body.
  */
-listarDestaquesPorUsername$Response(params: ListarDestaquesPorUsername$Params, context?: HttpContext): Observable<StrictHttpResponse<Array<DestaqueResponseDto>>> {
+listarDestaquesPorUsername$Response(params: ListarDestaquesPorUsername$Params, context?: HttpContext): Observable<StrictHttpResponse<Page>> {
   return listarDestaquesPorUsername(this.http, this.rootUrl, params, context);
 }
 
@@ -165,9 +167,9 @@ listarDestaquesPorUsername$Response(params: ListarDestaquesPorUsername$Params, c
  *
  * This method doesn't expect any request body.
  */
-listarDestaquesPorUsername(params: ListarDestaquesPorUsername$Params, context?: HttpContext): Observable<Array<DestaqueResponseDto>> {
+listarDestaquesPorUsername(params: ListarDestaquesPorUsername$Params, context?: HttpContext): Observable<Page> {
   return this.listarDestaquesPorUsername$Response(params, context).pipe(
-    map((r: StrictHttpResponse<Array<DestaqueResponseDto>>): Array<DestaqueResponseDto> => r.body)
+    map((r: StrictHttpResponse<Page>): Page => r.body)
   );
 }
 
@@ -250,7 +252,7 @@ listarDestaquesPorUsername(params: ListarDestaquesPorUsername$Params, context?: 
    *
    * This method doesn't expect any request body.
    */
-  listarStoriesPorDestaque$Response(params: ListarStoriesPorDestaque$Params, context?: HttpContext): Observable<StrictHttpResponse<Array<StorieResponseDto>>> {
+  listarStoriesPorDestaque$Response(params: ListarStoriesPorDestaque$Params, context?: HttpContext): Observable<StrictHttpResponse<Page>> {
     return listarStoriesPorDestaque(this.http, this.rootUrl, params, context);
   }
 
@@ -264,9 +266,9 @@ listarDestaquesPorUsername(params: ListarDestaquesPorUsername$Params, context?: 
    *
    * This method doesn't expect any request body.
    */
-  listarStoriesPorDestaque(params: ListarStoriesPorDestaque$Params, context?: HttpContext): Observable<Array<StorieResponseDto>> {
+  listarStoriesPorDestaque(params: ListarStoriesPorDestaque$Params, context?: HttpContext): Observable<Page> {
     return this.listarStoriesPorDestaque$Response(params, context).pipe(
-      map((r: StrictHttpResponse<Array<StorieResponseDto>>): Array<StorieResponseDto> => r.body)
+      map((r: StrictHttpResponse<Page>): Page => r.body)
     );
   }
 
@@ -283,7 +285,7 @@ listarDestaquesPorUsername(params: ListarDestaquesPorUsername$Params, context?: 
    *
    * This method doesn't expect any request body.
    */
-  contarStoriesPorDestaque$Response(params: ContarStoriesPorDestaque$Params, context?: HttpContext): Observable<StrictHttpResponse<number>> {
+  contarStoriesPorDestaque$Response(params: ContarStoriesPorDestaque$Params, context?: HttpContext): Observable<StrictHttpResponse<ContagemStoriesDto>> {
     return contarStoriesPorDestaque(this.http, this.rootUrl, params, context);
   }
 
@@ -297,9 +299,9 @@ listarDestaquesPorUsername(params: ListarDestaquesPorUsername$Params, context?: 
    *
    * This method doesn't expect any request body.
    */
-  contarStoriesPorDestaque(params: ContarStoriesPorDestaque$Params, context?: HttpContext): Observable<number> {
+  contarStoriesPorDestaque(params: ContarStoriesPorDestaque$Params, context?: HttpContext): Observable<ContagemStoriesDto> {
     return this.contarStoriesPorDestaque$Response(params, context).pipe(
-      map((r: StrictHttpResponse<number>): number => r.body)
+      map((r: StrictHttpResponse<ContagemStoriesDto>): ContagemStoriesDto => r.body)
     );
   }
 

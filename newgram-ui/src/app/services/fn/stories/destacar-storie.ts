@@ -24,7 +24,7 @@ export interface DestacarStorie$Params {
 }
 
 export function destacarStorie(http: HttpClient, rootUrl: string, params: DestacarStorie$Params, context?: HttpContext): Observable<StrictHttpResponse<StorieResponseDto>> {
-  const rb = new RequestBuilder(rootUrl, destacarStorie.PATH, 'post');
+  const rb = new RequestBuilder(rootUrl, destacarStorie.PATH, 'put');
   if (params) {
     rb.path('id', params.id, {});
     rb.path('destaqueId', params.destaqueId, {});

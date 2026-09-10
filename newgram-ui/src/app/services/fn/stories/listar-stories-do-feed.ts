@@ -8,14 +8,21 @@ import { filter, map } from 'rxjs/operators';
 import { StrictHttpResponse } from '../../strict-http-response';
 import { RequestBuilder } from '../../request-builder';
 
-import { StorieResponseDto } from '../../models/storie-response-dto';
+import { Page } from '../../models/page';
+import { Pageable } from '../../models/pageable';
 
 export interface ListarStoriesDoFeed$Params {
+
+/**
+ * Parâmetros de paginação (page=0, size=20)
+ */
+  pageable: Pageable;
 }
 
-export function listarStoriesDoFeed(http: HttpClient, rootUrl: string, params?: ListarStoriesDoFeed$Params, context?: HttpContext): Observable<StrictHttpResponse<Array<StorieResponseDto>>> {
+export function listarStoriesDoFeed(http: HttpClient, rootUrl: string, params: ListarStoriesDoFeed$Params, context?: HttpContext): Observable<StrictHttpResponse<Page>> {
   const rb = new RequestBuilder(rootUrl, listarStoriesDoFeed.PATH, 'get');
   if (params) {
+    rb.query('pageable', params.pageable, {});
   }
 
   return http.request(
@@ -23,7 +30,7 @@ export function listarStoriesDoFeed(http: HttpClient, rootUrl: string, params?: 
   ).pipe(
     filter((r: any): r is HttpResponse<any> => r instanceof HttpResponse),
     map((r: HttpResponse<any>) => {
-      return r as StrictHttpResponse<Array<StorieResponseDto>>;
+      return r as StrictHttpResponse<Page>;
     })
   );
 }

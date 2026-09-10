@@ -2,9 +2,10 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { JwtHelperService } from '@auth0/angular-jwt';
 import { Observable, catchError, of, tap, throwError } from 'rxjs';
+import { environment } from '../../../environments/environment';
 
 interface TokenResponse {
-  accessToken: string;
+  token: string;
   refreshToken: string;
 }
 
@@ -75,10 +76,10 @@ export class TokenService {
     }
 
     return this.http
-      .post<TokenResponse>('/auth/refresh-token', { refreshToken: this.refreshToken })
+      .post<TokenResponse>(`${environment.apiUrl}/auth/refresh-token`, { refreshToken: this.refreshToken })
       .pipe(
         tap((response) => {
-          this.token = response.accessToken;
+          this.token = response.token;
           this.refreshToken = response.refreshToken;
         }),
         catchError((error) => {

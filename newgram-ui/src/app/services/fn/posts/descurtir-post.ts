@@ -8,8 +8,6 @@ import { filter, map } from 'rxjs/operators';
 import { StrictHttpResponse } from '../../strict-http-response';
 import { RequestBuilder } from '../../request-builder';
 
-import { PostResponseDto } from '../../models/post-response-dto';
-
 export interface DescurtirPost$Params {
 
 /**
@@ -18,18 +16,18 @@ export interface DescurtirPost$Params {
   id: number;
 }
 
-export function descurtirPost(http: HttpClient, rootUrl: string, params: DescurtirPost$Params, context?: HttpContext): Observable<StrictHttpResponse<PostResponseDto>> {
+export function descurtirPost(http: HttpClient, rootUrl: string, params: DescurtirPost$Params, context?: HttpContext): Observable<StrictHttpResponse<void>> {
   const rb = new RequestBuilder(rootUrl, descurtirPost.PATH, 'delete');
   if (params) {
     rb.path('id', params.id, {});
   }
 
   return http.request(
-    rb.build({ responseType: 'json', accept: '*/*', context })
+    rb.build({ responseType: 'text', accept: '*/*', context })
   ).pipe(
     filter((r: any): r is HttpResponse<any> => r instanceof HttpResponse),
     map((r: HttpResponse<any>) => {
-      return r as StrictHttpResponse<PostResponseDto>;
+      return (r as HttpResponse<any>).clone({ body: undefined }) as StrictHttpResponse<void>;
     })
   );
 }

@@ -118,7 +118,7 @@ export class ExploreComponent {
 
     const likeAction$ = wasLiked
       ? this.postsService.descurtirPost({ id: post.id })
-      : this.postsService.curtirPost({ id: post.id });
+      : this.postsService.curtirPost({ id: post.id }).pipe(map(() => undefined));
 
     likeAction$
       .pipe(

@@ -8,7 +8,8 @@ import { filter, map } from 'rxjs/operators';
 import { StrictHttpResponse } from '../../strict-http-response';
 import { RequestBuilder } from '../../request-builder';
 
-import { StorieResponseDto } from '../../models/storie-response-dto';
+import { Page } from '../../models/page';
+import { Pageable } from '../../models/pageable';
 
 export interface ListarStoriesPorDestaque$Params {
 
@@ -16,12 +17,18 @@ export interface ListarStoriesPorDestaque$Params {
  * ID do destaque
  */
   id: number;
+
+/**
+ * Parâmetros de paginação (page=0, size=20)
+ */
+  pageable: Pageable;
 }
 
-export function listarStoriesPorDestaque(http: HttpClient, rootUrl: string, params: ListarStoriesPorDestaque$Params, context?: HttpContext): Observable<StrictHttpResponse<Array<StorieResponseDto>>> {
+export function listarStoriesPorDestaque(http: HttpClient, rootUrl: string, params: ListarStoriesPorDestaque$Params, context?: HttpContext): Observable<StrictHttpResponse<Page>> {
   const rb = new RequestBuilder(rootUrl, listarStoriesPorDestaque.PATH, 'get');
   if (params) {
     rb.path('id', params.id, {});
+    rb.query('pageable', params.pageable, {});
   }
 
   return http.request(
@@ -29,7 +36,7 @@ export function listarStoriesPorDestaque(http: HttpClient, rootUrl: string, para
   ).pipe(
     filter((r: any): r is HttpResponse<any> => r instanceof HttpResponse),
     map((r: HttpResponse<any>) => {
-      return r as StrictHttpResponse<Array<StorieResponseDto>>;
+      return r as StrictHttpResponse<Page>;
     })
   );
 }

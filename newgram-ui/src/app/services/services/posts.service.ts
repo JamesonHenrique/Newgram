@@ -209,7 +209,7 @@ export class PostsService extends BaseService {
    *
    * This method sends `multipart/form-data` and handles request body of type `multipart/form-data`.
    */
-  uploadImagemPost$Response(params: SalvarFotoDoPost$Params, context?: HttpContext): Observable<StrictHttpResponse<number>> {
+  uploadImagemPost$Response(params: SalvarFotoDoPost$Params, context?: HttpContext): Observable<StrictHttpResponse<void>> {
     return salvarFotoDoPost(this.http, this.rootUrl, params, context);
   }
 
@@ -219,9 +219,9 @@ export class PostsService extends BaseService {
    *
    * This method sends `multipart/form-data` and handles request body of type `multipart/form-data`.
    */
-  uploadImagemPost(params: SalvarFotoDoPost$Params, context?: HttpContext): Observable<number> {
+  uploadImagemPost(params: SalvarFotoDoPost$Params, context?: HttpContext): Observable<void> {
     return this.uploadImagemPost$Response(params, context).pipe(
-      map((r: StrictHttpResponse<number>) => r.body)
+      map((r: StrictHttpResponse<void>) => r.body)
     );
   }
 
@@ -766,7 +766,7 @@ export class PostsService extends BaseService {
    *
    * This method doesn't expect any request body.
    */
-  descurtirPost$Response(params: DescurtirPost$Params, context?: HttpContext): Observable<StrictHttpResponse<PostResponseDto>> {
+  descurtirPost$Response(params: DescurtirPost$Params, context?: HttpContext): Observable<StrictHttpResponse<void>> {
     return descurtirPost(this.http, this.rootUrl, params, context);
   }
 
@@ -780,9 +780,9 @@ export class PostsService extends BaseService {
    *
    * This method doesn't expect any request body.
    */
-  descurtirPost(params: DescurtirPost$Params, context?: HttpContext): Observable<PostResponseDto> {
+  descurtirPost(params: DescurtirPost$Params, context?: HttpContext): Observable<void> {
     return this.descurtirPost$Response(params, context).pipe(
-      map((r: StrictHttpResponse<PostResponseDto>): PostResponseDto => r.body)
+      map((r: StrictHttpResponse<void>): void => r.body)
     );
   }
 

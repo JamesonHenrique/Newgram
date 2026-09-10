@@ -8,8 +8,6 @@ import { filter, map } from 'rxjs/operators';
 import { StrictHttpResponse } from '../../strict-http-response';
 import { RequestBuilder } from '../../request-builder';
 
-import { ComentarioResponseDto } from '../../models/comentario-response-dto';
-
 export interface DescurtirComentario$Params {
 
 /**
@@ -18,18 +16,18 @@ export interface DescurtirComentario$Params {
   id: number;
 }
 
-export function descurtirComentario(http: HttpClient, rootUrl: string, params: DescurtirComentario$Params, context?: HttpContext): Observable<StrictHttpResponse<ComentarioResponseDto>> {
+export function descurtirComentario(http: HttpClient, rootUrl: string, params: DescurtirComentario$Params, context?: HttpContext): Observable<StrictHttpResponse<void>> {
   const rb = new RequestBuilder(rootUrl, descurtirComentario.PATH, 'delete');
   if (params) {
     rb.path('id', params.id, {});
   }
 
   return http.request(
-    rb.build({ responseType: 'json', accept: '*/*', context })
+    rb.build({ responseType: 'text', accept: '*/*', context })
   ).pipe(
     filter((r: any): r is HttpResponse<any> => r instanceof HttpResponse),
     map((r: HttpResponse<any>) => {
-      return r as StrictHttpResponse<ComentarioResponseDto>;
+      return (r as HttpResponse<any>).clone({ body: undefined }) as StrictHttpResponse<void>;
     })
   );
 }

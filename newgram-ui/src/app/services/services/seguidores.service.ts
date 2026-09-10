@@ -23,12 +23,15 @@ import { listarSeguidores1 } from '../fn/seguidores/listar-seguidores-1';
 import { ListarSeguidores1$Params } from '../fn/seguidores/listar-seguidores-1';
 import { listarSeguidos1 } from '../fn/seguidores/listar-seguidos-1';
 import { ListarSeguidos1$Params } from '../fn/seguidores/listar-seguidos-1';
+import { ContagemSeguidoresDto } from '../models/contagem-seguidores-dto';
+import { Page } from '../models/page';
 import { SeguidorResponseDto } from '../models/seguidor-response-dto';
 import { seguirUsuario } from '../fn/seguidores/seguir-usuario';
 import { SeguirUsuario$Params } from '../fn/seguidores/seguir-usuario';
 import { UsuarioSummaryDto } from '../models/usuario-summary-dto';
 import { verificarSeguimento } from '../fn/seguidores/verificar-seguimento';
 import { VerificarSeguimento$Params } from '../fn/seguidores/verificar-seguimento';
+import { VerificarSeguimentoDto } from '../models/verificar-seguimento-dto';
 
 
 /**
@@ -119,7 +122,7 @@ export class SeguidoresService extends BaseService {
    *
    * This method doesn't expect any request body.
    */
-  verificarSeguimento$Response(params: VerificarSeguimento$Params, context?: HttpContext): Observable<StrictHttpResponse<boolean>> {
+  verificarSeguimento$Response(params: VerificarSeguimento$Params, context?: HttpContext): Observable<StrictHttpResponse<VerificarSeguimentoDto>> {
     return verificarSeguimento(this.http, this.rootUrl, params, context);
   }
 
@@ -133,9 +136,9 @@ export class SeguidoresService extends BaseService {
    *
    * This method doesn't expect any request body.
    */
-  verificarSeguimento(params: VerificarSeguimento$Params, context?: HttpContext): Observable<boolean> {
+  verificarSeguimento(params: VerificarSeguimento$Params, context?: HttpContext): Observable<VerificarSeguimentoDto> {
     return this.verificarSeguimento$Response(params, context).pipe(
-      map((r: StrictHttpResponse<boolean>): boolean => r.body)
+      map((r: StrictHttpResponse<VerificarSeguimentoDto>): VerificarSeguimentoDto => r.body)
     );
   }
 
@@ -152,7 +155,7 @@ export class SeguidoresService extends BaseService {
    *
    * This method doesn't expect any request body.
    */
-  listarSeguidos1$Response(params: ListarSeguidos1$Params, context?: HttpContext): Observable<StrictHttpResponse<Array<SeguidorResponseDto>>> {
+  listarSeguidos1$Response(params: ListarSeguidos1$Params, context?: HttpContext): Observable<StrictHttpResponse<Page>> {
     return listarSeguidos1(this.http, this.rootUrl, params, context);
   }
 
@@ -166,9 +169,9 @@ export class SeguidoresService extends BaseService {
    *
    * This method doesn't expect any request body.
    */
-  listarSeguidos1(params: ListarSeguidos1$Params, context?: HttpContext): Observable<Array<SeguidorResponseDto>> {
+  listarSeguidos1(params: ListarSeguidos1$Params, context?: HttpContext): Observable<Page> {
     return this.listarSeguidos1$Response(params, context).pipe(
-      map((r: StrictHttpResponse<Array<SeguidorResponseDto>>): Array<SeguidorResponseDto> => r.body)
+      map((r: StrictHttpResponse<Page>): Page => r.body)
     );
   }
 
@@ -185,7 +188,7 @@ export class SeguidoresService extends BaseService {
    *
    * This method doesn't expect any request body.
    */
-  listarSeguidores1$Response(params: ListarSeguidores1$Params, context?: HttpContext): Observable<StrictHttpResponse<Array<SeguidorResponseDto>>> {
+  listarSeguidores1$Response(params: ListarSeguidores1$Params, context?: HttpContext): Observable<StrictHttpResponse<Page>> {
     return listarSeguidores1(this.http, this.rootUrl, params, context);
   }
 
@@ -199,9 +202,9 @@ export class SeguidoresService extends BaseService {
    *
    * This method doesn't expect any request body.
    */
-  listarSeguidores1(params: ListarSeguidores1$Params, context?: HttpContext): Observable<Array<SeguidorResponseDto>> {
+  listarSeguidores1(params: ListarSeguidores1$Params, context?: HttpContext): Observable<Page> {
     return this.listarSeguidores1$Response(params, context).pipe(
-      map((r: StrictHttpResponse<Array<SeguidorResponseDto>>): Array<SeguidorResponseDto> => r.body)
+      map((r: StrictHttpResponse<Page>): Page => r.body)
     );
   }
 
@@ -218,9 +221,7 @@ export class SeguidoresService extends BaseService {
    *
    * This method doesn't expect any request body.
    */
-  contarSeguidoresESeguidos$Response(params: ContarSeguidoresESeguidos$Params, context?: HttpContext): Observable<StrictHttpResponse<{
-[key: string]: number;
-}>> {
+  contarSeguidoresESeguidos$Response(params: ContarSeguidoresESeguidos$Params, context?: HttpContext): Observable<StrictHttpResponse<ContagemSeguidoresDto>> {
     return contarSeguidoresESeguidos(this.http, this.rootUrl, params, context);
   }
 
@@ -234,15 +235,9 @@ export class SeguidoresService extends BaseService {
    *
    * This method doesn't expect any request body.
    */
-  contarSeguidoresESeguidos(params: ContarSeguidoresESeguidos$Params, context?: HttpContext): Observable<{
-[key: string]: number;
-}> {
+  contarSeguidoresESeguidos(params: ContarSeguidoresESeguidos$Params, context?: HttpContext): Observable<ContagemSeguidoresDto> {
     return this.contarSeguidoresESeguidos$Response(params, context).pipe(
-      map((r: StrictHttpResponse<{
-[key: string]: number;
-}>): {
-[key: string]: number;
-} => r.body)
+      map((r: StrictHttpResponse<ContagemSeguidoresDto>): ContagemSeguidoresDto => r.body)
     );
   }
 

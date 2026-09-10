@@ -9,9 +9,10 @@ import { StrictHttpResponse } from '../../strict-http-response';
 import { RequestBuilder } from '../../request-builder';
 
 import { TokenDto } from '../../models/token-dto';
+import { RefreshTokenDto } from '../../models/refresh-token-dto';
 
 export interface RefreshToken$Params {
-      body: string
+      body: RefreshTokenDto
 }
 
 export function refreshToken(http: HttpClient, rootUrl: string, params: RefreshToken$Params, context?: HttpContext): Observable<StrictHttpResponse<TokenDto>> {

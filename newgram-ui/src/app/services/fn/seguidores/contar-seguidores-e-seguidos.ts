@@ -8,6 +8,7 @@ import { filter, map } from 'rxjs/operators';
 import { StrictHttpResponse } from '../../strict-http-response';
 import { RequestBuilder } from '../../request-builder';
 
+import { ContagemSeguidoresDto } from '../../models/contagem-seguidores-dto';
 
 export interface ContarSeguidoresESeguidos$Params {
 
@@ -17,9 +18,7 @@ export interface ContarSeguidoresESeguidos$Params {
   usuarioId: number;
 }
 
-export function contarSeguidoresESeguidos(http: HttpClient, rootUrl: string, params: ContarSeguidoresESeguidos$Params, context?: HttpContext): Observable<StrictHttpResponse<{
-[key: string]: number;
-}>> {
+export function contarSeguidoresESeguidos(http: HttpClient, rootUrl: string, params: ContarSeguidoresESeguidos$Params, context?: HttpContext): Observable<StrictHttpResponse<ContagemSeguidoresDto>> {
   const rb = new RequestBuilder(rootUrl, contarSeguidoresESeguidos.PATH, 'get');
   if (params) {
     rb.path('usuarioId', params.usuarioId, {});
@@ -30,9 +29,7 @@ export function contarSeguidoresESeguidos(http: HttpClient, rootUrl: string, par
   ).pipe(
     filter((r: any): r is HttpResponse<any> => r instanceof HttpResponse),
     map((r: HttpResponse<any>) => {
-      return r as StrictHttpResponse<{
-      [key: string]: number;
-      }>;
+      return r as StrictHttpResponse<ContagemSeguidoresDto>;
     })
   );
 }

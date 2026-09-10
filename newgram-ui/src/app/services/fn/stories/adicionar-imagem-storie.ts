@@ -26,7 +26,7 @@ export interface AdicionarImagemStorie$Params {
 }
 
 export function adicionarImagemStorie(http: HttpClient, rootUrl: string, params: AdicionarImagemStorie$Params, context?: HttpContext): Observable<StrictHttpResponse<StorieResponseDto>> {
-  const rb = new RequestBuilder(rootUrl, adicionarImagemStorie.PATH, 'post');
+  const rb = new RequestBuilder(rootUrl, adicionarImagemStorie.PATH, 'put');
   if (params) {
     rb.path('id', params.id, {});
     rb.body(params.body, 'multipart/form-data');

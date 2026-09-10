@@ -29,6 +29,7 @@ import { listarStoriesDoUsuario } from '../fn/stories/listar-stories-do-usuario'
 import { ListarStoriesDoUsuario$Params } from '../fn/stories/listar-stories-do-usuario';
 import { marcarComoVisualizado } from '../fn/stories/marcar-como-visualizado';
 import { MarcarComoVisualizado$Params } from '../fn/stories/marcar-como-visualizado';
+import { Page } from '../models/page';
 import { StorieResponseDto } from '../models/storie-response-dto';
 
 
@@ -252,7 +253,7 @@ export class StoriesService extends BaseService {
    *
    * This method doesn't expect any request body.
    */
-  listarStoriesDoUsuario$Response(params: ListarStoriesDoUsuario$Params, context?: HttpContext): Observable<StrictHttpResponse<Array<StorieResponseDto>>> {
+  listarStoriesDoUsuario$Response(params: ListarStoriesDoUsuario$Params, context?: HttpContext): Observable<StrictHttpResponse<Page>> {
     return listarStoriesDoUsuario(this.http, this.rootUrl, params, context);
   }
 
@@ -266,9 +267,9 @@ export class StoriesService extends BaseService {
    *
    * This method doesn't expect any request body.
    */
-  listarStoriesDoUsuario(params: ListarStoriesDoUsuario$Params, context?: HttpContext): Observable<Array<StorieResponseDto>> {
+  listarStoriesDoUsuario(params: ListarStoriesDoUsuario$Params, context?: HttpContext): Observable<Page> {
     return this.listarStoriesDoUsuario$Response(params, context).pipe(
-      map((r: StrictHttpResponse<Array<StorieResponseDto>>): Array<StorieResponseDto> => r.body)
+      map((r: StrictHttpResponse<Page>): Page => r.body)
     );
   }
 
@@ -285,7 +286,7 @@ export class StoriesService extends BaseService {
    *
    * This method doesn't expect any request body.
    */
-  listarStoriesDoFeed$Response(params?: ListarStoriesDoFeed$Params, context?: HttpContext): Observable<StrictHttpResponse<Array<StorieResponseDto>>> {
+  listarStoriesDoFeed$Response(params: ListarStoriesDoFeed$Params, context?: HttpContext): Observable<StrictHttpResponse<Page>> {
     return listarStoriesDoFeed(this.http, this.rootUrl, params, context);
   }
 
@@ -299,9 +300,9 @@ export class StoriesService extends BaseService {
    *
    * This method doesn't expect any request body.
    */
-  listarStoriesDoFeed(params?: ListarStoriesDoFeed$Params, context?: HttpContext): Observable<Array<StorieResponseDto>> {
+  listarStoriesDoFeed(params: ListarStoriesDoFeed$Params, context?: HttpContext): Observable<Page> {
     return this.listarStoriesDoFeed$Response(params, context).pipe(
-      map((r: StrictHttpResponse<Array<StorieResponseDto>>): Array<StorieResponseDto> => r.body)
+      map((r: StrictHttpResponse<Page>): Page => r.body)
     );
   }
 
@@ -318,7 +319,7 @@ export class StoriesService extends BaseService {
    *
    * This method doesn't expect any request body.
    */
-  listarStoriesDestacados$Response(params?: ListarStoriesDestacados$Params, context?: HttpContext): Observable<StrictHttpResponse<Array<StorieResponseDto>>> {
+  listarStoriesDestacados$Response(params: ListarStoriesDestacados$Params, context?: HttpContext): Observable<StrictHttpResponse<Page>> {
     return listarStoriesDestacados(this.http, this.rootUrl, params, context);
   }
 
@@ -332,9 +333,9 @@ export class StoriesService extends BaseService {
    *
    * This method doesn't expect any request body.
    */
-  listarStoriesDestacados(params?: ListarStoriesDestacados$Params, context?: HttpContext): Observable<Array<StorieResponseDto>> {
+  listarStoriesDestacados(params: ListarStoriesDestacados$Params, context?: HttpContext): Observable<Page> {
     return this.listarStoriesDestacados$Response(params, context).pipe(
-      map((r: StrictHttpResponse<Array<StorieResponseDto>>): Array<StorieResponseDto> => r.body)
+      map((r: StrictHttpResponse<Page>): Page => r.body)
     );
   }
 

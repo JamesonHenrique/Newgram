@@ -183,7 +183,7 @@ export class ComentariosService extends BaseService {
    *
    * This method doesn't expect any request body.
    */
-  listarRespostasPorComentario$Response(params: ListarRespostasPorComentario$Params, context?: HttpContext): Observable<StrictHttpResponse<string>> {
+  listarRespostasPorComentario$Response(params: ListarRespostasPorComentario$Params, context?: HttpContext): Observable<StrictHttpResponse<Page>> {
     return listarRespostasPorComentario(this.http, this.rootUrl, params, context);
   }
 
@@ -197,9 +197,9 @@ export class ComentariosService extends BaseService {
    *
    * This method doesn't expect any request body.
    */
-  listarRespostasPorComentario(params: ListarRespostasPorComentario$Params, context?: HttpContext): Observable<string> {
+  listarRespostasPorComentario(params: ListarRespostasPorComentario$Params, context?: HttpContext): Observable<Page> {
     return this.listarRespostasPorComentario$Response(params, context).pipe(
-      map((r: StrictHttpResponse<string>): string => r.body)
+      map((r: StrictHttpResponse<Page>): Page => r.body)
     );
   }
 
@@ -249,7 +249,7 @@ export class ComentariosService extends BaseService {
    *
    * This method doesn't expect any request body.
    */
-  descurtirComentario$Response(params: DescurtirComentario$Params, context?: HttpContext): Observable<StrictHttpResponse<ComentarioResponseDto>> {
+  descurtirComentario$Response(params: DescurtirComentario$Params, context?: HttpContext): Observable<StrictHttpResponse<void>> {
     return descurtirComentario(this.http, this.rootUrl, params, context);
   }
 
@@ -263,9 +263,9 @@ export class ComentariosService extends BaseService {
    *
    * This method doesn't expect any request body.
    */
-  descurtirComentario(params: DescurtirComentario$Params, context?: HttpContext): Observable<ComentarioResponseDto> {
+  descurtirComentario(params: DescurtirComentario$Params, context?: HttpContext): Observable<void> {
     return this.descurtirComentario$Response(params, context).pipe(
-      map((r: StrictHttpResponse<ComentarioResponseDto>): ComentarioResponseDto => r.body)
+      map((r: StrictHttpResponse<void>): void => r.body)
     );
   }
 

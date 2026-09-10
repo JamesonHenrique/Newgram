@@ -2,21 +2,21 @@ import { HttpInterceptorFn, HttpErrorResponse, HttpRequest, HttpHandlerFn, HttpE
 import { inject } from '@angular/core';
 
 import { Router } from '@angular/router';
-import { catchError, Observable, switchMap, throwError } from 'rxjs';
+import { catchError, Observable, shareReplay, switchMap, throwError, finalize, of } from 'rxjs';
 import { TokenService } from '../token/token.service';
+
+let refreshInFlight$: Observable<unknown> | null = null;
 
 export const tokenInterceptor: HttpInterceptorFn = (req, next) => {
   const tokenService = inject(TokenService);
   const router = inject(Router);
-  let refreshInProgress = false;
-  let pendingRequests: HttpRequest<any>[] = [];
 
   if (req.url.includes('/auth')) {
     return next(req);
   }
 
   return tokenService.renewTokenIfAboutToExpire().pipe(
-    switchMap(renewResponse => {
+    switchMap(() => {
       const authReq = addTokenToRequest(req, tokenService);
 
       return next(authReq).pipe(
@@ -43,15 +43,23 @@ function handle401Error(
     return throwError(() => new Error('Refresh token não disponível'));
   }
 
-  return tokenService.renewToken().pipe(
+  // Single-flight: N requests 401 simultâneos disparam 1 refresh só.
+  if (!refreshInFlight$) {
+    refreshInFlight$ = tokenService.renewToken().pipe(
+      shareReplay(1),
+      finalize(() => (refreshInFlight$ = null)),
+      catchError(error => {
+        tokenService.logout();
+        router.navigate(['/login']);
+        return throwError(() => error);
+      })
+    );
+  }
+
+  return refreshInFlight$.pipe(
     switchMap(() => {
       const newRequest = addTokenToRequest(request, tokenService);
       return next(newRequest);
-    }),
-    catchError(error => {
-      tokenService.logout();
-      router.navigate(['/login']);
-      return throwError(() => error);
     })
   );
 }

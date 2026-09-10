@@ -238,7 +238,7 @@ export class CreatePostComponent {
             formData.append('file', this.selectedFoto);
             return this.postService
               .uploadImagemPost({
-                id: response.id,
+                postId: response.id,
                 body: formData,
               })
               .pipe(

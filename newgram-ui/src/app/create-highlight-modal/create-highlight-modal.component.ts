@@ -116,11 +116,14 @@ export class CreateHighlightModalComponent {
 
   findAllStoriesByUserId() {
     this.storiesService
-      .listarStoriesDoUsuario({ autorId: this.tokenService.userId })
+      .listarStoriesDoUsuario({
+        autorId: this.tokenService.userId,
+        pageable: { page: 0, size: 50, sort: [''] },
+      })
       .pipe(takeUntil(this.destroy$))
       .subscribe({
-        next: (stories) => {
-          this.availableStories = stories;
+        next: (page) => {
+          this.availableStories = (page.content as any[] | undefined) || [];
         },
         error: (error) => {
           console.error('Erro ao buscar stories:', error);

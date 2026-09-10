@@ -8,8 +8,8 @@ import { filter, map } from 'rxjs/operators';
 import { StrictHttpResponse } from '../../strict-http-response';
 import { RequestBuilder } from '../../request-builder';
 
+import { Page } from '../../models/page';
 import { Pageable } from '../../models/pageable';
-import { SeguidorResponseDto } from '../../models/seguidor-response-dto';
 
 export interface ListarSeguidos1$Params {
 
@@ -24,7 +24,7 @@ export interface ListarSeguidos1$Params {
   pageable: Pageable;
 }
 
-export function listarSeguidos1(http: HttpClient, rootUrl: string, params: ListarSeguidos1$Params, context?: HttpContext): Observable<StrictHttpResponse<Array<SeguidorResponseDto>>> {
+export function listarSeguidos1(http: HttpClient, rootUrl: string, params: ListarSeguidos1$Params, context?: HttpContext): Observable<StrictHttpResponse<Page>> {
   const rb = new RequestBuilder(rootUrl, listarSeguidos1.PATH, 'get');
   if (params) {
     rb.path('usuarioId', params.usuarioId, {});
@@ -36,7 +36,7 @@ export function listarSeguidos1(http: HttpClient, rootUrl: string, params: Lista
   ).pipe(
     filter((r: any): r is HttpResponse<any> => r instanceof HttpResponse),
     map((r: HttpResponse<any>) => {
-      return r as StrictHttpResponse<Array<SeguidorResponseDto>>;
+      return r as StrictHttpResponse<Page>;
     })
   );
 }
