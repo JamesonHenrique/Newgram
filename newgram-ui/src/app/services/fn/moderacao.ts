@@ -147,3 +147,79 @@ export function listarBloqueios(http: HttpClient, rootUrl: string, params: Lista
 }
 
 listarBloqueios.PATH = '/moderacao/bloqueios';
+
+export type StatusDenuncia = 'ABERTA' | 'EM_ANALISE' | 'RESOLVIDA' | 'REJEITADA';
+
+export interface DenunciaDto {
+  alvoId?: number;
+  dataCriacao?: string;
+  descricao?: string;
+  id?: number;
+  motivo?: string;
+  status?: StatusDenuncia;
+  tipoAlvo?: 'POST' | 'COMENTARIO' | 'USUARIO';
+}
+
+export interface ListarFila$Params {
+
+/**
+ * Filtra por status (vazio = todas)
+ */
+  status?: StatusDenuncia;
+
+/**
+ * Parâmetros de paginação (page=0, size=20)
+ */
+  pageable: Pageable;
+}
+
+export function listarFila(http: HttpClient, rootUrl: string, params: ListarFila$Params, context?: HttpContext): Observable<StrictHttpResponse<Page>> {
+  const rb = new RequestBuilder(rootUrl, listarFila.PATH, 'get');
+  if (params) {
+    rb.query('status', params.status, {});
+    rb.query('pageable', params.pageable, {});
+  }
+
+  return http.request(
+    rb.build({ responseType: 'json', accept: '*/*', context })
+  ).pipe(
+    filter((r: any): r is HttpResponse<any> => r instanceof HttpResponse),
+    map((r: HttpResponse<any>) => {
+      return r as StrictHttpResponse<Page>;
+    })
+  );
+}
+
+listarFila.PATH = '/moderacao/denuncias';
+
+export interface ResolverDenuncia$Params {
+
+/**
+ * ID da denúncia
+ */
+  id: number;
+
+/**
+ * Novo status
+ */
+  status: 'EM_ANALISE' | 'RESOLVIDA' | 'REJEITADA';
+}
+
+export function resolverDenuncia(http: HttpClient, rootUrl: string, params: ResolverDenuncia$Params, context?: HttpContext): Observable<StrictHttpResponse<DenunciaDto>> {
+  const rb = new RequestBuilder(rootUrl, resolverDenuncia.PATH, 'patch');
+  if (params) {
+    rb.path('id', params.id, {});
+    rb.query('status', params.status, {});
+  }
+
+  return http.request(
+    rb.build({ responseType: 'json', accept: '*/*', context })
+  ).pipe(
+    filter((r: any): r is HttpResponse<any> => r instanceof HttpResponse),
+    map((r: HttpResponse<any>) => {
+      return r as StrictHttpResponse<DenunciaDto>;
+    })
+  );
+}
+
+resolverDenuncia.PATH = '/moderacao/denuncias/{id}';

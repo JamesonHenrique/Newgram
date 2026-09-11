@@ -29,6 +29,29 @@
         ></i>
         <span>{{ comentario.numeroCurtidas || 0 }}</span>
       </button>
+      <div class="flex gap-3 mt-1">
+        <button
+          *ngIf="comentario.numeroRespostas"
+          type="button"
+          class="text-xs text-gray-500"
+          (click)="alternarRespostas(comentario, $event)"
+        >
+          {{ respostasVisiveis[comentario.id] ? 'Ocultar' : 'Ver' }} respostas ({{ comentario.numeroRespostas }})
+        </button>
+        <button
+          type="button"
+          class="text-xs text-gray-500"
+          (click)="responder(comentario, $event)"
+        >
+          Responder
+        </button>
+      </div>
+      <div *ngIf="respostasVisiveis[comentario.id]" class="ml-6 mt-2 space-y-2">
+        <div *ngFor="let resposta of respostasVisiveis[comentario.id]" class="text-sm">
+          <span class="font-semibold">{{ resposta.autor?.username || resposta.username }}</span>
+          <span class="base-medium ml-2">{{ resposta.texto }}</span>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -50,10 +73,13 @@
   <input
     type="text"
     [(ngModel)]="comentarioTexto"
-    placeholder="Adicione um comentário..."
+    [placeholder]="responderA ? 'Responder ' + (responderA.autor?.username || responderA.username) + '...' : 'Adicione um comentário...'"
     class="comment-input-field"
     (keyup.enter)="enviarComentario()"
   />
+  <button *ngIf="responderA" type="button" class="text-xs text-gray-500" (click)="cancelarResposta()">
+    Cancelar
+  </button>
   <button class="btn-icon" (click)="enviarComentario()">
     <i class="fas fa-paper-plane icon-custom"></i>
   </button>

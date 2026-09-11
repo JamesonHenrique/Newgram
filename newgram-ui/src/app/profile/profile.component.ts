@@ -17,6 +17,7 @@ import {
   ModeracaoService,
   PostsService,
   SeguidoresService,
+  StatusService,
   StoriesService,
   UsuariosService,
 } from '../services/services';
@@ -64,6 +65,7 @@ export class ProfileComponent {
   solicitacoes: any[] = [];
   totalSolicitacoes = 0;
   analytics: any = null;
+  onlineAgora = false;
 
   posts: any[] = [];
   postSelected: any = null;
@@ -95,6 +97,7 @@ export class ProfileComponent {
     private moderacaoService: ModeracaoService,
     private conversasService: ConversasService,
     private autenticacaoService: AutenticacaoService,
+    private statusService: StatusService,
     private router: Router,
     private cdr: ChangeDetectorRef
   ) {}
@@ -241,12 +244,28 @@ export class ProfileComponent {
       .pipe(
         tap((usuario) => (this.userProfile = usuario)),
         tap((usuario) => this.carregarEstadoSeguimento(usuario)),
+        tap((usuario) => this.carregarPresenca(usuario)),
         catchError((err) => {
           console.error('Erro ao carregar perfil:', err);
           this.error = 'Usuário não encontrado';
           return throwError(() => err);
         })
       );
+  }
+
+  /** Presença: ponto verde quando o dono do perfil está online. */
+  private carregarPresenca(usuario: any): void {
+    this.onlineAgora = false;
+    if (!usuario?.id) {
+      return;
+    }
+    this.statusService
+      .statusPorUsuario({ usuarioId: usuario.id })
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (status) => (this.onlineAgora = !!status?.online),
+        error: () => (this.onlineAgora = false),
+      });
   }
 
   /** Preenche solicitacaoPendente para exibir "Solicitado" em conta privada. */
@@ -408,18 +427,22 @@ export class ProfileComponent {
   }
 
   getStoryIds(storyData: any): number[] {
+    return this.getStoryItems(storyData).map((story: any) => story.id).filter(Boolean);
+  }
+
+  getStoryItems(storyData: any): any[] {
     if (!storyData) return [];
 
     if (storyData?.stories) {
-      return storyData.stories.map((story: any) => story.id).filter(Boolean);
+      return storyData.stories;
     }
 
     if (Array.isArray(storyData)) {
-      return storyData.map((story: any) => story.id).filter(Boolean);
+      return storyData;
     }
 
     if (storyData?.id) {
-      return [storyData.id];
+      return [storyData];
     }
 
     return [];

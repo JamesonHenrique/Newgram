@@ -15,6 +15,8 @@ import { bloquear, Bloquear$Params } from '../fn/moderacao';
 import { denunciar, Denunciar$Params } from '../fn/moderacao';
 import { desbloquear, Desbloquear$Params } from '../fn/moderacao';
 import { listarBloqueios, ListarBloqueios$Params } from '../fn/moderacao';
+import { listarFila, ListarFila$Params } from '../fn/moderacao';
+import { resolverDenuncia, ResolverDenuncia$Params, DenunciaDto } from '../fn/moderacao';
 import { verificarBloqueio, VerificarBloqueio$Params, BloqueioStatus } from '../fn/moderacao';
 import { Page } from '../models/page';
 
@@ -189,6 +191,72 @@ export class ModeracaoService extends BaseService {
   listarBloqueios(params: ListarBloqueios$Params, context?: HttpContext): Observable<Page> {
     return this.listarBloqueios$Response(params, context).pipe(
       map((r: StrictHttpResponse<Page>): Page => r.body)
+    );
+  }
+
+  /** Path part for operation `listarFila()` */
+  static readonly ListarFilaPath = '/moderacao/denuncias';
+
+  /**
+   * Fila de moderação (ADMIN).
+   *
+   * Todas as denúncias, filtráveis por status
+   *
+   * This method provides access to the full `HttpResponse`, allowing access to response headers.
+   * To access only the response body, use `listarFila()` instead.
+   *
+   * This method doesn't expect any request body.
+   */
+  listarFila$Response(params: ListarFila$Params, context?: HttpContext): Observable<StrictHttpResponse<Page>> {
+    return listarFila(this.http, this.rootUrl, params, context);
+  }
+
+  /**
+   * Fila de moderação (ADMIN).
+   *
+   * Todas as denúncias, filtráveis por status
+   *
+   * This method provides access only to the response body.
+   * To access the full response (for headers, for example), `listarFila$Response()` instead.
+   *
+   * This method doesn't expect any request body.
+   */
+  listarFila(params: ListarFila$Params, context?: HttpContext): Observable<Page> {
+    return this.listarFila$Response(params, context).pipe(
+      map((r: StrictHttpResponse<Page>): Page => r.body)
+    );
+  }
+
+  /** Path part for operation `resolverDenuncia()` */
+  static readonly ResolverDenunciaPath = '/moderacao/denuncias/{id}';
+
+  /**
+   * Resolver denúncia (ADMIN).
+   *
+   * Move para EM_ANALISE, RESOLVIDA ou REJEITADA
+   *
+   * This method provides access to the full `HttpResponse`, allowing access to response headers.
+   * To access only the response body, use `resolverDenuncia()` instead.
+   *
+   * This method doesn't expect any request body.
+   */
+  resolverDenuncia$Response(params: ResolverDenuncia$Params, context?: HttpContext): Observable<StrictHttpResponse<DenunciaDto>> {
+    return resolverDenuncia(this.http, this.rootUrl, params, context);
+  }
+
+  /**
+   * Resolver denúncia (ADMIN).
+   *
+   * Move para EM_ANALISE, RESOLVIDA ou REJEITADA
+   *
+   * This method provides access only to the response body.
+   * To access the full response (for headers, for example), `resolverDenuncia$Response()` instead.
+   *
+   * This method doesn't expect any request body.
+   */
+  resolverDenuncia(params: ResolverDenuncia$Params, context?: HttpContext): Observable<DenunciaDto> {
+    return this.resolverDenuncia$Response(params, context).pipe(
+      map((r: StrictHttpResponse<DenunciaDto>): DenunciaDto => r.body)
     );
   }
 

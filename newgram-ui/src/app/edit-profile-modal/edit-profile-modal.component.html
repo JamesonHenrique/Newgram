@@ -77,6 +77,10 @@
           <div *ngIf="segredoTwoFactor && !twoFactorAtivo" class="space-y-2 mt-2">
             <p class="text-sm">Escaneie no app autenticador ou digite o segredo:</p>
             <code class="block p-2 bg-gray-700 rounded text-sm break-all">{{ segredoTwoFactor }}</code>
+            <div *ngIf="backupCodesTwoFactor?.length" class="p-2 bg-yellow-900/20 border border-yellow-700 rounded text-sm">
+              <p class="font-semibold">Códigos de recuperação (guarde agora, uso único):</p>
+              <code class="block break-all">{{ backupCodesTwoFactor.join(' · ') }}</code>
+            </div>
             <input
               type="text"
               [(ngModel)]="codigoTwoFactor"
@@ -117,6 +121,27 @@
           </select>
           <button type="button" class="cancel-btn mt-2" (click)="salvarPixETipoConta()">
             Salvar Pix e tipo de conta
+          </button>
+        </div>
+
+        <div class="form-group">
+          <label>Sessões ativas</label>
+          <button type="button" class="cancel-btn" (click)="carregarSessoes()">
+            Atualizar sessões
+          </button>
+          <div *ngFor="let sessao of sessoes" class="flex items-center gap-2 mt-2 text-sm">
+            <span class="text-gray-400">Desde {{ sessao.dataCriacao }}</span>
+            <button type="button" class="text-red-400" (click)="revogarSessao(sessao.jti)">
+              Revogar
+            </button>
+          </div>
+          <button
+            *ngIf="sessoes?.length"
+            type="button"
+            class="cancel-btn mt-2"
+            (click)="revogarTodasSessoes()"
+          >
+            Encerrar outras sessões
           </button>
         </div>
 

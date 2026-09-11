@@ -21,6 +21,7 @@
         <div class="profile-info">
           <div class="profile-name-section">
             <h1 class="h2-bold">{{ userProfile?.nome }}</h1>
+            <span *ngIf="onlineAgora" class="w-3 h-3 rounded-full bg-green-500 inline-block" title="Online agora"></span>
             <i
               class="fas fa-check-circle verified-badge"
               *ngIf="userProfile?.verificado"
@@ -297,6 +298,7 @@
     [isOpen]="isStoryModalOpen"
     [storyImages]="getStoryImages(currentStory)"
     [storyIds]="getStoryIds(currentStory)"
+    [stories]="getStoryItems(currentStory)"
     [autorId]="userProfile?.id ?? null"
     [viewerId]="tokenService.userId"
     [storyTitle]="currentStory?.nome || 'Stories'"

@@ -2,7 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, Input, OnChanges, OnDestroy, Output, SimpleChanges } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Subject, switchMap, takeUntil } from 'rxjs';
-import { ConversasService } from '../services/services';
+import { ConversasService, EnquetesService } from '../services/services';
 
 @Component({
   selector: 'app-story-modal',
@@ -16,6 +16,7 @@ export class StoryModalComponent implements OnChanges, OnDestroy {
   @Input() storyAvatar = '';
   @Input() storyImages: string[] = [];
   @Input() storyIds: number[] = [];
+  @Input() stories: any[] = [];
   @Input() autorId: number | null = null;
   @Input() viewerId: number | null = null;
 
@@ -35,11 +36,43 @@ export class StoryModalComponent implements OnChanges, OnDestroy {
   private pauseStartTime = 0;
   private remainingTime: number = this.STORY_DURATION;
 
-  constructor(private conversasService: ConversasService) {}
+  constructor(
+    private conversasService: ConversasService,
+    private enquetesService: EnquetesService
+  ) {}
 
   /** Resposta/reação só para stories de outro usuário com IDs conhecidos. */
   get podeInteragir(): boolean {
     return !!this.autorId && this.autorId !== this.viewerId;
+  }
+
+  /** Enquete do story exibido agora (se houver). */
+  get enqueteAtual(): any | null {
+    if (!this.stories?.length) {
+      return null;
+    }
+    const item = this.stories[Math.min(this.currentImageIndex, this.stories.length - 1)];
+    return item?.enquete ?? null;
+  }
+
+  votarEnqueteStory(opcao: any, event: Event): void {
+    event.stopPropagation();
+    const enquete = this.enqueteAtual;
+    if (!enquete?.id || !opcao?.id || enquete.minhaOpcaoId || enquete.encerrada) {
+      return;
+    }
+    this.enquetesService
+      .votarEnquete({ id: enquete.id, body: { opcaoId: opcao.id } })
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (atualizada) => {
+          const item = this.stories[Math.min(this.currentImageIndex, this.stories.length - 1)];
+          if (item) {
+            item.enquete = atualizada;
+          }
+        },
+        error: () => {},
+      });
   }
 
   private storyAtualId(): number | null {

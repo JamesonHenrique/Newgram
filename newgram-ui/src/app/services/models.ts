@@ -21,6 +21,7 @@ export type { MensagemResponseDto } from './models/mensagem-response-dto';
 export type { NotificacaoResponseDto } from './models/notificacao-response-dto';
 export type { Page } from './models/page';
 export type { StatusNotaDto } from './models/status-nota-dto';
+export type { StatusUsuarioResponseDto } from './models/status-usuario-response-dto';
 export type { Pageable } from './models/pageable';
 export type { PollOpcaoResponseDto, PollResponseDto } from './models/poll-response-dto';
 export type { PageableObject } from './models/pageable-object';

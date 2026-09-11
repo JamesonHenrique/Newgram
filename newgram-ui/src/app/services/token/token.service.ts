@@ -66,6 +66,13 @@ export class TokenService {
   }
 
   logout(): void {
+    // Revoga a sessão no back (fire-and-forget) e limpa o armazenamento local.
+    const refresh = this.refreshToken;
+    if (refresh) {
+      this.http
+        .post(`${environment.apiUrl}/auth/logout`, { refreshToken: refresh })
+        .subscribe({ error: () => {} });
+    }
     localStorage.removeItem(this.ACCESS_TOKEN_KEY);
     localStorage.removeItem(this.REFRESH_TOKEN_KEY);
   }

@@ -70,6 +70,11 @@ export interface UsuarioResponseDto {
   verificado?: boolean;
 
   /**
+   * Papel (USER, ADMIN)
+   */
+  papel?: 'USER' | 'ADMIN';
+
+  /**
    * E-mail verificado
    */
   emailVerificado?: boolean;

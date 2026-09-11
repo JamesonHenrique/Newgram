@@ -46,6 +46,11 @@ export interface UsuarioSummaryDto {
   verificado?: boolean;
 
   /**
+   * Papel (USER, ADMIN)
+   */
+  papel?: 'USER' | 'ADMIN';
+
+  /**
    * Nome de usuário único
    */
   username?: string;

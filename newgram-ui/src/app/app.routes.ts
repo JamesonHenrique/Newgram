@@ -1,19 +1,14 @@
 import { Routes } from '@angular/router';
 import { HomeComponent } from './home/home.component';
 import { LoginComponent } from './auth/login/login.component';
-import { RecuperarSenhaComponent } from './auth/recuperar-senha/recuperar-senha.component';
-import { RedefinirSenhaComponent } from './auth/redefinir-senha/redefinir-senha.component';
-import { VerificarEmailComponent } from './auth/verificar-email/verificar-email.component';
-import { RegisterComponent } from './auth/register/register.component';
 import { ProfileComponent } from './profile/profile.component';
 import { CreatePostComponent } from './create-post/create-post.component';
 import { SearchProfileComponent } from './search-profile/search-profile.component';
 import { ExploreComponent } from './explore/explore.component';
 import { FavoriteComponent } from './favorite/favorite.component';
-import { MensagensComponent } from './mensagens/mensagens.component';
-import { ReelsComponent } from './reels/reels.component';
 
 import { AuthGuard } from './services/guard/auth.guard';
+import { AdminGuard } from './services/guard/admin.guard';
 import { UsuarioResolver } from './services/resolver/usuario.resolver';
 import { LoginRedirectGuard } from './services/guard/login-redirect.guard';
 
@@ -61,13 +56,18 @@ export const routes: Routes = [
   },
   {
     path: 'mensagens',
-    component: MensagensComponent,
+    loadComponent: () => import('./mensagens/mensagens.component').then((m) => m.MensagensComponent),
     canActivate: [AuthGuard]
   },
   {
     path: 'reels',
-    component: ReelsComponent,
+    loadComponent: () => import('./reels/reels.component').then((m) => m.ReelsComponent),
     canActivate: [AuthGuard]
+  },
+  {
+    path: 'moderacao',
+    loadComponent: () => import('./moderacao/moderacao.component').then((m) => m.ModeracaoComponent),
+    canActivate: [AuthGuard, AdminGuard]
   },
   {
     path: 'login',
@@ -75,22 +75,25 @@ export const routes: Routes = [
   },
   {
     path: 'register',
-    component: RegisterComponent
+    loadComponent: () => import('./auth/register/register.component').then((m) => m.RegisterComponent),
   },
   {
     path: 'recuperar-senha',
-    component: RecuperarSenhaComponent
+    loadComponent: () =>
+      import('./auth/recuperar-senha/recuperar-senha.component').then((m) => m.RecuperarSenhaComponent),
   },
   {
     path: 'redefinir-senha',
-    component: RedefinirSenhaComponent
+    loadComponent: () =>
+      import('./auth/redefinir-senha/redefinir-senha.component').then((m) => m.RedefinirSenhaComponent),
   },
   {
     path: 'verificar-email',
-    component: VerificarEmailComponent
+    loadComponent: () =>
+      import('./auth/verificar-email/verificar-email.component').then((m) => m.VerificarEmailComponent),
   },
   {
     path: '**',
     redirectTo: 'feed'
-  }                                 
+  }
 ];

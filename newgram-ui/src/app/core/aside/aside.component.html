@@ -176,6 +176,26 @@
             >
           </div>
         </a>
+
+        <a
+          *ngIf="usuarioLogado?.papel === 'ADMIN'"
+          routerLink="/moderacao"
+          routerLinkActive="active-route    btn-active"
+          class="leftsidebar-link group base-medium transition-all duration-300"
+        >
+          <div
+            class="flex items-center gap-4 p-3 rounded-lg group-[.active-route]:bg-primary-500/10 group-[.active-route]:border-primary-500 group-[.active-route]:pl-3"
+          >
+            <i
+              routerLinkActive="icon-custom-active"
+              class="fas fa-shield-halved flex-center w-5 text-light-3 group-[.active-route]:text-primary-500 icon-custom"
+            ></i>
+            <span
+              class="text-light-3 group-[.active-route]:text-primary-500 group-[.active-route]:font-bold"
+              >Moderação</span
+            >
+          </div>
+        </a>
       </nav>
     </div>
 

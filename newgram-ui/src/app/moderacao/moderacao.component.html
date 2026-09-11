@@ -1,0 +1,56 @@
+<div class="content-area px-4 sm:px-6 lg:px-8">
+  <div class="max-w-5xl mx-auto">
+    <h1 class="text-2xl font-bold mb-4 text-primary-500">Moderação</h1>
+
+    <div *ngIf="semPermissao" class="p-4 bg-red-900/20 border border-red-800 rounded-lg text-sm">
+      Acesso restrito a administradores.
+    </div>
+
+    <div *ngIf="!semPermissao">
+      <div class="flex flex-wrap gap-2 mb-4">
+        <button
+          type="button"
+          *ngFor="let op of ['', 'ABERTA', 'EM_ANALISE', 'RESOLVIDA', 'REJEITADA']"
+          (click)="trocarFiltro($any(op))"
+          [class.follow-btn]="filtro !== op"
+          [class.following-btn]="filtro === op"
+        >
+          {{ op || 'Todas' }}
+        </button>
+      </div>
+
+      <div *ngIf="!denuncias?.length && !carregando" class="text-gray-500 text-sm">
+        Nenhuma denúncia neste filtro.
+      </div>
+
+      <div
+        *ngFor="let denuncia of denuncias"
+        class="p-3 mb-2 bg-gray-800 rounded-lg"
+      >
+        <div class="flex items-center gap-2 text-sm">
+          <strong>#{{ denuncia.id }}</strong>
+          <span>{{ denuncia.tipoAlvo }} {{ denuncia.alvoId }}</span>
+          <span class="text-gray-400">{{ denuncia.motivo }}</span>
+          <span class="ml-auto text-xs px-2 py-0.5 rounded bg-gray-700">{{ denuncia.status }}</span>
+        </div>
+        <div class="flex gap-2 mt-2" *ngIf="denuncia.status === 'ABERTA' || denuncia.status === 'EM_ANALISE'">
+          <button type="button" class="text-xs text-yellow-400" (click)="resolver(denuncia, 'EM_ANALISE', $event)">
+            Em análise
+          </button>
+          <button type="button" class="text-xs text-green-400" (click)="resolver(denuncia, 'RESOLVIDA', $event)">
+            Resolver
+          </button>
+          <button type="button" class="text-xs text-red-400" (click)="resolver(denuncia, 'REJEITADA', $event)">
+            Rejeitar
+          </button>
+        </div>
+      </div>
+
+      <div class="p-4 text-center" *ngIf="temMais && !semPermissao">
+        <button type="button" class="btn btn-primary" (click)="carregar()" [disabled]="carregando">
+          {{ carregando ? 'Carregando...' : 'Carregar mais' }}
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

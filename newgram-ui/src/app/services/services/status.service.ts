@@ -13,7 +13,9 @@ import { StrictHttpResponse } from '../strict-http-response';
 
 import { definirNota, DefinirNota$Params } from '../fn/status';
 import { listarNotas } from '../fn/status';
+import { statusPorUsuario, StatusPorUsuario$Params } from '../fn/status';
 import { StatusNotaDto } from '../models/status-nota-dto';
+import { StatusUsuarioResponseDto } from '../models/status-usuario-response-dto';
 
 
 /**
@@ -88,6 +90,39 @@ export class StatusService extends BaseService {
   definirNota(params: DefinirNota$Params, context?: HttpContext): Observable<StatusNotaDto> {
     return this.definirNota$Response(params, context).pipe(
       map((r: StrictHttpResponse<StatusNotaDto>): StatusNotaDto => r.body)
+    );
+  }
+
+  /** Path part for operation `statusPorUsuario()` */
+  static readonly StatusPorUsuarioPath = '/status/{usuarioId}';
+
+  /**
+   * Status de um usuário.
+   *
+   * Online e último acesso
+   *
+   * This method provides access to the full `HttpResponse`, allowing access to response headers.
+   * To access only the response body, use `statusPorUsuario()` instead.
+   *
+   * This method doesn't expect any request body.
+   */
+  statusPorUsuario$Response(params: StatusPorUsuario$Params, context?: HttpContext): Observable<StrictHttpResponse<StatusUsuarioResponseDto>> {
+    return statusPorUsuario(this.http, this.rootUrl, params, context);
+  }
+
+  /**
+   * Status de um usuário.
+   *
+   * Online e último acesso
+   *
+   * This method provides access only to the response body.
+   * To access the full response (for headers, for example), `statusPorUsuario$Response()` instead.
+   *
+   * This method doesn't expect any request body.
+   */
+  statusPorUsuario(params: StatusPorUsuario$Params, context?: HttpContext): Observable<StatusUsuarioResponseDto> {
+    return this.statusPorUsuario$Response(params, context).pipe(
+      map((r: StrictHttpResponse<StatusUsuarioResponseDto>): StatusUsuarioResponseDto => r.body)
     );
   }
 

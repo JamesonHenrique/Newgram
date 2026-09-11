@@ -31,8 +31,11 @@ export class EditProfileModalComponent {
 
   segredoTwoFactor: string | null = null;
   uriTwoFactor: string | null = null;
+  backupCodesTwoFactor: string[] = [];
   codigoTwoFactor = '';
   twoFactorAtivo = false;
+
+  sessoes: Array<{ jti?: string; dataCriacao?: string; expiracao?: string }> = [];
 
   chavePix = '';
   tipoConta: 'PESSOAL' | 'CRIADOR' | 'NEGOCIOS' = 'PESSOAL';
@@ -156,8 +159,39 @@ export class EditProfileModalComponent {
       next: (res) => {
         this.segredoTwoFactor = res?.['segredo'] ?? null;
         this.uriTwoFactor = res?.['uri'] ?? null;
+        const backup = res?.['backupCodes'] ?? '';
+        this.backupCodesTwoFactor = backup ? backup.split(',') : [];
       },
       error: () => (this.errorMessage = 'Não foi possível iniciar o 2FA.'),
+    });
+  }
+
+  carregarSessoes(): void {
+    this.autenticacaoService.listarSessoes().subscribe({
+      next: (sessoes) => (this.sessoes = sessoes || []),
+      error: () => (this.sessoes = []),
+    });
+  }
+
+  revogarSessao(jti: string | undefined): void {
+    if (!jti) {
+      return;
+    }
+    this.autenticacaoService.revogarSessao({ jti }).subscribe({
+      next: () => {
+        this.sessoes = this.sessoes.filter((s) => s.jti !== jti);
+      },
+      error: () => (this.errorMessage = 'Não foi possível revogar a sessão.'),
+    });
+  }
+
+  revogarTodasSessoes(): void {
+    this.autenticacaoService.revogarTodasSessoes().subscribe({
+      next: () => {
+        this.sessoes = [];
+        this.sucessoMsg = 'Outras sessões encerradas.';
+      },
+      error: () => (this.errorMessage = 'Não foi possível encerrar as sessões.'),
     });
   }
 

@@ -9,6 +9,7 @@ import { StrictHttpResponse } from '../strict-http-response';
 import { RequestBuilder } from '../request-builder';
 
 import { StatusNotaDto } from '../models/status-nota-dto';
+import { StatusUsuarioResponseDto } from '../models/status-usuario-response-dto';
 
 export function listarNotas(http: HttpClient, rootUrl: string, context?: HttpContext): Observable<StrictHttpResponse<Array<StatusNotaDto>>> {
   const rb = new RequestBuilder(rootUrl, listarNotas.PATH, 'get');
@@ -48,3 +49,29 @@ export function definirNota(http: HttpClient, rootUrl: string, params: DefinirNo
 }
 
 definirNota.PATH = '/status/nota';
+
+export interface StatusPorUsuario$Params {
+
+/**
+ * ID do usuário
+ */
+  usuarioId: number;
+}
+
+export function statusPorUsuario(http: HttpClient, rootUrl: string, params: StatusPorUsuario$Params, context?: HttpContext): Observable<StrictHttpResponse<StatusUsuarioResponseDto>> {
+  const rb = new RequestBuilder(rootUrl, statusPorUsuario.PATH, 'get');
+  if (params) {
+    rb.path('usuarioId', params.usuarioId, {});
+  }
+
+  return http.request(
+    rb.build({ responseType: 'json', accept: '*/*', context })
+  ).pipe(
+    filter((r: any): r is HttpResponse<any> => r instanceof HttpResponse),
+    map((r: HttpResponse<any>) => {
+      return r as StrictHttpResponse<StatusUsuarioResponseDto>;
+    })
+  );
+}
+
+statusPorUsuario.PATH = '/status/{usuarioId}';

@@ -74,17 +74,56 @@ export class CommentsComponent implements OnChanges {
       postId: this.postId,
       texto: this.comentarioTexto
     };
+    if (this.responderA) {
+      (comentarioDto as any).comentarioPaiId = this.responderA.id;
+    }
 
     this.comentariosService.criarComentario({ body: comentarioDto })
       .subscribe({
         next: (response) => {
           this.comentarioTexto = '';
+          this.responderA = null;
           this.loadComentarios(this.postId);
         },
         error: (err) => {
           console.error('Erro ao enviar comentário:', err);
         }
       });
+  }
+
+  respostasVisiveis: Record<number, any[]> = {};
+  responderA: any | null = null;
+
+  alternarRespostas(comentario: any, event: Event): void {
+    event.stopPropagation();
+    if (!comentario?.id) {
+      return;
+    }
+    if (this.respostasVisiveis[comentario.id]) {
+      delete this.respostasVisiveis[comentario.id];
+      return;
+    }
+    this.comentariosService
+      .listarRespostasPorComentario({
+        id: comentario.id,
+        pageable: { page: 0, size: 10, sort: [''] },
+      })
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (page) => {
+          this.respostasVisiveis[comentario.id] = (page.content as any[] | undefined) || [];
+        },
+        error: () => {},
+      });
+  }
+
+  responder(comentario: any, event: Event): void {
+    event.stopPropagation();
+    this.responderA = comentario;
+  }
+
+  cancelarResposta(): void {
+    this.responderA = null;
   }
   loadComentarios(postId: number) {
     this.comentariosService.listarComentariosPorPost({

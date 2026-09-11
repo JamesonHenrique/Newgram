@@ -24,6 +24,21 @@
       <div class="story-nav-right" (click)="nextImage()"></div>
     </div>
 
+    <div *ngIf="enqueteAtual as enquete" class="story-poll" (click)="$event.stopPropagation()">
+      <p class="story-poll-question">{{ enquete.pergunta }}</p>
+      <button
+        type="button"
+        *ngFor="let opcao of enquete.opcoes"
+        (click)="votarEnqueteStory(opcao, $event)"
+        [disabled]="enquete.minhaOpcaoId || enquete.encerrada"
+        class="story-poll-option"
+      >
+        {{ opcao.texto }} — {{ opcao.percentual?.toFixed(0) }}%
+        <span *ngIf="enquete.minhaOpcaoId === opcao.id">✓</span>
+      </button>
+      <p class="story-poll-total">{{ enquete.totalVotos }} votos</p>
+    </div>
+
     <div *ngIf="podeInteragir" class="story-reply" (click)="$event.stopPropagation()">
       <div class="story-reactions">
         <button

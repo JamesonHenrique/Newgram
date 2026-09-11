@@ -13,6 +13,7 @@ import { StrictHttpResponse } from '../strict-http-response';
 
 import { login } from '../fn/autenticacao/login';
 import { Login$Params } from '../fn/autenticacao/login';
+import { listarSessoes, revogarSessao, RevogarSessao$Params, revogarTodasSessoes, SessaoAtiva } from '../fn/autenticacao/sessoes';
 import { ativarTwoFactor } from '../fn/autenticacao/verificar-2fa';
 import { confirmarTwoFactor, ConfirmarTwoFactor$Params } from '../fn/autenticacao/verificar-2fa';
 import { desativarTwoFactor } from '../fn/autenticacao/verificar-2fa';
@@ -404,6 +405,105 @@ export class AutenticacaoService extends BaseService {
    */
   verificarEmail(params: VerificarEmail$Params, context?: HttpContext): Observable<void> {
     return this.verificarEmail$Response(params, context).pipe(
+      map((r: StrictHttpResponse<void>): void => r.body)
+    );
+  }
+
+  /** Path part for operation `listarSessoes()` */
+  static readonly ListarSessoesPath = '/auth/sessoes';
+
+  /**
+   * Listar sessões ativas.
+   *
+   * Refresh tokens não revogados da conta
+   *
+   * This method provides access to the full `HttpResponse`, allowing access to response headers.
+   * To access only the response body, use `listarSessoes()` instead.
+   *
+   * This method doesn't expect any request body.
+   */
+  listarSessoes$Response(context?: HttpContext): Observable<StrictHttpResponse<Array<SessaoAtiva>>> {
+    return listarSessoes(this.http, this.rootUrl, context);
+  }
+
+  /**
+   * Listar sessões ativas.
+   *
+   * Refresh tokens não revogados da conta
+   *
+   * This method provides access only to the response body.
+   * To access the full response (for headers, for example), `listarSessoes$Response()` instead.
+   *
+   * This method doesn't expect any request body.
+   */
+  listarSessoes(context?: HttpContext): Observable<Array<SessaoAtiva>> {
+    return this.listarSessoes$Response(context).pipe(
+      map((r: StrictHttpResponse<Array<SessaoAtiva>>): Array<SessaoAtiva> => r.body)
+    );
+  }
+
+  /** Path part for operation `revogarSessao()` */
+  static readonly RevogarSessaoPath = '/auth/sessoes/{jti}';
+
+  /**
+   * Revogar sessão.
+   *
+   * Revoga um refresh específico
+   *
+   * This method provides access to the full `HttpResponse`, allowing access to response headers.
+   * To access only the response body, use `revogarSessao()` instead.
+   *
+   * This method doesn't expect any request body.
+   */
+  revogarSessao$Response(params: RevogarSessao$Params, context?: HttpContext): Observable<StrictHttpResponse<void>> {
+    return revogarSessao(this.http, this.rootUrl, params, context);
+  }
+
+  /**
+   * Revogar sessão.
+   *
+   * Revoga um refresh específico
+   *
+   * This method provides access only to the response body.
+   * To access the full response (for headers, for example), `revogarSessao$Response()` instead.
+   *
+   * This method doesn't expect any request body.
+   */
+  revogarSessao(params: RevogarSessao$Params, context?: HttpContext): Observable<void> {
+    return this.revogarSessao$Response(params, context).pipe(
+      map((r: StrictHttpResponse<void>): void => r.body)
+    );
+  }
+
+  /** Path part for operation `revogarTodasSessoes()` */
+  static readonly RevogarTodasSessoesPath = '/auth/sessoes';
+
+  /**
+   * Encerrar outras sessões.
+   *
+   * Revoga todos os refreshes da conta
+   *
+   * This method provides access to the full `HttpResponse`, allowing access to response headers.
+   * To access only the response body, use `revogarTodasSessoes()` instead.
+   *
+   * This method doesn't expect any request body.
+   */
+  revogarTodasSessoes$Response(context?: HttpContext): Observable<StrictHttpResponse<void>> {
+    return revogarTodasSessoes(this.http, this.rootUrl, context);
+  }
+
+  /**
+   * Encerrar outras sessões.
+   *
+   * Revoga todos os refreshes da conta
+   *
+   * This method provides access only to the response body.
+   * To access the full response (for headers, for example), `revogarTodasSessoes$Response()` instead.
+   *
+   * This method doesn't expect any request body.
+   */
+  revogarTodasSessoes(context?: HttpContext): Observable<void> {
+    return this.revogarTodasSessoes$Response(context).pipe(
       map((r: StrictHttpResponse<void>): void => r.body)
     );
   }
