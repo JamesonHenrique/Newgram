@@ -71,6 +71,8 @@ public class PostService {
 
     @Autowired
     private NotificacaoService notificacaoService;
+    @org.springframework.cache.annotation.CacheEvict(
+            cacheNames = com.jhcs.newgram.infrastructure.config.CacheConfig.HASHTAGS_POPULARES, allEntries = true)
     @Transactional
     public PostResponseDTO criarPost(PostCreateDTO dto, Long usuarioId) {
         Usuario autor = usuarioRepository.findById(usuarioId)

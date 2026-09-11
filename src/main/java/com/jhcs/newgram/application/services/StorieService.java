@@ -67,7 +67,7 @@ public class StorieService {
         Storie storie = new Storie();
 
         storie.setAutor(autor);
-        storie.setDestacado(Boolean.TRUE.equals(dto.getDestacar()));
+        storie.setDestacado(dto.isDestacar());
 
         LocalDateTime agora = LocalDateTime.now();
         storie.setDataCriacao(agora);
@@ -79,7 +79,7 @@ public class StorieService {
             salvarImagem(storie.getId(), usuarioId, dto.getImagem());
         }
 
-        if (Boolean.TRUE.equals(dto.getDestacar())) {
+        if (dto.isDestacar()) {
             List<Destaque> destaques = destaqueRepository.findByUsuarioIdOrderByNome(usuarioId);
             if (!destaques.isEmpty()) {
 

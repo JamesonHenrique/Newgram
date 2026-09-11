@@ -16,6 +16,8 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -73,11 +75,13 @@ public class SeguidorService {
                 });
     }
 
+    @Cacheable(cacheNames = com.jhcs.newgram.infrastructure.config.CacheConfig.CONTAGENS_SEGUIDORES, key = "'seg:' + #usuarioId")
     @Transactional(readOnly = true)
     public Long contarSeguidores(Long usuarioId) {
         return seguidorRepository.countSeguidoresByUsuarioId(usuarioId, StatusSeguimento.ACEITO);
     }
 
+    @Cacheable(cacheNames = com.jhcs.newgram.infrastructure.config.CacheConfig.CONTAGENS_SEGUIDORES, key = "'sdo:' + #usuarioId")
     @Transactional(readOnly = true)
     public Long contarSeguidos(Long usuarioId) {
         return seguidorRepository.countSeguidosByUsuarioId(usuarioId, StatusSeguimento.ACEITO);
@@ -106,6 +110,7 @@ public class SeguidorService {
         return seguidorRepository.countSolicitacoesRecebidas(usuarioId);
     }
 
+    @CacheEvict(cacheNames = com.jhcs.newgram.infrastructure.config.CacheConfig.CONTAGENS_SEGUIDORES, allEntries = true)
     @Transactional
     public SeguidorResponseDTO seguir(Long seguidorId, Long seguidoId) {
         if (seguidorId.equals(seguidoId)) {
@@ -174,6 +179,7 @@ public class SeguidorService {
         seguidorRepository.delete(relacao);
     }
 
+    @CacheEvict(cacheNames = com.jhcs.newgram.infrastructure.config.CacheConfig.CONTAGENS_SEGUIDORES, allEntries = true)
     @Transactional
     public void deixarDeSeguir(Long seguidorId, Long seguidoId) {
         if (!seguidorRepository.existsBySeguidorIdAndSeguidoId(seguidorId, seguidoId)) {

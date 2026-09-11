@@ -12,6 +12,7 @@ import com.jhcs.newgram.application.services.AutenticacaoService;
 import com.jhcs.newgram.application.services.RecuperacaoSenhaService;
 import com.jhcs.newgram.application.services.VerificacaoEmailService;
 import com.jhcs.newgram.core.domain.entities.Usuario;
+import com.jhcs.newgram.infrastructure.security.JwtService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -35,6 +36,7 @@ public class AutenticacaoResource {
     private final AutenticacaoService autenticacaoService;
     private final RecuperacaoSenhaService recuperacaoSenhaService;
     private final VerificacaoEmailService verificacaoEmailService;
+    private final JwtService jwtService;
     @PostMapping(path = "/register", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @Operation(summary = "Registrar usuário", description = "Registra um novo usuário com foto de perfil")
     public ResponseEntity<TokenDTO> registrar(
@@ -171,6 +173,42 @@ public class AutenticacaoResource {
     public ResponseEntity<Void> reenviarVerificacao(@AuthenticationPrincipal Usuario usuario) {
         verificacaoEmailService.enviarLink(usuario.getId());
         return ResponseEntity.accepted().build();
+    }
+
+    @PostMapping(path = "/logout")
+    @Operation(summary = "Logout", description = "Revoga a sessão do refresh informado (idempotente)")
+    public ResponseEntity<Void> logout(@RequestBody(required = false) RefreshTokenDTO dto) {
+        jwtService.logout(dto == null ? null : dto.getRefreshToken());
+        return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping(path = "/sessoes")
+    @Operation(summary = "Listar sessões ativas", description = "Refresh tokens não revogados da conta")
+    public ResponseEntity<java.util.List<java.util.Map<String, Object>>> sessoes(
+            @AuthenticationPrincipal Usuario usuario) {
+        return ResponseEntity.ok(jwtService.listarSessoes(usuario.getId()));
+    }
+
+    @DeleteMapping(path = "/sessoes/{jti}")
+    @Operation(summary = "Revogar sessão", description = "Revoga um refresh específico")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "204", description = "Sessão revogada"),
+            @ApiResponse(responseCode = "401", description = "Sessão não encontrada",
+                    content = @Content)
+    })
+    public ResponseEntity<Void> revogarSessao(
+            @Parameter(description = "JTI da sessão", required = true)
+            @PathVariable String jti,
+            @AuthenticationPrincipal Usuario usuario) {
+        jwtService.revogarSessao(jti, usuario.getId());
+        return ResponseEntity.noContent().build();
+    }
+
+    @DeleteMapping(path = "/sessoes")
+    @Operation(summary = "Encerrar outras sessões", description = "Revoga todos os refreshes da conta")
+    public ResponseEntity<Void> revogarTodas(@AuthenticationPrincipal Usuario usuario) {
+        jwtService.revogarTodasSessoes(usuario.getId());
+        return ResponseEntity.noContent().build();
     }
 
 }

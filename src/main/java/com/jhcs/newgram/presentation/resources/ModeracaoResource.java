@@ -6,6 +6,7 @@ import com.jhcs.newgram.application.dtos.moderacao.DenunciaCreateDTO;
 import com.jhcs.newgram.application.dtos.moderacao.DenunciaResponseDTO;
 import com.jhcs.newgram.application.services.ModeracaoService;
 import com.jhcs.newgram.core.domain.entities.Usuario;
+import com.jhcs.newgram.core.domain.enums.StatusDenuncia;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -20,6 +21,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
@@ -57,6 +59,40 @@ public class ModeracaoResource {
             @PageableDefault(page = 0, size = 20) Pageable pageable) {
 
         return ResponseEntity.ok(moderacaoService.listarMinhasDenuncias(usuario.getId(), pageable));
+    }
+
+    @GetMapping("/denuncias")
+    @PreAuthorize("hasRole('ADMIN')")
+    @Operation(summary = "Fila de moderação (ADMIN)", description = "Todas as denúncias, filtráveis por status")
+    public ResponseEntity<Page<DenunciaResponseDTO>> fila(
+            @Parameter(description = "Filtra por status (vazio = todas)")
+            @RequestParam(required = false) StatusDenuncia status,
+            @Parameter(description = "Parâmetros de paginação (page=0, size=20)")
+            @PageableDefault(page = 0, size = 20) Pageable pageable) {
+
+        return ResponseEntity.ok(moderacaoService.listarFila(status, pageable));
+    }
+
+    @PatchMapping("/denuncias/{id:\\d+}")
+    @PreAuthorize("hasRole('ADMIN')")
+    @Operation(summary = "Resolver denúncia (ADMIN)", description = "Move para EM_ANALISE, RESOLVIDA ou REJEITADA")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Denúncia atualizada",
+                    content = @Content(schema = @Schema(implementation = DenunciaResponseDTO.class))),
+            @ApiResponse(responseCode = "400", description = "Status inválido",
+                    content = @Content),
+            @ApiResponse(responseCode = "403", description = "Só ADMIN",
+                    content = @Content),
+            @ApiResponse(responseCode = "404", description = "Denúncia não encontrada",
+                    content = @Content)
+    })
+    public ResponseEntity<DenunciaResponseDTO> resolver(
+            @Parameter(description = "ID da denúncia", required = true)
+            @PathVariable Long id,
+            @Parameter(description = "Novo status", required = true)
+            @RequestParam StatusDenuncia status) {
+
+        return ResponseEntity.ok(moderacaoService.resolver(id, status));
     }
 
     @PostMapping("/bloqueios/{usuarioId:\\d+}")

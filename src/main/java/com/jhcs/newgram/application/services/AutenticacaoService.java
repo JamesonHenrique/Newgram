@@ -106,13 +106,17 @@ public class AutenticacaoService {
         if (!usuario.isTwoFactorEnabled()) {
             throw new BusinessException("Conta sem autenticação em dois fatores");
         }
-        if (!totpService.verificar(usuario.getTotpSecret(), dto.getCodigo())) {
-            throw new BusinessException("Código inválido");
+        if (totpService.verificar(usuario.getTotpSecret(), dto.getCodigo())) {
+            return criarTokenDTO(jwtService.generateToken(usuario), jwtService.generateRefreshToken(usuario));
         }
-        return criarTokenDTO(jwtService.generateToken(usuario), jwtService.generateRefreshToken(usuario));
+        // Códigos de recuperação: uso único (consome ao acertar).
+        if (consumirBackupCode(usuario, dto.getCodigo())) {
+            return criarTokenDTO(jwtService.generateToken(usuario), jwtService.generateRefreshToken(usuario));
+        }
+        throw new BusinessException("Código inválido");
     }
 
-    /** Etapa 1 da ativação: gera segredo (só persiste após confirmação). */
+    /** Etapa 1 da ativação: gera segredo + 10 códigos de recuperação (exibidos uma vez). */
     @Transactional
     public Map<String, String> iniciarAtivacaoTwoFactor(Long usuarioId) {
         Usuario usuario = usuarioRepository.findById(usuarioId)
@@ -120,12 +124,15 @@ public class AutenticacaoService {
         if (usuario.isTwoFactorEnabled()) {
             throw new BusinessException("2FA já está ativo");
         }
-        String segredo = totpService.generarSegredo();
+        String segredo = totpService.gerarSegredo();
         usuario.setTotpSecret(segredo);
+        var backup = gerarBackupCodes();
+        usuario.setBackupCodes(String.join(",", backup.hashes()));
         usuarioRepository.save(usuario);
         return Map.of(
                 "segredo", segredo,
-                "uri", totpService.uriProvisionamento("Newgram", usuario.getEmail(), segredo));
+                "uri", totpService.uriProvisionamento("Newgram", usuario.getEmail(), segredo),
+                "backupCodes", String.join(",", backup.plain()));
     }
 
     /** Etapa 2: confirma o código e ativa. */
@@ -147,7 +154,55 @@ public class AutenticacaoService {
                 .orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado"));
         usuario.setTwoFactorEnabled(false);
         usuario.setTotpSecret(null);
+        usuario.setBackupCodes(null);
         usuarioRepository.save(usuario);
+    }
+
+    private record BackupCodes(java.util.List<String> plain, java.util.List<String> hashes) {
+    }
+
+    private static BackupCodes gerarBackupCodes() {
+        var random = new java.security.SecureRandom();
+        var plain = new java.util.ArrayList<String>();
+        var hashes = new java.util.ArrayList<String>();
+        for (int i = 0; i < 10; i++) {
+            String codigo = String.format("%08d", random.nextInt(100_000_000));
+            plain.add(codigo);
+            hashes.add(sha256(codigo));
+        }
+        return new BackupCodes(plain, hashes);
+    }
+
+    /** Consome um backup code válido (uso único). Retorna false se inválido. */
+    private boolean consumirBackupCode(Usuario usuario, String codigo) {
+        if (codigo == null || usuario.getBackupCodes() == null || usuario.getBackupCodes().isBlank()) {
+            return false;
+        }
+        String hash = sha256(codigo.trim());
+        var restantes = new java.util.ArrayList<String>();
+        boolean consumido = false;
+        for (String salvo : usuario.getBackupCodes().split(",")) {
+            if (!consumido && salvo.equals(hash)) {
+                consumido = true;
+            } else if (!salvo.isBlank()) {
+                restantes.add(salvo);
+            }
+        }
+        if (consumido) {
+            usuario.setBackupCodes(String.join(",", restantes));
+            usuarioRepository.save(usuario);
+        }
+        return consumido;
+    }
+
+    private static String sha256(String valor) {
+        try {
+            var digest = java.security.MessageDigest.getInstance("SHA-256");
+            return java.util.HexFormat.of().formatHex(
+                    digest.digest(valor.getBytes(java.nio.charset.StandardCharsets.UTF_8)));
+        } catch (java.security.NoSuchAlgorithmException e) {
+            throw new IllegalStateException("SHA-256 indisponível", e);
+        }
     }
 
     /** Rotaciona o par: refresh antigo invalidado, par novo emitido. */

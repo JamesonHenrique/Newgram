@@ -105,13 +105,14 @@ public class ConversaService {
         conversaRepository.save(conversa);
 
         MensagemResponseDTO resposta = converterMensagem(mensagem, euId);
+        final Long mensagemId = mensagem.getId();
 
         // Tempo real para quem estiver com a conversa aberta (polling continua de fallback).
         try {
             messagingTemplate.convertAndSend("/topic/conversas." + conversa.getId(), resposta);
         } catch (RuntimeException e) {
             org.slf4j.LoggerFactory.getLogger(ConversaService.class)
-                    .warn("Mensagem {} salva, broadcast falhou", mensagem.getId(), e);
+                    .warn("Mensagem {} salva, broadcast falhou", mensagemId, e);
         }
 
         // Notifica o outro participante (desacoplada: nao desfaz o envio).
@@ -125,11 +126,11 @@ public class ConversaService {
                                 eu.getUsername() + " enviou uma mensagem");
                     } catch (RuntimeException e) {
                         org.slf4j.LoggerFactory.getLogger(ConversaService.class)
-                                .warn("Mensagem {} salva, notificacao falhou", mensagem.getId(), e);
+                                .warn("Mensagem {} salva, notificacao falhou", mensagemId, e);
                     }
                 });
 
-        return converterMensagem(mensagem, euId);
+        return resposta;
     }
 
     @Transactional(readOnly = true)

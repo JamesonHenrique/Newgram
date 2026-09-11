@@ -1,0 +1,8 @@
+target/
+.git/
+.gitignore
+newgram-ui/node_modules/
+newgram-ui/dist/
+newgram-ui/.angular/
+*.log
+.env

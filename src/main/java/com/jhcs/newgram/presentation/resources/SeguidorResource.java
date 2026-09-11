@@ -15,8 +15,8 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.validation.Max;
-import jakarta.validation.Min;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -54,7 +54,6 @@ public class SeguidorResource {
         dto.setSeguindo(seguidorService.verificarSeguimento(usuario.getId(), usuarioId));
         dto.setSolicitacaoPendente(seguidorService.verificarSolicitacaoPendente(usuario.getId(), usuarioId));
         return ResponseEntity.ok(dto);
-    }
     }
 
     @GetMapping("/seguidores/{usuarioId:\\d+}")

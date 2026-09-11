@@ -9,6 +9,7 @@ import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.auth.credentials.AwsCredentialsProvider;
 import software.amazon.awssdk.auth.credentials.DefaultCredentialsProvider;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
+import software.amazon.awssdk.http.apache.ApacheHttpClient;
 import software.amazon.awssdk.http.nio.netty.NettyNioAsyncHttpClient;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3AsyncClient;
@@ -56,7 +57,7 @@ public class AwsConfig {
         return DefaultCredentialsProvider.create();
     }
 
-    private NettyNioAsyncHttpClient.Builder httpClient() {
+    private NettyNioAsyncHttpClient.Builder httpAsyncClient() {
         return NettyNioAsyncHttpClient.builder()
                 .connectionTimeout(Duration.ofSeconds(connectionTimeoutSeconds))
                 .readTimeout(Duration.ofSeconds(socketTimeoutSeconds))
@@ -64,12 +65,19 @@ public class AwsConfig {
                 .maxConcurrency(maxConnections);
     }
 
+    private ApacheHttpClient.Builder httpSyncClient() {
+        return ApacheHttpClient.builder()
+                .connectionTimeout(Duration.ofSeconds(connectionTimeoutSeconds))
+                .socketTimeout(Duration.ofSeconds(socketTimeoutSeconds))
+                .maxConnections(maxConnections);
+    }
+
     @Bean
     public S3Client s3Client(AwsCredentialsProvider credentials) {
         var builder = S3Client.builder()
                 .region(Region.of(region))
                 .credentialsProvider(credentials)
-                .httpClientBuilder(httpClient())
+                .httpClientBuilder(httpSyncClient())
                 .serviceConfiguration(S3Configuration.builder()
                         .pathStyleAccessEnabled(endpoint != null && !endpoint.isBlank())
                         .build());
@@ -95,7 +103,7 @@ public class AwsConfig {
         var builder = S3AsyncClient.builder()
                 .region(Region.of(region))
                 .credentialsProvider(credentials)
-                .httpClientBuilder(httpClient())
+                .httpClientBuilder(httpAsyncClient())
                 .serviceConfiguration(S3Configuration.builder()
                         .pathStyleAccessEnabled(endpoint != null && !endpoint.isBlank())
                         .build());

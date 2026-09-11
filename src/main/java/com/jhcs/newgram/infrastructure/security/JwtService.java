@@ -1,6 +1,8 @@
 package com.jhcs.newgram.infrastructure.security;
 
+import com.jhcs.newgram.core.domain.entities.RefreshToken;
 import com.jhcs.newgram.core.domain.entities.Usuario;
+import com.jhcs.newgram.core.domain.repositories.RefreshTokenRepository;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.JwtException;
@@ -9,13 +11,14 @@ import io.jsonwebtoken.security.Keys;
 import jakarta.annotation.PostConstruct;
 import java.nio.charset.StandardCharsets;
 import java.security.SecureRandom;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.Base64;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 import javax.crypto.SecretKey;
 import org.slf4j.Logger;
@@ -24,14 +27,16 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Emissao e validacao de JWT (HMAC-SHA256).
  *
- * <p>Modelo: access curto + refresh longo com rotacao. O segredo vem de
- * {@code JWT_SECRET} (Base64 ou texto com ao menos 256 bits). Sem segredo
- * configurado, uma chave efemera e gerada apenas para desenvolvimento
- * (tokens nao sobrevivem ao restart — nunca usar em prod).
+ * <p>Modelo: access curto (stateless) + refresh longo com rotacao e
+ * persistência em {@code refresh_token} (revogável, lista sessões).
+ * O segredo vem de {@code JWT_SECRET} (Base64 ou texto com ao menos
+ * 256 bits). Sem segredo configurado, uma chave efemera e gerada apenas
+ * para desenvolvimento (tokens nao sobrevivem ao restart — nunca em prod).
  */
 @Service
 public class JwtService {
@@ -59,11 +64,11 @@ public class JwtService {
     private SecretKey signingKey;
 
     private final UserDetailsService userDetailsService;
+    private final RefreshTokenRepository refreshTokenRepository;
 
-    private final Set<String> blacklistedTokens = ConcurrentHashMap.newKeySet();
-
-    public JwtService(UserDetailsService userDetailsService) {
+    public JwtService(UserDetailsService userDetailsService, RefreshTokenRepository refreshTokenRepository) {
         this.userDetailsService = userDetailsService;
+        this.refreshTokenRepository = refreshTokenRepository;
     }
 
     @PostConstruct
@@ -94,19 +99,40 @@ public class JwtService {
         return extractClaim(token, Claims::getSubject);
     }
 
+    public String extractJti(String token) {
+        return extractClaim(token, Claims::getId);
+    }
+
     public String generateToken(UserDetails userDetails) {
         Map<String, Object> claims = new HashMap<>();
         claims.put(CLAIM_TOKEN_TYPE, TYPE_ACCESS);
         return generateToken(claims, userDetails, accessTokenExpiration);
     }
 
+    /** Emite refresh e persiste a sessão (jti) para revogação posterior. */
+    @Transactional
     public String generateRefreshToken(UserDetails userDetails) {
         Map<String, Object> claims = new HashMap<>();
         claims.put(CLAIM_TOKEN_TYPE, TYPE_REFRESH);
-        return generateToken(claims, userDetails, refreshTokenExpiration);
+        String jti = UUID.randomUUID().toString();
+        String token = buildToken(claims, userDetails, refreshTokenExpiration, jti);
+
+        if (userDetails instanceof Usuario usuario && usuario.getId() != null) {
+            RefreshToken sessao = new RefreshToken();
+            sessao.setUsuario(usuario);
+            sessao.setJti(jti);
+            sessao.setExpiracao(LocalDateTime.now().plusNanos(refreshTokenExpiration * 1_000_000));
+            sessao.setRevogado(false);
+            refreshTokenRepository.save(sessao);
+        }
+        return token;
     }
 
     public String generateToken(Map<String, Object> extraClaims, UserDetails userDetails, long expirationTime) {
+        return buildToken(extraClaims, userDetails, expirationTime, UUID.randomUUID().toString());
+    }
+
+    private String buildToken(Map<String, Object> extraClaims, UserDetails userDetails, long expirationTime, String jti) {
         Map<String, Object> claims = new HashMap<>(extraClaims);
         if (userDetails instanceof Usuario usuario) {
             claims.putIfAbsent("nome", usuario.getNome());
@@ -118,19 +144,16 @@ public class JwtService {
                 .claims(claims)
                 .subject(userDetails.getUsername())
                 .issuer(issuer)
-                .id(UUID.randomUUID().toString())
+                .id(jti)
                 .issuedAt(now)
                 .expiration(expiration)
                 .signWith(signingKey)
                 .compact();
     }
 
-    /** Access token valido: assinatura ok, nao expirado, nao revogado, issuer e tipo conferem. */
+    /** Access token valido: assinatura ok, nao expirado, issuer e tipo conferem. */
     public boolean isTokenValid(String token, UserDetails userDetails) {
         try {
-            if (blacklistedTokens.contains(token)) {
-                return false;
-            }
             Claims claims = extractAllClaims(token);
             if (!TYPE_ACCESS.equals(claims.get(CLAIM_TOKEN_TYPE))) {
                 return false;
@@ -150,9 +173,6 @@ public class JwtService {
 
     public boolean isRefreshTokenValid(String token) {
         try {
-            if (blacklistedTokens.contains(token)) {
-                return false;
-            }
             Claims claims = extractAllClaims(token);
             if (!TYPE_REFRESH.equals(claims.get(CLAIM_TOKEN_TYPE))) {
                 return false;
@@ -160,7 +180,13 @@ public class JwtService {
             if (!issuer.equals(claims.getIssuer())) {
                 return false;
             }
-            return claims.getExpiration().after(new Date());
+            if (!claims.getExpiration().after(new Date())) {
+                return false;
+            }
+            // Sessão precisa existir e estar ativa no banco.
+            return refreshTokenRepository.findByJti(claims.getId())
+                    .map(sessao -> !sessao.expirado(LocalDateTime.now()))
+                    .orElse(false);
         } catch (ExpiredJwtException e) {
             logger.warn("Refresh token expirado");
             return false;
@@ -171,10 +197,11 @@ public class JwtService {
     }
 
     /**
-     * Rotaciona o par de tokens: invalida o refresh antigo e emite access +
+     * Rotaciona o par de tokens: revoga o refresh antigo e emite access +
      * refresh novos. Reuso do refresh antigo apos a rotacao e rejeitado
      * (sem reemissao em cadeia — sinal de possivel roubo).
      */
+    @Transactional
     public Map<String, String> refreshToken(String refreshToken) {
         if (!isRefreshTokenValid(refreshToken)) {
             throw new JwtAuthenticationException("Refresh token inválido ou expirado");
@@ -182,7 +209,11 @@ public class JwtService {
         String email = extractUsername(refreshToken);
         UserDetails userDetails = userDetailsService.loadUserByUsername(email);
 
-        blacklistedTokens.add(refreshToken);
+        String jtiAntigo = extractJti(refreshToken);
+        refreshTokenRepository.findByJti(jtiAntigo).ifPresent(sessao -> {
+            sessao.setRevogado(true);
+            refreshTokenRepository.save(sessao);
+        });
 
         Map<String, String> tokens = new HashMap<>();
         tokens.put("accessToken", generateToken(userDetails));
@@ -190,8 +221,50 @@ public class JwtService {
         return tokens;
     }
 
-    public void invalidateToken(String token) {
-        blacklistedTokens.add(token);
+    /** Logout: revoga a sessão do refresh informado (idempotente). */
+    @Transactional
+    public void logout(String refreshToken) {
+        if (refreshToken == null || refreshToken.isBlank()) {
+            return;
+        }
+        try {
+            String jti = extractJti(refreshToken);
+            refreshTokenRepository.findByJti(jti).ifPresent(sessao -> {
+                sessao.setRevogado(true);
+                refreshTokenRepository.save(sessao);
+            });
+        } catch (JwtException | IllegalArgumentException e) {
+            logger.warn("Logout com refresh invalido (ignorado)");
+        }
+    }
+
+    @Transactional(readOnly = true)
+    public List<Map<String, Object>> listarSessoes(Long usuarioId) {
+        return refreshTokenRepository.findSessoesAtivas(usuarioId, LocalDateTime.now()).stream()
+                .map(sessao -> {
+                    Map<String, Object> item = new HashMap<>();
+                    item.put("jti", sessao.getJti());
+                    item.put("expiracao", sessao.getExpiracao().atZone(ZoneId.of("UTC")).toInstant().toString());
+                    item.put("dataCriacao", sessao.getDataCriacao().atZone(ZoneId.of("UTC")).toInstant().toString());
+                    return item;
+                })
+                .toList();
+    }
+
+    @Transactional
+    public void revogarSessao(String jti, Long usuarioId) {
+        RefreshToken sessao = refreshTokenRepository.findByJti(jti)
+                .orElseThrow(() -> new JwtAuthenticationException("Sessão não encontrada"));
+        if (!sessao.getUsuario().getId().equals(usuarioId)) {
+            throw new JwtAuthenticationException("Sessão não encontrada");
+        }
+        sessao.setRevogado(true);
+        refreshTokenRepository.save(sessao);
+    }
+
+    @Transactional
+    public void revogarTodasSessoes(Long usuarioId) {
+        refreshTokenRepository.revogarTodasDoUsuario(usuarioId);
     }
 
     public <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {

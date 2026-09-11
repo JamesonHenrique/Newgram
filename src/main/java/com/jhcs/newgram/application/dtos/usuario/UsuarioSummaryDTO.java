@@ -23,6 +23,9 @@ public class UsuarioSummaryDTO {
     @Schema(description = "Selo de verificação", example = "false")
     private boolean verificado;
 
+    @Schema(description = "Papel (USER, ADMIN)", example = "USER")
+    private com.jhcs.newgram.core.domain.enums.Papel papel;
+
     @Schema(description = "Número de seguidores do usuário", example = "100")
     private Long numeroSeguidores;
 

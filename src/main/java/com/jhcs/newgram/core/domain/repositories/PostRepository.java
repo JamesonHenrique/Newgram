@@ -1,7 +1,6 @@
 package com.jhcs.newgram.core.domain.repositories;
 
 import com.jhcs.newgram.core.domain.entities.Post;
-import com.jhcs.newgram.core.domain.enums.TipoVisibilidade;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -105,26 +104,6 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     @Query("SELECT p FROM Post p WHERE p.id IN (SELECT s.post.id FROM Salvos s WHERE s.usuario.id = :usuarioId AND s.colecao = :colecao) ORDER BY p.dataCriacao DESC")
     Page<Post> findSalvosByUsuarioIdAndColecao(@Param("usuarioId") Long usuarioId, @Param("colecao") String colecao, Pageable pageable);
 
-    @Query(value = "SELECT p.* FROM post p " +
-            "JOIN curtida c ON p.id = c.post_id " +
-            "WHERE p.arquivado = false " +
-            "AND NOT EXISTS (SELECT 1 FROM bloqueio b WHERE (b.bloqueador_id = :usuarioId AND b.bloqueado_id = p.autor_id) OR (b.bloqueador_id = p.autor_id AND b.bloqueado_id = :usuarioId)) " +
-            "AND (p.autor_id = :usuarioId " +
-            "OR EXISTS (SELECT 1 FROM seguidor s WHERE s.seguidor_id = :usuarioId AND s.seguido_id = p.autor_id AND s.status = 'ACEITO') " +
-            "OR ((p.visibilidade IS NULL OR p.visibilidade <> 'PRIVADO') " +
-            "AND (SELECT u.privado FROM usuario u WHERE u.id = p.autor_id) = false)) " +
-            "GROUP BY p.id " +
-            "ORDER BY COUNT(c.id) DESC, p.data_criacao DESC",
-            countQuery = "SELECT COUNT(DISTINCT p.id) FROM post p " +
-                    "JOIN curtida c ON p.id = c.post_id WHERE p.arquivado = false " +
-                    "AND NOT EXISTS (SELECT 1 FROM bloqueio b WHERE (b.bloqueador_id = :usuarioId AND b.bloqueado_id = p.autor_id) OR (b.bloqueador_id = p.autor_id AND b.bloqueado_id = :usuarioId)) " +
-                    "AND (p.autor_id = :usuarioId " +
-                    "OR EXISTS (SELECT 1 FROM seguidor s WHERE s.seguidor_id = :usuarioId AND s.seguido_id = p.autor_id AND s.status = 'ACEITO') " +
-                    "OR ((p.visibilidade IS NULL OR p.visibilidade <> 'PRIVADO') " +
-                    "AND (SELECT u.privado FROM usuario u WHERE u.id = p.autor_id) = false))",
-            nativeQuery = true)
-    Page<Post> findTopPostsByLikes(@Param("usuarioId") Long usuarioId, Pageable pageable);
-
     /** @deprecated use {@link #buscarPostsPorLegenda(String, Long, Pageable)} */
     @Deprecated
     default Page<Post> searchPostsByContent(String termo, Long usuarioId, Pageable pageable) {
@@ -139,8 +118,6 @@ public interface PostRepository extends JpaRepository<Post, Long> {
             "OR EXISTS (SELECT 1 FROM Seguidor s WHERE s.seguidor.id = :usuarioId AND s.seguido.id = p.autor.id AND s.status = com.jhcs.newgram.core.domain.enums.StatusSeguimento.ACEITO) " +
             "OR ((p.visibilidade IS NULL OR p.visibilidade <> com.jhcs.newgram.core.domain.enums.TipoVisibilidade.PRIVADO) AND p.autor.privado = false))")
     Page<Post> findReelsByUsuarioId(@Param("usuarioId") Long usuarioId, Pageable pageable);
-
-    Page<Post> findByVisibilidadeAndArquivadoFalse(TipoVisibilidade visibilidade, Pageable pageable);
 
     @Query("SELECT COUNT(p) FROM Post p JOIN p.hashtags h WHERE h.id = :hashtagId")
     Long countByHashtagId(@Param("hashtagId") Long hashtagId);

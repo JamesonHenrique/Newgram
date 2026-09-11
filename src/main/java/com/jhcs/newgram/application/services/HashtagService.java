@@ -7,6 +7,7 @@ import com.jhcs.newgram.core.domain.repositories.HashtagRepository;
 import com.jhcs.newgram.core.domain.repositories.PostRepository;
 import com.jhcs.newgram.infrastructure.exception.ResourceNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -33,6 +34,7 @@ public class HashtagService {
         return converterParaResponseDTO(hashtag);
     }
 
+    @Cacheable(cacheNames = com.jhcs.newgram.infrastructure.config.CacheConfig.HASHTAGS_POPULARES)
     @Transactional(readOnly = true)
     public Page<HashtagSummaryDTO> listarHashtagsPopulares(Pageable pageable) {
 

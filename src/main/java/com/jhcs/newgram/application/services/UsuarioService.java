@@ -332,6 +332,7 @@ public class UsuarioService {
         dto.setSeguindoUsuario(segue(usuarioLogadoId, usuario.getId()));
         dto.setPrivado(usuario.isPrivado());
         dto.setVerificado(usuario.isVerificado());
+        dto.setPapel(usuario.getPapel());
 
         return dto;
     }

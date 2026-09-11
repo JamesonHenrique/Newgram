@@ -1,6 +1,7 @@
 package com.jhcs.newgram.core.domain.entities;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.jhcs.newgram.core.domain.enums.Papel;
 import com.jhcs.newgram.core.domain.enums.TipoConta;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
@@ -71,6 +72,15 @@ public class Usuario implements UserDetails {
     @Column(name = "tipo_conta", nullable = false, length = 20)
     private TipoConta tipoConta = TipoConta.PESSOAL;
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 10)
+    private Papel papel = Papel.USER;
+
+    /** Hashes SHA-256 de códigos de recuperação do 2FA, separados por vírgula. */
+    @JsonIgnore
+    @Column(name = "backup_codes", columnDefinition = "TEXT")
+    private String backupCodes;
+
     @CreationTimestamp
     @Column(name = "data_criacao", nullable = false, updatable = false)
     private LocalDateTime dataCriacao;
@@ -108,7 +118,8 @@ public class Usuario implements UserDetails {
     @Override
     @JsonIgnore
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return List.of();
+        return List.of(new org.springframework.security.core.authority.SimpleGrantedAuthority(
+                "ROLE_" + (papel == null ? Papel.USER : papel).name()));
     }
 
     @Override

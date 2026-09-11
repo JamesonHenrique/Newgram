@@ -1,9 +1,11 @@
 package com.jhcs.newgram.presentation.resources;
 
 import com.jhcs.newgram.application.dtos.statususuario.StatusNotaDTO;
+import com.jhcs.newgram.application.dtos.statususuario.StatusUsuarioResponseDTO;
 import com.jhcs.newgram.application.services.StatusUsuarioService;
 import com.jhcs.newgram.core.domain.entities.Usuario;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -35,5 +37,14 @@ public class StatusResource {
             @AuthenticationPrincipal Usuario usuario) {
 
         return ResponseEntity.ok(statusUsuarioService.definirNota(usuario.getId(), body.get("nota")));
+    }
+
+    @GetMapping("/{usuarioId:\\d+}")
+    @Operation(summary = "Status de um usuário", description = "Online e último acesso")
+    public ResponseEntity<StatusUsuarioResponseDTO> statusPorUsuario(
+            @Parameter(description = "ID do usuário", required = true)
+            @PathVariable Long usuarioId) {
+
+        return ResponseEntity.ok(statusUsuarioService.buscarStatusPorUsuarioId(usuarioId));
     }
 }

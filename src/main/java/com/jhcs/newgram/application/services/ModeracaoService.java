@@ -67,7 +67,31 @@ public class ModeracaoService {
                 denuncianteId, Support.safePage(pageable)).map(this::converterDenuncia);
     }
 
+    /** Fila de moderação (ADMIN): abertas/pendentes primeiro por padrão. */
+    @Transactional(readOnly = true)
+    public Page<DenunciaResponseDTO> listarFila(StatusDenuncia status, Pageable pageable) {
+        if (status == null) {
+            return denunciaRepository.findAll(Support.safePage(pageable)).map(this::converterDenuncia);
+        }
+        return denunciaRepository.findByStatusOrderByDataCriacaoDesc(status, Support.safePage(pageable))
+                .map(this::converterDenuncia);
+    }
+
+    /** ADMIN: move a denúncia na fila (EM_ANALISE, RESOLVIDA, REJEITADA). */
     @Transactional
+    public DenunciaResponseDTO resolver(Long denunciaId, StatusDenuncia novoStatus) {
+        if (novoStatus == null || novoStatus == StatusDenuncia.ABERTA) {
+            throw new BusinessException("Status inválido para resolução");
+        }
+        Denuncia denuncia = denunciaRepository.findById(denunciaId)
+                .orElseThrow(() -> new ResourceNotFoundException("Denúncia não encontrada"));
+        denuncia.setStatus(novoStatus);
+        return converterDenuncia(denunciaRepository.save(denuncia));
+    }
+
+    @Transactional
+    @org.springframework.cache.annotation.CacheEvict(
+            cacheNames = com.jhcs.newgram.infrastructure.config.CacheConfig.CONTAGENS_SEGUIDORES, allEntries = true)
     public void bloquear(Long bloqueadorId, Long bloqueadoId) {
         if (bloqueadorId.equals(bloqueadoId)) {
             throw new BusinessException("Não é possível bloquear a si mesmo");

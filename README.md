@@ -189,7 +189,7 @@ Swagger UI → http://localhost:8080/swagger-ui.html
 ## 🚀 Começando
 
 ### Pré-requisitos
-- Java 17+ e Maven
+- Java 21+ e Maven (ou JDK via `scoop install temurin21-jdk`)
 - Node.js + npm e Angular CLI
 - PostgreSQL
 - Um bucket AWS S3 (para upload de mídia)
@@ -241,6 +241,34 @@ npx ng-openapi-gen
 ng serve
 ```
 Aplicação em `http://localhost:4200`.
+
+### Deploy
+
+Back-end (qualquer PaaS com JDK 21 — Render, Railway, Fly.io):
+
+```bash
+docker build -t newgram .
+docker run -p 8080:8080 \
+  -e DATABASE_URL=jdbc:postgresql://<host>:5432/newgram \
+  -e DATABASE_USERNAME=newgram \
+  -e DATABASE_PASSWORD='<segredo>' \
+  -e JWT_SECRET='<openssl rand -base64 32>' \
+  -e AWS_ACCESS_KEY_ID=... \
+  -e AWS_SECRET_ACCESS_KEY=... \
+  -e AWS_REGION=us-east-1 \
+  -e AWS_S3_BUCKET=newgram-prod \
+  -e APP_FRONT_URL=https://seu-front.vercel.app \
+  -e APP_CORS_EXTRA=https://seu-front.vercel.app \
+  -e PUSH_VAPID_PUBLIC_KEY=... \
+  -e PUSH_VAPID_PRIVATE_KEY=... \
+  newgram
+```
+
+Notas de produção:
+- Storage S3-compatível (AWS S3, Cloudflare R2 ou MinIO) via `AWS_S3_ENDPOINT` quando necessário.
+- Crie o primeiro admin: `UPDATE usuario SET papel = 'ADMIN' WHERE email = 'voce@example.com';`
+- Rate-limit é in-memory (por instância); cache Caffeine idem. Multi-instância: trocar por Redis/Bucket4j sem mudar callers.
+- Front: `cd newgram-ui && npm ci && npx ng build --configuration production` e publique `dist/` (Vercel/Netlify). PWA e push exigem HTTPS.
 
 ---
 
