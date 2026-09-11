@@ -14,6 +14,7 @@ import com.jhcs.newgram.core.domain.repositories.DenunciaRepository;
 import com.jhcs.newgram.core.domain.repositories.PostRepository;
 import com.jhcs.newgram.core.domain.repositories.SeguidorRepository;
 import com.jhcs.newgram.core.domain.repositories.UsuarioRepository;
+import com.jhcs.newgram.infrastructure.aws.S3StorageService;
 import com.jhcs.newgram.infrastructure.exception.BusinessException;
 import com.jhcs.newgram.infrastructure.exception.ResourceNotFoundException;
 import java.time.LocalDateTime;
@@ -37,6 +38,7 @@ public class ModeracaoService {
     private final PostRepository postRepository;
     private final ComentarioRepository comentarioRepository;
     private final SeguidorRepository seguidorRepository;
+    private final S3StorageService s3StorageService;
 
     @Transactional
     public DenunciaResponseDTO denunciar(DenunciaCreateDTO dto, Long denuncianteId) {
@@ -87,6 +89,41 @@ public class ModeracaoService {
                 .orElseThrow(() -> new ResourceNotFoundException("Denúncia não encontrada"));
         denuncia.setStatus(novoStatus);
         return converterDenuncia(denunciaRepository.save(denuncia));
+    }
+
+    /** ADMIN: resumo do alvo para decidir sem sair da fila (null se já removido). */
+    @Transactional(readOnly = true)
+    public java.util.Map<String, Object> obterAlvo(Long denunciaId) {
+        Denuncia denuncia = denunciaRepository.findById(denunciaId)
+                .orElseThrow(() -> new ResourceNotFoundException("Denúncia não encontrada"));
+        java.util.Map<String, Object> alvo = new java.util.LinkedHashMap<>();
+        alvo.put("tipo", denuncia.getTipoAlvo());
+        alvo.put("alvoId", denuncia.getAlvoId());
+        switch (denuncia.getTipoAlvo()) {
+            case POST -> postRepository.findById(denuncia.getAlvoId()).ifPresentOrElse(
+                    post -> {
+                        alvo.put("legenda", post.getLegenda());
+                        alvo.put("autorUsername", post.getAutor().getUsername());
+                        alvo.put("imagemUrl",
+                                s3StorageService.getFileUrl(post.getImagemUrl()));
+                    },
+                    () -> alvo.put("removido", true));
+            case COMENTARIO -> comentarioRepository.findById(denuncia.getAlvoId()).ifPresentOrElse(
+                    comentario -> {
+                        alvo.put("texto", comentario.getTexto());
+                        alvo.put("autorUsername", comentario.getAutor().getUsername());
+                        alvo.put("postId", comentario.getPost().getId());
+                    },
+                    () -> alvo.put("removido", true));
+            case USUARIO -> usuarioRepository.findById(denuncia.getAlvoId()).ifPresentOrElse(
+                    usuario -> {
+                        alvo.put("username", usuario.getUsername());
+                        alvo.put("nome", usuario.getNome());
+                        alvo.put("bio", usuario.getBio());
+                    },
+                    () -> alvo.put("removido", true));
+        }
+        return alvo;
     }
 
     @Transactional

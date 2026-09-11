@@ -223,3 +223,33 @@ export function resolverDenuncia(http: HttpClient, rootUrl: string, params: Reso
 }
 
 resolverDenuncia.PATH = '/moderacao/denuncias/{id}';
+
+export interface PreviewAlvo$Params {
+
+/**
+ * ID da denúncia
+ */
+  id: number;
+}
+
+export function previewAlvo(http: HttpClient, rootUrl: string, params: PreviewAlvo$Params, context?: HttpContext): Observable<StrictHttpResponse<{
+[key: string]: any;
+}>> {
+  const rb = new RequestBuilder(rootUrl, previewAlvo.PATH, 'get');
+  if (params) {
+    rb.path('id', params.id, {});
+  }
+
+  return http.request(
+    rb.build({ responseType: 'json', accept: '*/*', context })
+  ).pipe(
+    filter((r: any): r is HttpResponse<any> => r instanceof HttpResponse),
+    map((r: HttpResponse<any>) => {
+      return r as StrictHttpResponse<{
+      [key: string]: any;
+      }>;
+    })
+  );
+}
+
+previewAlvo.PATH = '/moderacao/denuncias/{id}/alvo';

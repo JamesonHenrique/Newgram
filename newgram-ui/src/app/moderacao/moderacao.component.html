@@ -33,6 +33,23 @@
           <span class="text-gray-400">{{ denuncia.motivo }}</span>
           <span class="ml-auto text-xs px-2 py-0.5 rounded bg-gray-700">{{ denuncia.status }}</span>
         </div>
+        <button type="button" class="text-xs text-primary-500 mt-1" (click)="alternarPreview(denuncia, $event)">
+          {{ previews[denuncia.id || 0] ? 'Ocultar conteúdo' : 'Ver conteúdo' }}
+        </button>
+        <div *ngIf="denuncia.id && previews[denuncia.id]" class="mt-2 p-2 bg-gray-900 rounded text-sm">
+          <p *ngIf="previews[denuncia.id].removido" class="text-gray-500">Conteúdo já removido.</p>
+          <p *ngIf="previews[denuncia.id].legenda">Legenda: {{ previews[denuncia.id].legenda }}</p>
+          <p *ngIf="previews[denuncia.id].texto">Texto: {{ previews[denuncia.id].texto }}</p>
+          <p *ngIf="previews[denuncia.id].autorUsername">Autor: &#64;{{ previews[denuncia.id].autorUsername }}</p>
+          <p *ngIf="previews[denuncia.id].username">Usuário: &#64;{{ previews[denuncia.id].username }} ({{ previews[denuncia.id].nome }})</p>
+          <p *ngIf="previews[denuncia.id].bio">Bio: {{ previews[denuncia.id].bio }}</p>
+          <img
+            *ngIf="previews[denuncia.id].imagemUrl"
+            [src]="previews[denuncia.id].imagemUrl"
+            alt="Mídia denunciada"
+            class="mt-2 max-h-48 rounded"
+          />
+        </div>
         <div class="flex gap-2 mt-2" *ngIf="denuncia.status === 'ABERTA' || denuncia.status === 'EM_ANALISE'">
           <button type="button" class="text-xs text-yellow-400" (click)="resolver(denuncia, 'EM_ANALISE', $event)">
             Em análise

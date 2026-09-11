@@ -24,6 +24,7 @@ export class ModeracaoComponent implements OnInit, OnDestroy {
   temMais = true;
   carregando = false;
   semPermissao = false;
+  previews: Record<number, any> = {};
 
   constructor(private title: Title, private moderacaoService: ModeracaoService) {
     this.title.setTitle('Moderação');
@@ -91,6 +92,24 @@ export class ModeracaoComponent implements OnInit, OnDestroy {
         next: (atualizada) => {
           this.denuncias = this.denuncias.map((d) => (d.id === atualizada.id ? atualizada : d));
         },
+        error: () => {},
+      });
+  }
+
+  alternarPreview(denuncia: DenunciaDto, event: Event): void {
+    event.stopPropagation();
+    if (!denuncia.id) {
+      return;
+    }
+    if (this.previews[denuncia.id]) {
+      delete this.previews[denuncia.id];
+      return;
+    }
+    this.moderacaoService
+      .previewAlvo({ id: denuncia.id })
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (alvo) => (this.previews[denuncia.id as number] = alvo),
         error: () => {},
       });
   }

@@ -16,6 +16,7 @@ import { denunciar, Denunciar$Params } from '../fn/moderacao';
 import { desbloquear, Desbloquear$Params } from '../fn/moderacao';
 import { listarBloqueios, ListarBloqueios$Params } from '../fn/moderacao';
 import { listarFila, ListarFila$Params } from '../fn/moderacao';
+import { previewAlvo, PreviewAlvo$Params } from '../fn/moderacao';
 import { resolverDenuncia, ResolverDenuncia$Params, DenunciaDto } from '../fn/moderacao';
 import { verificarBloqueio, VerificarBloqueio$Params, BloqueioStatus } from '../fn/moderacao';
 import { Page } from '../models/page';
@@ -257,6 +258,47 @@ export class ModeracaoService extends BaseService {
   resolverDenuncia(params: ResolverDenuncia$Params, context?: HttpContext): Observable<DenunciaDto> {
     return this.resolverDenuncia$Response(params, context).pipe(
       map((r: StrictHttpResponse<DenunciaDto>): DenunciaDto => r.body)
+    );
+  }
+
+  /** Path part for operation `previewAlvo()` */
+  static readonly PreviewAlvoPath = '/moderacao/denuncias/{id}/alvo';
+
+  /**
+   * Preview do alvo (ADMIN).
+   *
+   * Resumo do conteúdo denunciado
+   *
+   * This method provides access to the full `HttpResponse`, allowing access to response headers.
+   * To access only the response body, use `previewAlvo()` instead.
+   *
+   * This method doesn't expect any request body.
+   */
+  previewAlvo$Response(params: PreviewAlvo$Params, context?: HttpContext): Observable<StrictHttpResponse<{
+[key: string]: any;
+}>> {
+    return previewAlvo(this.http, this.rootUrl, params, context);
+  }
+
+  /**
+   * Preview do alvo (ADMIN).
+   *
+   * Resumo do conteúdo denunciado
+   *
+   * This method provides access only to the response body.
+   * To access the full response (for headers, for example), `previewAlvo$Response()` instead.
+   *
+   * This method doesn't expect any request body.
+   */
+  previewAlvo(params: PreviewAlvo$Params, context?: HttpContext): Observable<{
+[key: string]: any;
+}> {
+    return this.previewAlvo$Response(params, context).pipe(
+      map((r: StrictHttpResponse<{
+[key: string]: any;
+}>): {
+[key: string]: any;
+} => r.body)
     );
   }
 

@@ -125,7 +125,9 @@ public class StorieService {
         }
 
 
+        String imagem = storie.getStorieImagemUrl();
         storieRepository.delete(storie);
+        arquivoService.deleteFile(imagem);
     }
 
     @Transactional(readOnly = true)

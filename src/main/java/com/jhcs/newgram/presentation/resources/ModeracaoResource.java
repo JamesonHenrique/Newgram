@@ -95,6 +95,23 @@ public class ModeracaoResource {
         return ResponseEntity.ok(moderacaoService.resolver(id, status));
     }
 
+    @GetMapping("/denuncias/{id:\\d+}/alvo")
+    @PreAuthorize("hasRole('ADMIN')")
+    @Operation(summary = "Preview do alvo (ADMIN)", description = "Resumo do conteúdo denunciado")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Resumo retornado"),
+            @ApiResponse(responseCode = "403", description = "Só ADMIN",
+                    content = @Content),
+            @ApiResponse(responseCode = "404", description = "Denúncia não encontrada",
+                    content = @Content)
+    })
+    public ResponseEntity<java.util.Map<String, Object>> alvo(
+            @Parameter(description = "ID da denúncia", required = true)
+            @PathVariable Long id) {
+
+        return ResponseEntity.ok(moderacaoService.obterAlvo(id));
+    }
+
     @PostMapping("/bloqueios/{usuarioId:\\d+}")
     @Operation(summary = "Bloquear usuário", description = "Bloqueia e rompe o vínculo nos dois sentidos")
     @ApiResponses(value = {

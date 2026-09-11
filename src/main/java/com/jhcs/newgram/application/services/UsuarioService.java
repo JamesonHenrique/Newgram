@@ -152,9 +152,12 @@ public class UsuarioService {
         Usuario usuario = usuarioRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Nenhum usuario encontrado com o ID: " + id));
 
+        String fotoAntiga = usuario.getFotoPerfil();
         var fotoPerfil = arquivoService.saveFile(file, usuario.getUsuarioName(), TipoArquivo.FOTO_PERFIL);
         usuario.setFotoPerfil(fotoPerfil);
         usuarioRepository.save(usuario);
+        // Foto antiga vira órfã só após a nova persistir.
+        arquivoService.deleteFile(fotoAntiga);
     }
 
     @Transactional
@@ -235,6 +238,8 @@ public class UsuarioService {
         usuario.setTwoFactorEnabled(false);
         usuario.setTotpSecret(null);
         usuario.setChavePix(null);
+        arquivoService.deleteFile(usuario.getFotoPerfil());
+        usuario.setFotoPerfil(null);
         usuarioRepository.save(usuario);
     }
 

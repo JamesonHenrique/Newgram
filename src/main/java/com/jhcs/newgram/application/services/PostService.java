@@ -166,7 +166,10 @@ public class PostService {
             throw new UnauthorizedException("Você não tem permissão para excluir este post");
         }
 
+        String imagem = post.getImagemUrl();
         postRepository.delete(post);
+        // Mídia só é apagada após o delete commitar a intenção (fora da TX do banco).
+        arquivoService.deleteFile(imagem);
     }
 
     @Transactional

@@ -36,6 +36,18 @@ public class ArquivoService {
         return s3StorageService.uploadFile(sourceFile, fileUploadSubPath);
     }
 
+    /** Remove arquivo antigo sem nunca quebrar a operação de negócio. */
+    public void deleteFile(String filePath) {
+        if (filePath == null || filePath.isBlank()) {
+            return;
+        }
+        try {
+            s3StorageService.deleteFile(filePath);
+        } catch (RuntimeException e) {
+            log.warn("Arquivo orfao nao removido: {}", filePath, e);
+        }
+    }
+
     private void validarArquivo(MultipartFile arquivo) {
         if (arquivo.isEmpty()) {
             throw new ArquivoException("Arquivo vazio");

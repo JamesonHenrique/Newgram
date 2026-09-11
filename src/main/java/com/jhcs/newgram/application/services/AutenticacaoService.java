@@ -60,6 +60,8 @@ public class AutenticacaoService {
         try {
             usuarioRepository.saveAndFlush(usuario);
         } catch (DataIntegrityViolationException e) {
+            // Upload já foi feito fora da TX: remove para não orfanar no bucket.
+            arquivoService.deleteFile(fotoPerfilPath);
             throw new BusinessException("Email ou nome de usuário já cadastrado", e);
         }
 

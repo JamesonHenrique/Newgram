@@ -136,7 +136,9 @@ public class DestaqueService {
         }
 
 
+        String capa = destaque.getDestaqueFotoDeCapaUrl();
         destaqueRepository.delete(destaque);
+        arquivoService.deleteFile(capa);
     }
 
     @Transactional(readOnly = true)
@@ -178,9 +180,11 @@ public class DestaqueService {
 
         Usuario usuario = usuarioRepository.findById(usuarioId)
                 .orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado"));
+        String capaAntiga = destaque.getDestaqueFotoDeCapaUrl();
         String capaUrl = arquivoService.saveFile(arquivo, usuario.getUsuarioName(), TipoArquivo.FOTO_DESTAQUE);
         destaque.setDestaqueFotoDeCapaUrl(capaUrl);
         destaqueRepository.save(destaque);
+        arquivoService.deleteFile(capaAntiga);
 
         return buscarDestaquePorId(destaqueId, usuarioId);
     }
