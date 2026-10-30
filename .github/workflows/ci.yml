@@ -32,4 +32,5 @@ jobs:
           cache-dependency-path: newgram-ui/package-lock.json
       - run: npm ci
       - run: npx tsc --noEmit -p tsconfig.app.json
+      - run: npx ng test --watch=false --browsers=ChromeHeadless
       - run: npx ng build --configuration production

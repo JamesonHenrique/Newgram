@@ -6,6 +6,15 @@ describe('HeaderComponent', () => {
   let component: HeaderComponent;
   let fixture: ComponentFixture<HeaderComponent>;
 
+  beforeEach(() => {
+    localStorage.setItem(
+      'usuarioLogado',
+      JSON.stringify({ username: 'test-user', nome: 'Test User', fotoPerfil: '' }),
+    );
+  });
+
+  afterEach(() => localStorage.removeItem('usuarioLogado'));
+
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [HeaderComponent]

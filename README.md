@@ -245,7 +245,13 @@ Aplicação em `http://localhost:4200`.
 ### Testes
 
 ```bash
-# Back-end: testes unitários e verificação do build
+# Frontend: testes unitários em Chrome headless
+cd newgram-ui
+npm ci
+npm test -- --watch=false --browsers=ChromeHeadless
+
+# Back-end: testes e verificação do build
+cd ..
 ./mvnw -B verify
 ```
 
