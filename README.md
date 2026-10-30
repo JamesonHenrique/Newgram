@@ -9,8 +9,8 @@
 
 [![Demo](https://img.shields.io/badge/🚀_Acesse_a_Demo-392E9F?style=for-the-badge&logo=vercel&logoColor=white)](https://newgram-nine.vercel.app/)
 
-![Java](https://img.shields.io/badge/Java-17-ED8B00?style=flat-square&logo=openjdk&logoColor=white)
-![Spring Boot](https://img.shields.io/badge/Spring_Boot-3.4.4-6DB33F?style=flat-square&logo=springboot&logoColor=white)
+![Java](https://img.shields.io/badge/Java-21-ED8B00?style=flat-square&logo=openjdk&logoColor=white)
+![Spring Boot](https://img.shields.io/badge/Spring_Boot-3.5.4-6DB33F?style=flat-square&logo=springboot&logoColor=white)
 ![Angular](https://img.shields.io/badge/Angular-19-DD0031?style=flat-square&logo=angular&logoColor=white)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-204E78?style=flat-square&logo=postgresql&logoColor=white)
 ![AWS S3](https://img.shields.io/badge/AWS_S3-569A31?style=flat-square&logo=amazons3&logoColor=white)
@@ -149,7 +149,7 @@ classDiagram
 ## 🛠️ Stack
 
 **Back-end**
-- Java 17 · Spring Boot 3.4.4
+- Java 21 · Spring Boot 3.5.4
 - Spring Web · Spring Data JPA · Spring Security
 - Autenticação JWT (JJWT — access + refresh)
 - PostgreSQL · Flyway (migrations versionadas)
@@ -241,6 +241,13 @@ npx ng-openapi-gen
 ng serve
 ```
 Aplicação em `http://localhost:4200`.
+
+### Testes
+
+```bash
+# Back-end: testes unitários e verificação do build
+./mvnw -B verify
+```
 
 ### Deploy
 

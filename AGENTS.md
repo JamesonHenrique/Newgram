@@ -1,6 +1,6 @@
 # AGENTS.md — Newgram
 
-Rede social full stack: Spring Boot 3.4.4 (Java 17) + Angular 19 + PostgreSQL + AWS S3.
+Rede social full stack: Spring Boot 3.5.4 (Java 21) + Angular 19 + PostgreSQL + AWS S3.
 
 ## Estrutura
 
